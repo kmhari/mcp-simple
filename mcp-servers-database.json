@@ -3,120 +3,319 @@
     "name": "AWS Knowledge Base Retrieval",
     "githubLink": "https://github.com/modelcontextprotocol/servers/tree/main/src/aws-kb-retrieval-server",
     "package": "@modelcontextprotocol/server-aws-kb-retrieval",
-    "description": "Query AWS Knowledge Base for Bedrock"
+    "description": "Query AWS Knowledge Base for Bedrock",
+    "installCommand": "npx @modelcontextprotocol/server-aws-kb-retrieval",
+    "requiredEnvVars": ["AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY", "AWS_REGION"],
+    "optionalParams": ["KNOWLEDGE_BASE_ID"],
+    "usageInstructions": "Connect to AWS Bedrock Knowledge Base to retrieve information and documents",
+    "category": "AWS Services"
   },
   "brave-search": {
     "name": "Brave Search",
     "githubLink": "https://github.com/modelcontextprotocol/servers/tree/main/src/brave-search",
     "package": "@modelcontextprotocol/server-brave-search",
-    "description": "Web search using Brave Search API"
+    "description": "Web search using Brave Search API",
+    "installCommand": "npx @modelcontextprotocol/server-brave-search",
+    "requiredEnvVars": ["BRAVE_API_KEY"],
+    "optionalParams": ["SEARCH_RESULTS_LIMIT"],
+    "usageInstructions": "Perform web searches using Brave's privacy-focused search engine",
+    "category": "Search"
   },
   "everart": {
     "name": "EverArt",
     "githubLink": "https://github.com/modelcontextprotocol/servers/tree/main/src/everart",
     "package": "@modelcontextprotocol/server-everart",
-    "description": "AI image generation using EverArt"
+    "description": "AI image generation using EverArt",
+    "installCommand": "npx @modelcontextprotocol/server-everart",
+    "requiredEnvVars": ["EVERART_API_KEY"],
+    "optionalParams": ["IMAGE_SIZE", "STYLE"],
+    "usageInstructions": "Generate AI images using various models and styles",
+    "category": "AI/ML"
   },
   "everything": {
     "name": "Everything",
     "githubLink": "https://github.com/modelcontextprotocol/servers/tree/main/src/everything",
     "package": "@modelcontextprotocol/server-everything",
-    "description": "Windows Everything search integration"
+    "description": "Reference/test server with prompts, resources, and tools",
+    "installCommand": "npx @modelcontextprotocol/server-everything",
+    "requiredEnvVars": [],
+    "optionalParams": ["CONFIG_PATH"],
+    "usageInstructions": "Development and testing server with example implementations",
+    "category": "Development"
   },
   "fetch": {
     "name": "Fetch",
     "githubLink": "https://github.com/modelcontextprotocol/servers/tree/main/src/fetch",
     "package": "@modelcontextprotocol/server-fetch",
-    "description": "Web content fetching and processing"
+    "description": "Web content fetching and processing",
+    "installCommand": "npx @modelcontextprotocol/server-fetch",
+    "requiredEnvVars": [],
+    "optionalParams": ["USER_AGENT", "TIMEOUT"],
+    "usageInstructions": "Fetch and process web content for efficient LLM usage",
+    "category": "Web Scraping"
   },
   "filesystem": {
     "name": "Filesystem",
     "githubLink": "https://github.com/modelcontextprotocol/servers/tree/main/src/filesystem",
     "package": "@modelcontextprotocol/server-filesystem",
-    "description": "Local filesystem operations"
+    "description": "Local filesystem operations",
+    "installCommand": "npx @modelcontextprotocol/server-filesystem",
+    "requiredEnvVars": [],
+    "optionalParams": ["ALLOWED_DIRECTORIES"],
+    "usageInstructions": "Read, write, and manage local files and directories",
+    "category": "File Management"
   },
   "gdrive": {
     "name": "Google Drive",
     "githubLink": "https://github.com/modelcontextprotocol/servers/tree/main/src/gdrive",
     "package": "@modelcontextprotocol/server-gdrive",
-    "description": "Google Drive integration"
+    "description": "Google Drive integration",
+    "installCommand": "npx @modelcontextprotocol/server-gdrive",
+    "requiredEnvVars": ["GOOGLE_DRIVE_CREDENTIALS"],
+    "optionalParams": ["FOLDER_ID"],
+    "usageInstructions": "Access and manage Google Drive files and folders",
+    "category": "Cloud Storage"
   },
   "git": {
     "name": "Git",
     "githubLink": "https://github.com/modelcontextprotocol/servers/tree/main/src/git",
     "package": "@modelcontextprotocol/server-git",
-    "description": "Git repository operations"
+    "description": "Git repository operations",
+    "installCommand": "npx @modelcontextprotocol/server-git",
+    "requiredEnvVars": [],
+    "optionalParams": ["REPOSITORY_PATH"],
+    "usageInstructions": "Perform Git operations like commit, push, pull, and branch management",
+    "category": "Version Control"
   },
   "github": {
     "name": "GitHub",
     "githubLink": "https://github.com/modelcontextprotocol/servers/tree/main/src/github",
     "package": "@modelcontextprotocol/server-github",
-    "description": "GitHub API integration"
+    "description": "GitHub API integration",
+    "installCommand": "npx @modelcontextprotocol/server-github",
+    "requiredEnvVars": ["GITHUB_TOKEN"],
+    "optionalParams": ["REPOSITORY_OWNER", "REPOSITORY_NAME"],
+    "usageInstructions": "Interact with GitHub repositories, issues, pull requests, and more",
+    "category": "Version Control"
   },
   "gitlab": {
     "name": "GitLab",
     "githubLink": "https://github.com/modelcontextprotocol/servers/tree/main/src/gitlab",
     "package": "@modelcontextprotocol/server-gitlab",
-    "description": "GitLab API integration"
+    "description": "GitLab API integration",
+    "installCommand": "npx @modelcontextprotocol/server-gitlab",
+    "requiredEnvVars": ["GITLAB_TOKEN"],
+    "optionalParams": ["GITLAB_URL", "PROJECT_ID"],
+    "usageInstructions": "Manage GitLab projects, merge requests, and CI/CD pipelines",
+    "category": "Version Control"
   },
   "google-maps": {
     "name": "Google Maps",
     "githubLink": "https://github.com/modelcontextprotocol/servers/tree/main/src/google-maps",
     "package": "@modelcontextprotocol/server-google-maps",
-    "description": "Google Maps API integration"
+    "description": "Google Maps API integration",
+    "installCommand": "npx @modelcontextprotocol/server-google-maps",
+    "requiredEnvVars": ["GOOGLE_MAPS_API_KEY"],
+    "optionalParams": ["DEFAULT_LOCATION"],
+    "usageInstructions": "Search locations, get directions, and access mapping services",
+    "category": "Location Services"
   },
   "memory": {
     "name": "Memory",
     "githubLink": "https://github.com/modelcontextprotocol/servers/tree/main/src/memory",
     "package": "@modelcontextprotocol/server-memory",
-    "description": "Persistent memory and knowledge storage"
+    "description": "Persistent memory and knowledge storage",
+    "installCommand": "npx @modelcontextprotocol/server-memory",
+    "requiredEnvVars": [],
+    "optionalParams": ["MEMORY_FILE_PATH"],
+    "usageInstructions": "Store and retrieve persistent memories across conversations",
+    "category": "Data Storage"
   },
   "postgres": {
     "name": "PostgreSQL",
     "githubLink": "https://github.com/modelcontextprotocol/servers/tree/main/src/postgres",
     "package": "@modelcontextprotocol/server-postgres",
-    "description": "PostgreSQL database integration"
+    "description": "PostgreSQL database integration",
+    "installCommand": "npx @modelcontextprotocol/server-postgres",
+    "requiredEnvVars": ["DATABASE_URL"],
+    "optionalParams": ["SCHEMA_NAME"],
+    "usageInstructions": "Execute SQL queries and manage PostgreSQL databases",
+    "category": "Database"
   },
   "puppeteer": {
     "name": "Puppeteer",
     "githubLink": "https://github.com/modelcontextprotocol/servers/tree/main/src/puppeteer",
     "package": "@modelcontextprotocol/server-puppeteer",
-    "description": "Web automation using Puppeteer"
+    "description": "Web automation using Puppeteer",
+    "installCommand": "npx @modelcontextprotocol/server-puppeteer",
+    "requiredEnvVars": [],
+    "optionalParams": ["HEADLESS", "VIEWPORT_WIDTH", "VIEWPORT_HEIGHT"],
+    "usageInstructions": "Automate web browser interactions and scraping",
+    "category": "Web Automation"
   },
   "redis": {
     "name": "Redis",
     "githubLink": "https://github.com/modelcontextprotocol/servers/tree/main/src/redis",
     "package": "@modelcontextprotocol/server-redis",
-    "description": "Redis database integration"
+    "description": "Redis database integration",
+    "installCommand": "npx @modelcontextprotocol/server-redis",
+    "requiredEnvVars": ["REDIS_URL"],
+    "optionalParams": ["REDIS_PASSWORD"],
+    "usageInstructions": "Manage Redis key-value store and caching operations",
+    "category": "Database"
   },
   "sentry": {
     "name": "Sentry",
     "githubLink": "https://github.com/modelcontextprotocol/servers/tree/main/src/sentry",
     "package": "@modelcontextprotocol/server-sentry",
-    "description": "Sentry error tracking integration"
+    "description": "Sentry error tracking integration",
+    "installCommand": "npx @modelcontextprotocol/server-sentry",
+    "requiredEnvVars": ["SENTRY_DSN"],
+    "optionalParams": ["SENTRY_PROJECT", "SENTRY_ORGANIZATION"],
+    "usageInstructions": "Monitor and manage application errors and performance",
+    "category": "Monitoring"
   },
   "sequentialthinking": {
     "name": "Sequential Thinking",
     "githubLink": "https://github.com/modelcontextprotocol/servers/tree/main/src/sequentialthinking",
     "package": "@modelcontextprotocol/server-sequentialthinking",
-    "description": "Sequential thinking and reasoning tools"
+    "description": "Sequential thinking and reasoning tools",
+    "installCommand": "npx @modelcontextprotocol/server-sequentialthinking",
+    "requiredEnvVars": [],
+    "optionalParams": ["THINKING_DEPTH"],
+    "usageInstructions": "Enable step-by-step reasoning and problem-solving approaches",
+    "category": "AI/ML"
   },
   "slack": {
     "name": "Slack",
     "githubLink": "https://github.com/modelcontextprotocol/servers/tree/main/src/slack",
     "package": "@modelcontextprotocol/server-slack",
-    "description": "Slack integration"
+    "description": "Slack integration",
+    "installCommand": "npx @modelcontextprotocol/server-slack",
+    "requiredEnvVars": ["SLACK_BOT_TOKEN"],
+    "optionalParams": ["SLACK_CHANNEL"],
+    "usageInstructions": "Send messages and interact with Slack workspaces",
+    "category": "Communication"
   },
   "sqlite": {
     "name": "SQLite",
     "githubLink": "https://github.com/modelcontextprotocol/servers/tree/main/src/sqlite",
     "package": "@modelcontextprotocol/server-sqlite",
-    "description": "SQLite database integration"
+    "description": "SQLite database integration",
+    "installCommand": "npx @modelcontextprotocol/server-sqlite",
+    "requiredEnvVars": [],
+    "optionalParams": ["DATABASE_PATH"],
+    "usageInstructions": "Manage SQLite databases with SQL queries and operations",
+    "category": "Database"
   },
   "time": {
     "name": "Time",
     "githubLink": "https://github.com/modelcontextprotocol/servers/tree/main/src/time",
     "package": "@modelcontextprotocol/server-time",
-    "description": "Time and scheduling utilities"
+    "description": "Time and scheduling utilities",
+    "installCommand": "npx @modelcontextprotocol/server-time",
+    "requiredEnvVars": [],
+    "optionalParams": ["TIMEZONE"],
+    "usageInstructions": "Get current time, schedule events, and manage time zones",
+    "category": "Utilities"
+  },
+  "obsidian": {
+    "name": "Obsidian",
+    "githubLink": "https://github.com/calclavia/mcp-obsidian",
+    "package": null,
+    "description": "Read and search through Obsidian vault or Markdown notes directory",
+    "installCommand": "pip install mcp-obsidian",
+    "requiredEnvVars": ["OBSIDIAN_VAULT_PATH"],
+    "optionalParams": ["SEARCH_DEPTH"],
+    "usageInstructions": "Access and search Obsidian notes and Markdown files",
+    "category": "Knowledge Management"
+  },
+  "spotify": {
+    "name": "Spotify",
+    "githubLink": "https://github.com/varunneal/spotify-mcp",
+    "package": null,
+    "description": "MCP server allowing LLM to play and use Spotify",
+    "installCommand": "pip install spotify-mcp",
+    "requiredEnvVars": ["SPOTIFY_CLIENT_ID", "SPOTIFY_CLIENT_SECRET"],
+    "optionalParams": ["SPOTIFY_REDIRECT_URI"],
+    "usageInstructions": "Control Spotify playback and search music",
+    "category": "Entertainment"
+  },
+  "kubernetes": {
+    "name": "Kubernetes",
+    "githubLink": "https://github.com/Flux159/mcp-server-kubernetes",
+    "package": null,
+    "description": "Connect to Kubernetes cluster and manage pods, deployments, and services",
+    "installCommand": "pip install mcp-kubernetes",
+    "requiredEnvVars": ["KUBECONFIG"],
+    "optionalParams": ["NAMESPACE"],
+    "usageInstructions": "Manage Kubernetes resources via natural language interface",
+    "category": "DevOps"
+  },
+  "docker": {
+    "name": "Docker",
+    "githubLink": "https://github.com/zueai/mcp-server-docker",
+    "package": null,
+    "description": "Manage Docker containers, images, and Docker Compose services",
+    "installCommand": "pip install mcp-docker",
+    "requiredEnvVars": [],
+    "optionalParams": ["DOCKER_HOST"],
+    "usageInstructions": "Control Docker containers and manage containerized applications",
+    "category": "DevOps"
+  },
+  "aws": {
+    "name": "AWS",
+    "githubLink": "https://github.com/awslabs/mcp",
+    "package": null,
+    "description": "Specialized MCP servers bringing AWS best practices to development workflow",
+    "installCommand": "pip install mcp-aws",
+    "requiredEnvVars": ["AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY", "AWS_REGION"],
+    "optionalParams": ["AWS_PROFILE"],
+    "usageInstructions": "Interact with various AWS services and resources",
+    "category": "Cloud Services"
+  },
+  "azure": {
+    "name": "Azure",
+    "githubLink": "https://github.com/Azure/azure-mcp-server",
+    "package": null,
+    "description": "Microsoft Azure cloud services integration",
+    "installCommand": "pip install azure-mcp",
+    "requiredEnvVars": ["AZURE_CLIENT_ID", "AZURE_CLIENT_SECRET", "AZURE_TENANT_ID"],
+    "optionalParams": ["AZURE_SUBSCRIPTION_ID"],
+    "usageInstructions": "Manage Azure resources and services",
+    "category": "Cloud Services"
+  },
+  "notion": {
+    "name": "Notion",
+    "githubLink": "https://github.com/agentic-labs/mcp-notion",
+    "package": null,
+    "description": "Notion integration for databases, pages, and content management",
+    "installCommand": "pip install mcp-notion",
+    "requiredEnvVars": ["NOTION_TOKEN"],
+    "optionalParams": ["DATABASE_ID"],
+    "usageInstructions": "Create, read, and update Notion pages and databases",
+    "category": "Productivity"
+  },
+  "linear": {
+    "name": "Linear",
+    "githubLink": "https://github.com/lxy-yz/mcp-linear",
+    "package": null,
+    "description": "Linear project management and issue tracking",
+    "installCommand": "pip install mcp-linear",
+    "requiredEnvVars": ["LINEAR_API_KEY"],
+    "optionalParams": ["TEAM_ID"],
+    "usageInstructions": "Manage Linear issues, projects, and team workflows",
+    "category": "Project Management"
+  },
+  "jira": {
+    "name": "Jira",
+    "githubLink": "https://github.com/shankarpandala/mcp-jira",
+    "package": null,
+    "description": "Atlassian Jira integration for issue tracking and project management",
+    "installCommand": "pip install mcp-jira",
+    "requiredEnvVars": ["JIRA_URL", "JIRA_USERNAME", "JIRA_API_TOKEN"],
+    "optionalParams": ["PROJECT_KEY"],
+    "usageInstructions": "Create, update, and manage Jira issues and projects",
+    "category": "Project Management"
   }
 }
