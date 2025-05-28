@@ -3,15 +3,20 @@
 const fs = require('fs');
 const path = require('path');
 const readline = require('readline');
+const os = require('os');
 
 class MCPManager {
     constructor() {
         this.configPath = path.join(process.cwd(), '.mcp.json');
+        this.locationsFile = path.join(os.homedir(), '.config', 'mcpsimple', 'locations');
+        this.databasePath = path.join(__dirname, 'mcp-servers-database.json');
         this.rl = readline.createInterface({
             input: process.stdin,
             output: process.stdout
         });
         
+        this.mcpServersDatabase = this.loadMCPDatabase();
+
         this.preConfiguredServers = {
             postgres: {
                 name: 'PostgreSQL',
@@ -51,9 +56,54 @@ class MCPManager {
         };
     }
 
+    loadMCPDatabase() {
+        try {
+            if (fs.existsSync(this.databasePath)) {
+                const content = fs.readFileSync(this.databasePath, 'utf8');
+                return JSON.parse(content);
+            }
+        } catch (error) {
+            console.log('Warning: Could not load MCP servers database:', error.message);
+        }
+        
+        return {};
+    }
+
+    ensureConfigDir() {
+        const configDir = path.dirname(this.locationsFile);
+        try {
+            fs.mkdirSync(configDir, { recursive: true });
+        } catch (error) {
+            // Directory might already exist, ignore
+        }
+    }
+
+    registerLocation(configPath) {
+        this.ensureConfigDir();
+        
+        try {
+            let locations = [];
+            if (fs.existsSync(this.locationsFile)) {
+                const content = fs.readFileSync(this.locationsFile, 'utf8').trim();
+                if (content) {
+                    locations = content.split('\n').filter(loc => loc.trim());
+                }
+            }
+            
+            const absolutePath = path.resolve(configPath);
+            if (!locations.includes(absolutePath)) {
+                locations.push(absolutePath);
+                fs.writeFileSync(this.locationsFile, locations.join('\n') + '\n');
+            }
+        } catch (error) {
+            console.log('Warning: Could not register location:', error.message);
+        }
+    }
+
     loadConfig() {
         try {
             if (fs.existsSync(this.configPath)) {
+                this.registerLocation(this.configPath);
                 const content = fs.readFileSync(this.configPath, 'utf8');
                 return JSON.parse(content);
             }
@@ -69,6 +119,7 @@ class MCPManager {
     saveConfig(config) {
         try {
             fs.writeFileSync(this.configPath, JSON.stringify(config, null, 2));
+            this.registerLocation(this.configPath);
             console.log('✅ Configuration saved successfully!');
         } catch (error) {
             console.log('❌ Error saving config:', error.message);
@@ -89,9 +140,10 @@ class MCPManager {
         console.log('3. List current servers');
         console.log('4. Remove server');
         console.log('5. View configuration file');
-        console.log('6. Exit');
+        console.log('6. Browse MCP servers database');
+        console.log('7. Exit');
         
-        const choice = await this.prompt('\nSelect an option (1-6): ');
+        const choice = await this.prompt('\nSelect an option (1-7): ');
         return choice.trim();
     }
 
@@ -231,6 +283,25 @@ class MCPManager {
         console.log(JSON.stringify(config, null, 2));
     }
 
+    async browseMCPDatabase() {
+        console.log('\n🗄️  MCP Servers Database:');
+        console.log('=========================');
+        
+        const servers = Object.keys(this.mcpServersDatabase);
+        servers.forEach((key, index) => {
+            const server = this.mcpServersDatabase[key];
+            console.log(`${index + 1}. ${server.name}`);
+            console.log(`   Package: ${server.package}`);
+            console.log(`   Description: ${server.description}`);
+            console.log(`   GitHub: ${server.githubLink}`);
+            console.log('');
+        });
+        
+        console.log(`Found ${servers.length} MCP servers in the database.`);
+        
+        const action = await this.prompt('\nPress Enter to return to main menu...');
+    }
+
     async run() {
         console.log('Welcome to MCP Server Manager! 🚀');
         
@@ -255,6 +326,9 @@ class MCPManager {
                         this.viewConfig();
                         break;
                     case '6':
+                        await this.browseMCPDatabase();
+                        break;
+                    case '7':
                         console.log('👋 Goodbye!');
                         this.rl.close();
                         return;

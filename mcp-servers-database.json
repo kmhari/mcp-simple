@@ -1,0 +1,122 @@
+{
+  "aws-kb-retrieval-server": {
+    "name": "AWS Knowledge Base Retrieval",
+    "githubLink": "https://github.com/modelcontextprotocol/servers/tree/main/src/aws-kb-retrieval-server",
+    "package": "@modelcontextprotocol/server-aws-kb-retrieval",
+    "description": "Query AWS Knowledge Base for Bedrock"
+  },
+  "brave-search": {
+    "name": "Brave Search",
+    "githubLink": "https://github.com/modelcontextprotocol/servers/tree/main/src/brave-search",
+    "package": "@modelcontextprotocol/server-brave-search",
+    "description": "Web search using Brave Search API"
+  },
+  "everart": {
+    "name": "EverArt",
+    "githubLink": "https://github.com/modelcontextprotocol/servers/tree/main/src/everart",
+    "package": "@modelcontextprotocol/server-everart",
+    "description": "AI image generation using EverArt"
+  },
+  "everything": {
+    "name": "Everything",
+    "githubLink": "https://github.com/modelcontextprotocol/servers/tree/main/src/everything",
+    "package": "@modelcontextprotocol/server-everything",
+    "description": "Windows Everything search integration"
+  },
+  "fetch": {
+    "name": "Fetch",
+    "githubLink": "https://github.com/modelcontextprotocol/servers/tree/main/src/fetch",
+    "package": "@modelcontextprotocol/server-fetch",
+    "description": "Web content fetching and processing"
+  },
+  "filesystem": {
+    "name": "Filesystem",
+    "githubLink": "https://github.com/modelcontextprotocol/servers/tree/main/src/filesystem",
+    "package": "@modelcontextprotocol/server-filesystem",
+    "description": "Local filesystem operations"
+  },
+  "gdrive": {
+    "name": "Google Drive",
+    "githubLink": "https://github.com/modelcontextprotocol/servers/tree/main/src/gdrive",
+    "package": "@modelcontextprotocol/server-gdrive",
+    "description": "Google Drive integration"
+  },
+  "git": {
+    "name": "Git",
+    "githubLink": "https://github.com/modelcontextprotocol/servers/tree/main/src/git",
+    "package": "@modelcontextprotocol/server-git",
+    "description": "Git repository operations"
+  },
+  "github": {
+    "name": "GitHub",
+    "githubLink": "https://github.com/modelcontextprotocol/servers/tree/main/src/github",
+    "package": "@modelcontextprotocol/server-github",
+    "description": "GitHub API integration"
+  },
+  "gitlab": {
+    "name": "GitLab",
+    "githubLink": "https://github.com/modelcontextprotocol/servers/tree/main/src/gitlab",
+    "package": "@modelcontextprotocol/server-gitlab",
+    "description": "GitLab API integration"
+  },
+  "google-maps": {
+    "name": "Google Maps",
+    "githubLink": "https://github.com/modelcontextprotocol/servers/tree/main/src/google-maps",
+    "package": "@modelcontextprotocol/server-google-maps",
+    "description": "Google Maps API integration"
+  },
+  "memory": {
+    "name": "Memory",
+    "githubLink": "https://github.com/modelcontextprotocol/servers/tree/main/src/memory",
+    "package": "@modelcontextprotocol/server-memory",
+    "description": "Persistent memory and knowledge storage"
+  },
+  "postgres": {
+    "name": "PostgreSQL",
+    "githubLink": "https://github.com/modelcontextprotocol/servers/tree/main/src/postgres",
+    "package": "@modelcontextprotocol/server-postgres",
+    "description": "PostgreSQL database integration"
+  },
+  "puppeteer": {
+    "name": "Puppeteer",
+    "githubLink": "https://github.com/modelcontextprotocol/servers/tree/main/src/puppeteer",
+    "package": "@modelcontextprotocol/server-puppeteer",
+    "description": "Web automation using Puppeteer"
+  },
+  "redis": {
+    "name": "Redis",
+    "githubLink": "https://github.com/modelcontextprotocol/servers/tree/main/src/redis",
+    "package": "@modelcontextprotocol/server-redis",
+    "description": "Redis database integration"
+  },
+  "sentry": {
+    "name": "Sentry",
+    "githubLink": "https://github.com/modelcontextprotocol/servers/tree/main/src/sentry",
+    "package": "@modelcontextprotocol/server-sentry",
+    "description": "Sentry error tracking integration"
+  },
+  "sequentialthinking": {
+    "name": "Sequential Thinking",
+    "githubLink": "https://github.com/modelcontextprotocol/servers/tree/main/src/sequentialthinking",
+    "package": "@modelcontextprotocol/server-sequentialthinking",
+    "description": "Sequential thinking and reasoning tools"
+  },
+  "slack": {
+    "name": "Slack",
+    "githubLink": "https://github.com/modelcontextprotocol/servers/tree/main/src/slack",
+    "package": "@modelcontextprotocol/server-slack",
+    "description": "Slack integration"
+  },
+  "sqlite": {
+    "name": "SQLite",
+    "githubLink": "https://github.com/modelcontextprotocol/servers/tree/main/src/sqlite",
+    "package": "@modelcontextprotocol/server-sqlite",
+    "description": "SQLite database integration"
+  },
+  "time": {
+    "name": "Time",
+    "githubLink": "https://github.com/modelcontextprotocol/servers/tree/main/src/time",
+    "package": "@modelcontextprotocol/server-time",
+    "description": "Time and scheduling utilities"
+  }
+}
