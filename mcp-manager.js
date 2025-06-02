@@ -52,6 +52,105 @@ class MCPManager {
                 },
                 requiresInput: true,
                 inputPrompt: 'SQLite database path (e.g., ./db.sqlite):'
+            },
+            filesystem: {
+                name: 'Filesystem',
+                package: '@modelcontextprotocol/server-filesystem',
+                config: {
+                    command: 'npx',
+                    args: ['-y', '@modelcontextprotocol/server-filesystem'],
+                    env: {}
+                },
+                requiresInput: true,
+                inputPrompt: 'Root directory path to allow access (e.g., /home/user/projects):'
+            },
+            github: {
+                name: 'GitHub',
+                package: '@modelcontextprotocol/server-github',
+                config: {
+                    command: 'npx',
+                    args: ['-y', '@modelcontextprotocol/server-github'],
+                    env: {}
+                },
+                requiresInput: true,
+                inputPrompt: 'GitHub Personal Access Token:'
+            },
+            googledrive: {
+                name: 'Google Drive',
+                package: '@modelcontextprotocol/server-gdrive',
+                config: {
+                    command: 'npx',
+                    args: ['-y', '@modelcontextprotocol/server-gdrive'],
+                    env: {}
+                },
+                requiresInput: false,
+                inputPrompt: ''
+            },
+            slack: {
+                name: 'Slack',
+                package: '@modelcontextprotocol/server-slack',
+                config: {
+                    command: 'npx',
+                    args: ['-y', '@modelcontextprotocol/server-slack'],
+                    env: {}
+                },
+                requiresInput: true,
+                inputPrompt: 'Slack Bot Token (xoxb-...):'
+            },
+            brave: {
+                name: 'Brave Search',
+                package: '@modelcontextprotocol/server-brave-search',
+                config: {
+                    command: 'npx',
+                    args: ['-y', '@modelcontextprotocol/server-brave-search'],
+                    env: {}
+                },
+                requiresInput: true,
+                inputPrompt: 'Brave Search API Key:'
+            },
+            everything: {
+                name: 'Everything (Windows)',
+                package: '@modelcontextprotocol/server-everything',
+                config: {
+                    command: 'npx',
+                    args: ['-y', '@modelcontextprotocol/server-everything'],
+                    env: {}
+                },
+                requiresInput: false,
+                inputPrompt: ''
+            },
+            fetch: {
+                name: 'Fetch',
+                package: '@modelcontextprotocol/server-fetch',
+                config: {
+                    command: 'npx',
+                    args: ['-y', '@modelcontextprotocol/server-fetch'],
+                    env: {}
+                },
+                requiresInput: false,
+                inputPrompt: ''
+            },
+            memory: {
+                name: 'Memory',
+                package: '@modelcontextprotocol/server-memory',
+                config: {
+                    command: 'npx',
+                    args: ['-y', '@modelcontextprotocol/server-memory'],
+                    env: {}
+                },
+                requiresInput: false,
+                inputPrompt: ''
+            },
+            puppeteer: {
+                name: 'Puppeteer',
+                package: '@modelcontextprotocol/server-puppeteer',
+                config: {
+                    command: 'npx',
+                    args: ['-y', '@modelcontextprotocol/server-puppeteer'],
+                    env: {}
+                },
+                requiresInput: false,
+                inputPrompt: ''
             }
         };
     }
@@ -180,6 +279,14 @@ class MCPManager {
                 serverConfig.env.REDIS_URL = input || 'redis://localhost:6379';
             } else if (serverKey === 'sqlite') {
                 serverConfig.args.push(input);
+            } else if (serverKey === 'filesystem') {
+                serverConfig.args.push(input);
+            } else if (serverKey === 'github') {
+                serverConfig.env.GITHUB_PERSONAL_ACCESS_TOKEN = input;
+            } else if (serverKey === 'slack') {
+                serverConfig.env.SLACK_BOT_TOKEN = input;
+            } else if (serverKey === 'brave') {
+                serverConfig.env.BRAVE_SEARCH_API_KEY = input;
             }
         }
         
