@@ -1,0 +1,36 @@
+{
+  "name": "mcp-manager",
+  "version": "1.0.0",
+  "description": "Interactive CLI tool for managing MCP (Model Context Protocol) server configurations",
+  "main": "mcp-manager.js",
+  "bin": {
+    "mcp-manager": "./bin/mcp-manager.js"
+  },
+  "scripts": {
+    "test": "echo \"No tests specified\" && exit 0"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "cli",
+    "configuration",
+    "manager",
+    "server",
+    "ai",
+    "llm"
+  ],
+  "author": "hari",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kmhari/mcp-simple.git"
+  },
+  "bugs": {
+    "url": "https://github.com/kmhari/mcp-simple/issues"
+  },
+  "homepage": "https://github.com/kmhari/mcp-simple#readme",
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "preferGlobal": true
+}

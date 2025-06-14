@@ -1,0 +1,32 @@
+# Git
+.git
+.gitignore
+
+# Development files
+CLAUDE.md
+.mcp.json
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+npm-debug.log*
+
+# Dependencies
+node_modules/
+
+# Test coverage
+coverage/
+.nyc_output/
+
+# Build files
+dist/
+build/
