@@ -882,11 +882,11 @@
   "playwright": {
     "name": "Microsoft Playwright",
     "githubLink": "https://github.com/microsoft/playwright-mcp",
-    "package": "@modelcontextprotocol/server-playwright",
+    "package": "playwright-mcp",
     "description": "Browser automation and testing with Playwright",
-    "installCommand": "npx @modelcontextprotocol/server-playwright",
+    "installCommand": "npx playwright-mcp",
     "requiredEnvVars": [],
-    "optionalParams": ["BROWSER_TYPE", "HEADLESS", "VIEWPORT_WIDTH", "VIEWPORT_HEIGHT"],
+    "optionalParams": ["BROWSER_TYPE", "HEADLESS", "VIEWPORT_WIDTH", "VIEWPORT_HEIGHT", "DEFAULT_TIMEOUT"],
     "usageInstructions": "Automate browser interactions, perform web testing, and capture screenshots",
     "category": "Development Tools"
   },
