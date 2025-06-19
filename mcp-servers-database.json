@@ -915,11 +915,11 @@
   "xcodebuild": {
     "name": "Xcode Build",
     "githubLink": "https://github.com/cameroncooke/XcodeBuildMCP",
-    "package": "xcodebuild-mcp",
+    "package": "xcodebuildmcp",
     "description": "Xcode project building and iOS/macOS development automation",
-    "installCommand": "npx xcodebuild-mcp",
+    "installCommand": "npx -y xcodebuildmcp@latest",
     "requiredEnvVars": [],
-    "optionalParams": ["PROJECT_PATH", "SCHEME", "CONFIGURATION", "DESTINATION"],
+    "optionalParams": ["SENTRY_DISABLED", "PROJECT_PATH", "SCHEME", "CONFIGURATION", "DESTINATION"],
     "usageInstructions": "Build, test, and manage Xcode projects for iOS and macOS development",
     "category": "Development Tools"
   }
