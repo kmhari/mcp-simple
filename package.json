@@ -1,10 +1,10 @@
 {
-  "name": "mcp-manager",
-  "version": "1.0.0",
+  "name": "@oglabs/mcp",
+  "version": "1.2.2",
   "description": "Interactive CLI tool for managing MCP (Model Context Protocol) server configurations",
   "main": "mcp-manager.js",
   "bin": {
-    "mcp-manager": "./bin/mcp-manager.js"
+    "mcp": "./bin/mcp-manager.js"
   },
   "scripts": {
     "test": "echo \"No tests specified\" && exit 0"
