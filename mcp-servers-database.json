@@ -878,5 +878,49 @@
     "optionalParams": ["CHANNEL_NAME"],
     "usageInstructions": "Access Twitch streams, chat, and channel data",
     "category": "Entertainment"
+  },
+  "playwright": {
+    "name": "Microsoft Playwright",
+    "githubLink": "https://github.com/microsoft/playwright-mcp",
+    "package": "@modelcontextprotocol/server-playwright",
+    "description": "Browser automation and testing with Playwright",
+    "installCommand": "npx @modelcontextprotocol/server-playwright",
+    "requiredEnvVars": [],
+    "optionalParams": ["BROWSER_TYPE", "HEADLESS", "VIEWPORT_WIDTH", "VIEWPORT_HEIGHT"],
+    "usageInstructions": "Automate browser interactions, perform web testing, and capture screenshots",
+    "category": "Development Tools"
+  },
+  "context7": {
+    "name": "Context7",
+    "githubLink": "https://github.com/context7/mcp-server",
+    "package": "@context7/mcp-server",
+    "description": "Context management and conversation memory system",
+    "installCommand": "npx @context7/mcp-server",
+    "requiredEnvVars": [],
+    "optionalParams": ["CONTEXT_FILE_PATH", "MAX_CONTEXT_SIZE"],
+    "usageInstructions": "Manage conversation context, maintain session memory, and handle context switching",
+    "category": "AI & Machine Learning"
+  },
+  "taskmaster": {
+    "name": "Taskmaster",
+    "githubLink": "https://github.com/KimbyDigital/task-master-mcp",
+    "package": "task-master-mcp",
+    "description": "Advanced task and project management system",
+    "installCommand": "npx task-master-mcp",
+    "requiredEnvVars": [],
+    "optionalParams": ["TASKS_FILE_PATH", "DEFAULT_PRIORITY"],
+    "usageInstructions": "Create, organize, and track tasks with advanced features like dependencies and scheduling",
+    "category": "Productivity"
+  },
+  "xcodebuild": {
+    "name": "Xcode Build",
+    "githubLink": "https://github.com/cameroncooke/XcodeBuildMCP",
+    "package": "xcodebuild-mcp",
+    "description": "Xcode project building and iOS/macOS development automation",
+    "installCommand": "npx xcodebuild-mcp",
+    "requiredEnvVars": [],
+    "optionalParams": ["PROJECT_PATH", "SCHEME", "CONFIGURATION", "DESTINATION"],
+    "usageInstructions": "Build, test, and manage Xcode projects for iOS and macOS development",
+    "category": "Development Tools"
   }
 }
