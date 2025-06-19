@@ -892,12 +892,12 @@
   },
   "context7": {
     "name": "Context7",
-    "githubLink": "https://github.com/context7/mcp-server",
-    "package": "@context7/mcp-server",
+    "githubLink": "https://github.com/upstash/context7",
+    "package": "@upstash/context7",
     "description": "Context management and conversation memory system",
-    "installCommand": "npx @context7/mcp-server",
-    "requiredEnvVars": [],
-    "optionalParams": ["CONTEXT_FILE_PATH", "MAX_CONTEXT_SIZE"],
+    "installCommand": "npx @upstash/context7",
+    "requiredEnvVars": ["UPSTASH_REDIS_REST_URL", "UPSTASH_REDIS_REST_TOKEN"],
+    "optionalParams": ["CONTEXT_KEY", "MAX_CONTEXT_SIZE"],
     "usageInstructions": "Manage conversation context, maintain session memory, and handle context switching",
     "category": "AI & Machine Learning"
   },
