@@ -896,8 +896,8 @@
     "package": "@upstash/context7",
     "description": "Context management and conversation memory system",
     "installCommand": "npx @upstash/context7",
-    "requiredEnvVars": ["UPSTASH_REDIS_REST_URL", "UPSTASH_REDIS_REST_TOKEN"],
-    "optionalParams": ["CONTEXT_KEY", "MAX_CONTEXT_SIZE"],
+    "requiredEnvVars": [],
+    "optionalParams": ["UPSTASH_REDIS_REST_URL", "UPSTASH_REDIS_REST_TOKEN", "CONTEXT_KEY", "MAX_CONTEXT_SIZE"],
     "usageInstructions": "Manage conversation context, maintain session memory, and handle context switching",
     "category": "AI & Machine Learning"
   },
