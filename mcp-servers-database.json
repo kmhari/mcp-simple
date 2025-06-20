@@ -933,5 +933,16 @@
     "optionalParams": ["PROJECT_REF"],
     "usageInstructions": "Manage Supabase projects, design tables, run SQL queries, create database branches, generate TypeScript types, and handle migrations",
     "category": "Databases"
+  },
+  "skyvern": {
+    "name": "Skyvern",
+    "githubLink": "https://github.com/Skyvern-AI/skyvern",
+    "package": "skyvern",
+    "description": "Browser automation for AI applications - enables form filling, file downloads, and web research",
+    "installCommand": "pip install skyvern",
+    "requiredEnvVars": ["SKYVERN_BASE_URL", "SKYVERN_API_KEY"],
+    "optionalParams": [],
+    "usageInstructions": "Connect AI applications to the browser for automated web interactions. Supports form filling, file downloads, web research, and other browser-based tasks. Run 'skyvern init' to configure, then optionally 'skyvern run server' for local deployment.",
+    "category": "Automation"
   }
 }
