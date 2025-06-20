@@ -7,28 +7,51 @@ Interactive CLI tool for managing MCP (Model Context Protocol) server configurat
 ### Global Installation (Recommended)
 
 ```bash
-npm install -g mcp-manager
+npm install -g @oglabs/mcp
 ```
 
 ### Local Installation
 
 ```bash
-npm install mcp-manager
+npm install @oglabs/mcp
 ```
 
 ## Usage
 
+### Interactive CLI Mode
+
 After global installation, you can run the tool from anywhere:
 
 ```bash
-mcp-manager
+@oglabs/mcp
 ```
 
 Or if installed locally:
 
 ```bash
-npx mcp-manager
+npx @oglabs/mcp
 ```
+
+### Web Interface Mode
+
+Launch the web interface:
+
+```bash
+@oglabs/mcp --web
+```
+
+Or if installed locally:
+
+```bash
+npx @oglabs/mcp --web
+```
+
+The web interface will automatically open in your default browser at `http://localhost:3333`. The interface provides:
+
+- **Browse Servers**: Search and browse all available MCP servers organized by category
+- **Current Servers**: View and manage your currently configured servers
+- **Add Custom**: Add custom MCP server configurations
+- **Edit Config**: Directly edit the `.mcp.json` configuration file
 
 ## Features
 
@@ -71,21 +94,21 @@ MCP Manager manages `.mcp.json` files in your current working directory. The con
 
 ### Adding a Pre-configured Server
 
-1. Run `mcp-manager`
+1. Run `@oglabs/mcp`
 2. Select "Add a pre-configured MCP server"
 3. Choose from the list (e.g., "PostgreSQL")
 4. Follow the prompts for any required configuration
 
 ### Adding a Custom Server
 
-1. Run `mcp-manager`
+1. Run `@oglabs/mcp`
 2. Select "Add a custom MCP server"
 3. Enter the server name, command, and arguments
 4. Optionally add environment variables
 
 ### Removing a Server
 
-1. Run `mcp-manager`
+1. Run `@oglabs/mcp`
 2. Select "Remove an MCP server"
 3. Choose the server to remove
 
@@ -100,7 +123,7 @@ cd mcp-simple
 npm install
 
 # Run locally
-node mcp-manager.js
+node @oglabs/mcp.js
 ```
 
 ## License

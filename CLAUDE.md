@@ -8,7 +8,7 @@ This is an MCP (Model Context Protocol) Server Manager - an interactive CLI tool
 
 ## Core Architecture
 
-**Single-file application**: `mcp-manager.js` contains the entire application logic in a single `MCPManager` class.
+**Single-file application**: `@oglabs/mcp.js` contains the entire application logic in a single `MCPManager` class.
 
 **Key Components**:
 - **MCPManager class**: Main application controller that handles the interactive CLI interface
@@ -33,10 +33,10 @@ This is an MCP (Model Context Protocol) Server Manager - an interactive CLI tool
 
 ```bash
 # Run the interactive CLI
-node mcp-manager.js
+node @oglabs/mcp.js
 
 # Make it executable (if needed)
-chmod +x mcp-manager.js
+chmod +x @oglabs/mcp.js
 ```
 
 ## Pre-configured MCP Servers
