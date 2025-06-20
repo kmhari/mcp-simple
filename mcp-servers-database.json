@@ -903,12 +903,12 @@
   },
   "taskmaster": {
     "name": "Task Master",
-    "githubLink": "https://github.com/KimbyDigital/task-master-mcp",
+    "githubLink": "https://github.com/eyaltoledano/claude-task-master",
     "package": "task-master-mcp",
     "description": "Comprehensive task management with projects, contexts, and advanced organization",
-    "installCommand": "npx task-master-mcp",
+    "installCommand": "npx ask-master-ai",
     "requiredEnvVars": [],
-    "optionalParams": ["TASKS_DB_PATH", "DEFAULT_PROJECT", "DEFAULT_CONTEXT", "ENABLE_REMINDERS"],
+    "optionalParams": [""],
     "usageInstructions": "Manage tasks with projects, contexts, priorities, due dates, and dependencies. Supports natural language input for task creation and filtering.",
     "category": "Productivity"
   },
