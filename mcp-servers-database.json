@@ -922,5 +922,16 @@
     "optionalParams": ["SENTRY_DISABLED", "PROJECT_PATH", "SCHEME", "CONFIGURATION", "DESTINATION"],
     "usageInstructions": "Build, test, and manage Xcode projects for iOS and macOS development",
     "category": "Development Tools"
+  },
+  "supabase": {
+    "name": "Supabase",
+    "githubLink": "https://github.com/supabase-community/supabase-mcp",
+    "package": "@supabase/mcp-server-supabase",
+    "description": "Complete Supabase platform integration for database and project management",
+    "installCommand": "npx @supabase/mcp-server-supabase@latest",
+    "requiredEnvVars": ["SUPABASE_ACCESS_TOKEN"],
+    "optionalParams": ["PROJECT_REF"],
+    "usageInstructions": "Manage Supabase projects, design tables, run SQL queries, create database branches, generate TypeScript types, and handle migrations",
+    "category": "Databases"
   }
 }
