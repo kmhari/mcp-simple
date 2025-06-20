@@ -882,9 +882,9 @@
   "playwright": {
     "name": "Microsoft Playwright",
     "githubLink": "https://github.com/microsoft/playwright-mcp",
-    "package": "playwright-mcp",
+    "package": "@playwright/mcp@latest",
     "description": "Browser automation and testing with Playwright",
-    "installCommand": "npx playwright-mcp",
+    "installCommand": "npx @playwright/mcp@latest",
     "requiredEnvVars": [],
     "optionalParams": ["BROWSER_TYPE", "HEADLESS", "VIEWPORT_WIDTH", "VIEWPORT_HEIGHT", "DEFAULT_TIMEOUT"],
     "usageInstructions": "Automate browser interactions, perform web testing, and capture screenshots",
@@ -893,9 +893,9 @@
   "context7": {
     "name": "Context7",
     "githubLink": "https://github.com/upstash/context7",
-    "package": "@upstash/context7",
+    "package": "@upstash/context7-mcp",
     "description": "Context management and conversation memory system",
-    "installCommand": "npx @upstash/context7",
+    "installCommand": "npx @upstash/context7-mcp",
     "requiredEnvVars": [],
     "optionalParams": ["UPSTASH_REDIS_REST_URL", "UPSTASH_REDIS_REST_TOKEN", "CONTEXT_KEY", "MAX_CONTEXT_SIZE"],
     "usageInstructions": "Manage conversation context, maintain session memory, and handle context switching",
