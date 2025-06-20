@@ -902,14 +902,14 @@
     "category": "AI & Machine Learning"
   },
   "taskmaster": {
-    "name": "Taskmaster",
+    "name": "Task Master",
     "githubLink": "https://github.com/KimbyDigital/task-master-mcp",
     "package": "task-master-mcp",
-    "description": "Advanced task and project management system",
+    "description": "Comprehensive task management with projects, contexts, and advanced organization",
     "installCommand": "npx task-master-mcp",
     "requiredEnvVars": [],
-    "optionalParams": ["TASKS_FILE_PATH", "DEFAULT_PRIORITY"],
-    "usageInstructions": "Create, organize, and track tasks with advanced features like dependencies and scheduling",
+    "optionalParams": ["TASKS_DB_PATH", "DEFAULT_PROJECT", "DEFAULT_CONTEXT", "ENABLE_REMINDERS"],
+    "usageInstructions": "Manage tasks with projects, contexts, priorities, due dates, and dependencies. Supports natural language input for task creation and filtering.",
     "category": "Productivity"
   },
   "xcodebuild": {
