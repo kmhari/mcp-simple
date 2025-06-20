@@ -906,7 +906,7 @@
     "githubLink": "https://github.com/eyaltoledano/claude-task-master",
     "package": "task-master-mcp",
     "description": "Comprehensive task management with projects, contexts, and advanced organization",
-    "installCommand": "npx ask-master-ai",
+    "installCommand": "npx task-master-ai",
     "requiredEnvVars": [],
     "optionalParams": [""],
     "usageInstructions": "Manage tasks with projects, contexts, priorities, due dates, and dependencies. Supports natural language input for task creation and filtering.",
