@@ -178,9 +178,9 @@
   "sequentialthinking": {
     "name": "Sequential Thinking",
     "githubLink": "https://github.com/modelcontextprotocol/servers/tree/main/src/sequentialthinking",
-    "package": "@modelcontextprotocol/server-sequentialthinking",
+    "package": "@modelcontextprotocol/server-sequential-thinking",
     "description": "Sequential thinking and reasoning tools",
-    "installCommand": "npx @modelcontextprotocol/server-sequentialthinking",
+    "installCommand": "npx @modelcontextprotocol/server-sequential-thinking",
     "requiredEnvVars": [],
     "optionalParams": ["THINKING_DEPTH"],
     "usageInstructions": "Enable step-by-step reasoning and problem-solving approaches",
@@ -559,6 +559,17 @@
     "optionalParams": ["PROJECT_SLUG"],
     "usageInstructions": "Manage CircleCI pipelines and build workflows",
     "category": "DevOps"
+  },
+  "clerk": {
+    "name": "Clerk",
+    "githubLink": "https://github.com/clerk/javascript/tree/HEAD/packages/agent-toolkit",
+    "package": "@clerk/agent-toolkit",
+    "description": "Authentication and user management with Clerk for AI agents",
+    "installCommand": "npx @clerk/agent-toolkit",
+    "requiredEnvVars": ["CLERK_SECRET_KEY"],
+    "optionalParams": [],
+    "usageInstructions": "Integrate Clerk authentication with AI agent frameworks. Manage users, organizations, and inject session claims into AI prompts. Warning: Agent behavior is non-deterministic - use carefully in production.",
+    "category": "Authentication"
   },
   "travis": {
     "name": "Travis CI",
@@ -944,5 +955,16 @@
     "optionalParams": [],
     "usageInstructions": "Connect AI applications to the browser for automated web interactions. Supports form filling, file downloads, web research, and other browser-based tasks. Run 'skyvern init' to configure, then optionally 'skyvern run server' for local deployment.",
     "category": "Automation"
+  },
+  "nixos": {
+    "name": "NixOS",
+    "githubLink": "https://github.com/utensils/mcp-nixos",
+    "package": "mcp-nixos",
+    "description": "Provides real-time information about NixOS packages, configurations, and version histories",
+    "installCommand": "uvx mcp-nixos",
+    "requiredEnvVars": [],
+    "optionalParams": ["ELASTICSEARCH_URL"],
+    "usageInstructions": "Search NixOS packages, configuration options, Home Manager settings, nix-darwin configurations, and package version history. Queries live NixOS APIs for accurate data.",
+    "category": "Development Tools"
   }
 }
