@@ -1111,7 +1111,11 @@ class MCPManager {
                     formHtml += \`
                         <div class="form-group">
                             <label>\${envVar}</label>
-                            <input type="text" name="env_\${envVar}" required>
+                            <input type="text" name="env_\${envVar}" id="env_\${envVar}" required>
+                            \${key === 'slack' && envVar === 'SLACK_BOT_TOKEN' ? 
+                                \`<button type="button" class="btn-secondary" style="margin-top: 8px;" onclick="getSlackTokenWithSkyvern()">
+                                    Get Token with Skyvern
+                                </button>\` : ''}
                         </div>
                     \`;
                 });
@@ -1280,6 +1284,223 @@ class MCPManager {
             setTimeout(() => {
                 message.style.display = 'none';
             }, 5000);
+        }
+        
+        async function getSlackTokenWithSkyvern() {
+            // Show step-by-step guide modal
+            showSlackTokenGuide();
+        }
+        
+        function showSlackTokenGuide() {
+            const modal = document.getElementById('serverModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalBody = document.getElementById('modalBody');
+            
+            modalTitle.textContent = 'Get Slack Bot Token - Step by Step';
+            
+            modalBody.innerHTML = \`
+                <div class="slack-token-guide">
+                    <h3>Manual Steps:</h3>
+                    <ol>
+                        <li>
+                            <strong>Go to Slack API Apps page</strong><br>
+                            <a href="https://api.slack.com/apps" target="_blank" class="btn-secondary">Open Slack Apps</a>
+                        </li>
+                        <li>
+                            <strong>Create a new app or select existing app</strong><br>
+                            <small>If creating new: Choose "From scratch" and give it a name</small>
+                        </li>
+                        <li>
+                            <strong>Navigate to "OAuth & Permissions" in the left sidebar</strong>
+                        </li>
+                        <li>
+                            <strong>Add Bot Token Scopes</strong><br>
+                            <small>Common scopes: chat:write, channels:read, users:read</small>
+                        </li>
+                        <li>
+                            <strong>Install to Workspace</strong><br>
+                            <small>Click "Install to Workspace" button and authorize</small>
+                        </li>
+                        <li>
+                            <strong>Copy the Bot User OAuth Token</strong><br>
+                            <small>It starts with "xoxb-"</small>
+                        </li>
+                    </ol>
+                    
+                    <div class="form-group">
+                        <label>Paste your Bot Token here:</label>
+                        <input type="text" id="manual_slack_token" placeholder="xoxb-your-token-here">
+                    </div>
+                    
+                    <h4>Or use Skyvern automation:</h4>
+                    <button type="button" class="btn-primary" onclick="launchSkyvernAutomation()">
+                        Launch Skyvern Browser Automation
+                    </button>
+                    
+                    <div class="button-group" style="margin-top: 20px;">
+                        <button type="button" class="btn-primary" onclick="applySlackToken()">Apply Token</button>
+                        <button type="button" class="btn-secondary" onclick="closeModal()">Cancel</button>
+                    </div>
+                </div>
+                
+                <style>
+                    .slack-token-guide ol {
+                        margin: 20px 0;
+                        padding-left: 20px;
+                    }
+                    .slack-token-guide li {
+                        margin: 15px 0;
+                        line-height: 1.5;
+                    }
+                    .slack-token-guide a {
+                        display: inline-block;
+                        margin: 5px 0;
+                    }
+                </style>
+            \`;
+            
+            modal.style.display = 'block';
+        }
+        
+        function applySlackToken() {
+            const token = document.getElementById('manual_slack_token').value;
+            if (token) {
+                document.getElementById('env_SLACK_BOT_TOKEN').value = token;
+                closeModal();
+                showMessage('Slack token applied successfully', 'success');
+            } else {
+                showMessage('Please enter a token', 'error');
+            }
+        }
+        
+        async function launchSkyvernAutomation() {
+            const button = event.target;
+            const originalText = button.textContent;
+            button.disabled = true;
+            button.textContent = 'Checking Skyvern...';
+            
+            try {
+                // Check if Skyvern is configured
+                const skyvernConfig = currentConfig.mcpServers.skyvern;
+                if (!skyvernConfig || !skyvernConfig.env || !skyvernConfig.env.SKYVERN_API_KEY) {
+                    throw new Error('Skyvern is not configured. Please configure Skyvern server first.');
+                }
+                
+                button.textContent = 'Launching browser...';
+                
+                // Create Skyvern task
+                const skyvernUrl = skyvernConfig.env.SKYVERN_BASE_URL || 'https://api.skyvern.com';
+                const apiKey = skyvernConfig.env.SKYVERN_API_KEY;
+                
+                const taskPayload = {
+                    url: 'https://api.slack.com/apps',
+                    navigation_goal: 'Navigate to Slack API apps, create or select a bot app, go to OAuth & Permissions, and retrieve the Bot User OAuth Token that starts with xoxb-',
+                    data_extraction_goal: 'Extract the Bot User OAuth Token from the OAuth & Permissions page',
+                    proxy_location: 'NONE',
+                    navigation_payload: {
+                        instructions: [
+                            'If not logged in, wait for user to login',
+                            'Create new app or select existing app', 
+                            'Navigate to OAuth & Permissions section',
+                            'If no scopes added, add chat:write scope',
+                            'Install app to workspace if not installed',
+                            'Copy Bot User OAuth Token'
+                        ]
+                    }
+                };
+                
+                const response = await fetch(\`\${skyvernUrl}/api/v1/tasks\`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-api-key': apiKey
+                    },
+                    body: JSON.stringify(taskPayload)
+                });
+                
+                if (!response.ok) {
+                    const error = await response.text();
+                    throw new Error(\`Failed to create Skyvern task: \${error}\`);
+                }
+                
+                const task = await response.json();
+                button.textContent = 'Browser launched - Complete steps in browser';
+                
+                // Open Skyvern dashboard in new tab
+                if (task.task_id) {
+                    window.open(\`\${skyvernUrl}/tasks/\${task.task_id}\`, '_blank');
+                }
+                
+                // Poll for completion
+                const taskId = task.task_id;
+                let pollCount = 0;
+                const maxPolls = 60; // 5 minutes
+                
+                const pollInterval = setInterval(async () => {
+                    pollCount++;
+                    
+                    try {
+                        const statusResponse = await fetch(\`\${skyvernUrl}/api/v1/tasks/\${taskId}\`, {
+                            headers: {
+                                'x-api-key': apiKey
+                            }
+                        });
+                        
+                        if (statusResponse.ok) {
+                            const status = await statusResponse.json();
+                            
+                            if (status.status === 'completed') {
+                                clearInterval(pollInterval);
+                                
+                                // Try to extract token from results
+                                let token = null;
+                                
+                                if (status.extracted_information) {
+                                    // Look for token in various possible locations
+                                    token = status.extracted_information.token || 
+                                           status.extracted_information.bot_token ||
+                                           status.extracted_information.oauth_token;
+                                    
+                                    // If not found, search in the text
+                                    if (!token && status.extracted_information.text) {
+                                        const match = status.extracted_information.text.match(/xoxb-[a-zA-Z0-9-]+/);
+                                        if (match) token = match[0];
+                                    }
+                                }
+                                
+                                if (token) {
+                                    document.getElementById('manual_slack_token').value = token;
+                                    button.textContent = 'Token Retrieved! Click Apply Token';
+                                    showMessage('Token found! Click "Apply Token" to use it', 'success');
+                                } else {
+                                    button.textContent = 'Task completed - Check browser and paste token manually';
+                                    showMessage('Please copy the token from the browser and paste it above', 'info');
+                                }
+                                
+                                button.disabled = false;
+                            } else if (status.status === 'failed') {
+                                clearInterval(pollInterval);
+                                throw new Error('Skyvern task failed - Please complete manually');
+                            } else if (pollCount >= maxPolls) {
+                                clearInterval(pollInterval);
+                                button.textContent = 'Complete in browser and paste token';
+                                button.disabled = false;
+                                showMessage('Please complete the process in the browser and paste the token', 'info');
+                            }
+                        }
+                    } catch (error) {
+                        clearInterval(pollInterval);
+                        button.textContent = originalText;
+                        button.disabled = false;
+                        showMessage('Error: ' + error.message, 'error');
+                    }
+                }, 5000);
+                
+            } catch (error) {
+                showMessage('Error: ' + error.message, 'error');
+                button.textContent = originalText;
+                button.disabled = false;
+            }
         }
         
         // Close modal when clicking outside

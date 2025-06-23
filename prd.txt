@@ -1,0 +1,400 @@
+# Complete Guide: Open-Source PBX Integration with LiveKit Infrastructure
+
+## Quick Setup Path for Replacing Plivo
+
+If you're looking to quickly replace Plivo with an open-source PBX that integrates with LiveKit, FreePBX is your best option. It provides a GUI interface that simplifies configuration while still giving you full control over session timers and SIP headers that are critical for preventing call drops.
+
+## 1. PBX Installation and Initial Setup
+
+### FreePBX Installation (Recommended for Ease of Use)
+
+**On Debian 12 (Fastest Method):**
+```bash
+apt update && apt install -y wget
+wget https://raw.githubusercontent.com/FreePBX/sng_freepbx_debian_install/master/sng_freepbx_debian_install.sh
+chmod +x sng_freepbx_debian_install.sh
+./sng_freepbx_debian_install.sh
+```
+
+**On Ubuntu 24.04 LTS:**
+```bash
+# Install dependencies
+sudo apt update && sudo apt -y full-upgrade
+sudo apt install -y mariadb-server apache2 php libapache2-mod-php php-intl \
+    php-mysql php-curl php-cli php-zip php-xml php-gd php-common \
+    php-mbstring php-xmlrpc php-bcmath php-json php-sqlite3
+
+# Install Asterisk from source
+cd /usr/src
+wget https://downloads.asterisk.org/pub/telephony/asterisk/asterisk-22-current.tar.gz
+tar xzf asterisk-22-current.tar.gz
+cd asterisk-22.*/
+./configure --libdir=/usr/lib64 --with-jansson-bundled
+make && make install
+make samples && make config
+
+# Install FreePBX
+cd /usr/src
+wget http://mirror.freepbx.org/modules/packages/freepbx/freepbx-17.0-latest.tgz
+tar xzf freepbx-17.0-latest.tgz
+cd freepbx
+./start_asterisk start
+./install -n
+```
+
+## 2. Critical Session Timer Configuration (Prevents 15-Minute Drops)
+
+### PJSIP Configuration for Session Timers
+
+Create or edit `/etc/asterisk/pjsip.conf`:
+
+```ini
+[global]
+type=global
+default_realm=yourdomain.com
+
+[transport-udp]
+type=transport
+protocol=udp
+bind=0.0.0.0
+external_media_address=YOUR_PUBLIC_IP
+external_signaling_address=YOUR_PUBLIC_IP
+
+[livekit-trunk]
+type=endpoint
+transport=transport-udp
+context=from-livekit
+disallow=all
+allow=ulaw,alaw
+direct_media=no
+; Critical session timer settings
+timers=yes
+timers_min_se=90
+timers_sess_expires=3600
+session_refresher=uac
+; WebRTC support
+use_avpf=yes
+rtcp_mux=yes
+ice_support=yes
+media_encryption=dtls
+dtls_verify=fingerprint
+dtls_setup=actpass
+dtls_auto_generate_cert=yes
+; NAT handling
+rtp_symmetric=yes
+force_rport=yes
+rewrite_contact=yes
+
+[livekit-trunk]
+type=aor
+contact=sip:YOUR_LIVEKIT_SIP_IP:5060
+qualify_frequency=60
+
+[livekit-trunk]
+type=identify
+endpoint=livekit-trunk
+match=YOUR_LIVEKIT_SIP_IP
+```
+
+### FreePBX GUI Configuration
+
+Navigate to **Settings → Asterisk SIP Settings**:
+- Session Timers: **Originate**
+- Session Expires: **3600** (1 hour)
+- Session Min-SE: **90**
+
+## 3. LiveKit SIP Server Setup and Configuration
+
+### LiveKit SIP Service Configuration
+
+Create `config.yaml` for LiveKit SIP service:
+
+```yaml
+api_key: <your-livekit-api-key>
+api_secret: <your-livekit-api-secret>
+ws_url: ws://localhost:7880
+redis:
+  address: localhost:6379
+  username: ""
+  password: ""
+  db: 0
+
+# Network configuration
+sip_port: 5060
+rtp_port: 10000-20000
+use_external_ip: true
+
+# Logging and monitoring
+health_port: 8080
+prometheus_port: 9090
+log_level: debug
+```
+
+### Docker Deployment
+
+```yaml
+version: '3.8'
+services:
+  livekit-sip:
+    image: livekit/sip
+    ports:
+      - "5060:5060/udp"
+      - "10000-20000:10000-20000/udp"
+    environment:
+      - SIP_CONFIG_BODY=<config-yaml-content>
+    network_mode: host
+    depends_on:
+      - redis
+      - livekit-server
+```
+
+## 4. Integration Configuration
+
+### Create LiveKit SIP Trunks
+
+**Inbound Trunk Configuration:**
+```bash
+# Create inbound trunk JSON
+cat > inbound-trunk.json << EOF
+{
+  "trunk": {
+    "name": "Asterisk Inbound",
+    "numbers": ["+1234567890"],
+    "allowed_addresses": ["YOUR_ASTERISK_IP/32"],
+    "auth_username": "",
+    "auth_password": ""
+  }
+}
+EOF
+
+# Create trunk
+lk sip inbound create inbound-trunk.json
+```
+
+**Outbound Trunk Configuration:**
+```bash
+# Create outbound trunk JSON
+cat > outbound-trunk.json << EOF
+{
+  "trunk": {
+    "name": "Asterisk Outbound",
+    "address": "YOUR_ASTERISK_IP:5060",
+    "numbers": ["*"],
+    "auth_username": "",
+    "auth_password": ""
+  }
+}
+EOF
+
+# Create trunk
+lk sip outbound create outbound-trunk.json
+```
+
+### Asterisk Dialplan Configuration
+
+Edit `/etc/asterisk/extensions.conf`:
+
+```ini
+[globals]
+LIVEKIT_TRUNK=PJSIP/livekit-trunk
+
+[from-livekit]
+; Incoming calls from LiveKit
+exten => _X.,1,NoOp(Incoming call from LiveKit: ${CALLERID(all)})
+exten => _X.,n,Answer()
+exten => _X.,n,Goto(internal,${EXTEN},1)
+
+[from-pstn]
+; Incoming PSTN calls to route to LiveKit
+exten => _X.,1,NoOp(PSTN call to LiveKit: ${EXTEN})
+exten => _X.,n,Set(__SIPADDHEADER=Session-Expires: 3600)
+exten => _X.,n,Set(__SIPADDHEADER=Min-SE: 90)
+exten => _X.,n,Dial(${LIVEKIT_TRUNK}/${EXTEN})
+exten => _X.,n,Hangup()
+
+[internal]
+; Internal routing
+exten => _1NXXNXXXXXX,1,Dial(${LIVEKIT_TRUNK}/${EXTEN})
+exten => _NXXNXXXXXX,1,Dial(${LIVEKIT_TRUNK}/1${EXTEN})
+```
+
+## 5. SIP Trunk Configuration with Carriers
+
+### Example: Twilio Configuration
+
+```ini
+[twilio]
+type=registration
+outbound_auth=twilio_auth
+server_uri=sip:yourdomain.pstn.twilio.com
+client_uri=sip:username@yourdomain.pstn.twilio.com
+retry_interval=60
+
+[twilio_auth]
+type=auth
+auth_type=userpass
+password=your_password
+username=your_username
+
+[twilio]
+type=endpoint
+transport=transport-udp
+context=from-pstn
+disallow=all
+allow=ulaw,alaw
+outbound_auth=twilio_auth
+direct_media=no
+; Session timers
+timers=yes
+timers_sess_expires=3600
+timers_min_se=90
+```
+
+## 6. Handling 405 Method Not Allowed Responses
+
+### Common Causes and Solutions
+
+**In PJSIP endpoint configuration:**
+```ini
+[problematic_provider]
+type=endpoint
+; Disable methods that cause 405 errors
+allow_subscribe=no
+mwi_subscribe=no
+100rel=no
+; Conservative authentication
+trust_id_outbound=no
+send_pai=no
+send_rpid=no
+; Retry configuration
+auth_rejection_permanent=no
+```
+
+**For providers that don't support REGISTER:**
+```ini
+[trunk_no_register]
+type=endpoint
+; No registration section needed
+; Use IP-based authentication instead
+```
+
+## 7. Network and Firewall Configuration
+
+### Required Ports
+```bash
+# SIP signaling
+sudo ufw allow 5060/udp
+
+# RTP media range
+sudo ufw allow 10000:20000/udp
+
+# For AWS/Cloud providers
+# Security Group Rules:
+# - UDP 5060 (SIP)
+# - UDP 10000-20000 (RTP)
+```
+
+### NAT Configuration
+```ini
+[transport-nat]
+type=transport
+protocol=udp
+bind=0.0.0.0
+local_net=192.168.1.0/24
+external_media_address=YOUR_PUBLIC_IP
+external_signaling_address=YOUR_PUBLIC_IP
+```
+
+## 8. Troubleshooting Guide
+
+### Debug Commands
+
+**Enable SIP debugging:**
+```bash
+asterisk -r
+pjsip set logger on
+core set verbose 5
+```
+
+**Monitor active calls:**
+```bash
+core show channels
+pjsip show channels
+```
+
+### Common Issues and Solutions
+
+**15-Minute Call Drops:**
+- Ensure `timers_sess_expires=3600` in endpoint configuration
+- Set `session_refresher=uac` to handle refreshes from your side
+- Check firewall isn't blocking SIP UPDATE/re-INVITE messages
+
+**No Audio Issues:**
+- Verify RTP ports 10000-20000 are open
+- Enable `rtp_symmetric=yes` for NAT traversal
+- Check codec compatibility (use ulaw/alaw)
+
+**405 Method Not Allowed:**
+- Disable unsupported methods (`allow_subscribe=no`)
+- Check provider documentation for supported SIP methods
+- Use IP authentication if REGISTER isn't supported
+
+### Performance Monitoring
+
+**Key metrics to monitor:**
+```bash
+# Check registration status
+pjsip show registrations
+
+# Monitor system resources
+asterisk -rx "core show sysinfo"
+
+# Watch for errors
+tail -f /var/log/asterisk/messages | grep ERROR
+```
+
+## 9. Security Best Practices
+
+### Firewall Rules
+```bash
+# Allow SIP only from known providers
+iptables -A INPUT -p udp --dport 5060 -s PROVIDER_IP -j ACCEPT
+iptables -A INPUT -p udp --dport 5060 -s LIVEKIT_IP -j ACCEPT
+iptables -A INPUT -p udp --dport 5060 -j DROP
+```
+
+### Fail2ban Configuration
+```ini
+[asterisk]
+enabled = true
+port = 5060
+protocol = udp
+filter = asterisk
+logpath = /var/log/asterisk/messages
+maxretry = 5
+bantime = 3600
+```
+
+## 10. Production Deployment Checklist
+
+1. **Network Requirements:**
+   - Static public IP or proper DDNS
+   - Ports 5060 and 10000-20000 open
+   - QoS configured for voice traffic
+
+2. **Hardware Recommendations:**
+   - Minimum 4 CPU cores for up to 100 concurrent calls
+   - 8GB RAM minimum
+   - SSD storage for better performance
+
+3. **Monitoring Setup:**
+   - Configure Prometheus endpoint in LiveKit
+   - Set up alerts for call failures > 5%
+   - Monitor session timer negotiations
+
+4. **Backup Configuration:**
+   - Regular backups of `/etc/asterisk/`
+   - Database backups for FreePBX
+   - Document all custom configurations
+
+This configuration will successfully replace Plivo as your PSTN gateway while maintaining the session timer handling needed to prevent call drops. The integration with LiveKit provides modern WebRTC capabilities while leveraging the stability and flexibility of Asterisk/FreePBX for traditional telephony needs.
