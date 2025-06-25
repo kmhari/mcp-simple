@@ -273,5 +273,16 @@
     "optionalParams": ["OPENAI_API_KEY", "ANTHROPIC_API_KEY", "GEMINI_API_KEY", "GROQ_API_KEY", "DEEPSEEK_API_KEY", "OLLAMA_HOST"],
     "usageInstructions": "Query multiple LLM providers (OpenAI, Anthropic, Google, Groq, DeepSeek, Ollama) simultaneously or individually. Configure API keys for the providers you want to use.",
     "category": "AI/ML"
+  },
+  "clickup": {
+    "name": "ClickUp",
+    "githubLink": "https://github.com/taazkareem/clickup-mcp-server",
+    "package": "@taazkareem/clickup-mcp-server",
+    "description": "Comprehensive ClickUp task management integration with 36 tools for AI applications",
+    "installCommand": "npx -y @taazkareem/clickup-mcp-server@latest",
+    "requiredEnvVars": ["CLICKUP_API_KEY", "CLICKUP_TEAM_ID"],
+    "optionalParams": ["ENABLE_SSE", "PORT", "DISABLED_TOOLS"],
+    "usageInstructions": "Manage ClickUp tasks, spaces, lists, and folders with natural language. Create, update, track time, and manage team members. Supports HTTP/SSE transport and markdown formatting.",
+    "category": "Project Management"
   }
 }
