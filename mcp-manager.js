@@ -128,20 +128,60 @@ class MCPManager {
         const servers = Object.keys(this.preConfiguredServers);
         const categories = [...new Set(servers.map(key => this.preConfiguredServers[key].category || 'Other'))];
         
-        // Display servers by category
-        let serverList = [];
-        categories.sort().forEach(category => {
-            console.log(`\n${category}:`);
-            servers.forEach(key => {
-                const server = this.preConfiguredServers[key];
-                if ((server.category || 'Other') === category) {
-                    serverList.push({ key, server });
-                    console.log(`${serverList.length}. ${server.name} - ${server.description}`);
-                }
-            });
+        // Separate servers with and without required env vars
+        const fastServers = [];
+        const regularServers = [];
+        
+        servers.forEach(key => {
+            const server = this.preConfiguredServers[key];
+            if (!server.requiredEnvVars || server.requiredEnvVars.length === 0) {
+                fastServers.push({ key, server });
+            } else {
+                regularServers.push({ key, server });
+            }
         });
         
-        const choice = await this.prompt(`\nSelect server (1-${serverList.length}), 0 to cancel, or q to quit: `);
+        // Display supafast servers first
+        if (fastServers.length > 0) {
+            console.log('\n⚡ Supafast Servers (no setup required):');
+            console.log('==========================================');
+            fastServers.forEach((item, index) => {
+                console.log(`S${index + 1}. ${item.server.name} - ${item.server.description}`);
+            });
+        }
+        
+        // Display regular servers by category
+        let serverList = [];
+        categories.sort().forEach(category => {
+            const categoryServers = regularServers.filter(item => (item.server.category || 'Other') === category);
+            if (categoryServers.length > 0) {
+                console.log(`\n${category}:`);
+                categoryServers.forEach(item => {
+                    serverList.push(item);
+                    console.log(`${serverList.length}. ${item.server.name} - ${item.server.description}`);
+                });
+            }
+        });
+        
+        console.log('\nOptions:');
+        console.log(`• S1-S${fastServers.length}: Add supafast server instantly`);
+        console.log(`• 1-${serverList.length}: Configure server with settings`);
+        console.log('• 0: Cancel');
+        
+        const choice = await this.prompt(`\nSelect server (S1-S${fastServers.length}, 1-${serverList.length}, 0 to cancel, or q to quit): `);
+        
+        // Handle supafast servers
+        if (choice.toLowerCase().startsWith('s')) {
+            const fastIndex = parseInt(choice.substring(1)) - 1;
+            if (fastIndex >= 0 && fastIndex < fastServers.length) {
+                await this.addSupafastServer(fastServers[fastIndex]);
+                return;
+            } else {
+                console.log('❌ Invalid supafast selection');
+                return;
+            }
+        }
+        
         const serverIndex = parseInt(choice) - 1;
         
         if (choice === '0') {
@@ -194,6 +234,46 @@ class MCPManager {
         config.mcpServers[serverName] = serverConfig;
         this.saveConfig(config);
         console.log(`\n✅ Added ${server.name} server successfully!`);
+        if (server.usageInstructions) {
+            console.log(`\n💡 Usage: ${server.usageInstructions}`);
+        }
+    }
+
+    async addSupafastServer({ key: serverKey, server }) {
+        console.log(`\n⚡ Adding ${server.name} instantly...`);
+        
+        const config = this.loadConfig();
+        
+        // Parse the install command to get command and args
+        const installParts = server.installCommand.split(' ');
+        const command = installParts[0];
+        const args = installParts.slice(1);
+        
+        let serverConfig = {
+            command,
+            args: [...args],
+            env: {}
+        };
+        
+        // Handle optional parameters if any
+        if (server.optionalParams && server.optionalParams.length > 0) {
+            const addOptional = await this.prompt(`\n📝 Configure optional parameters? (y/N): `);
+            if (addOptional.toLowerCase() === 'y') {
+                console.log(`\n📝 Optional parameters (press Enter to skip):`);
+                for (const param of server.optionalParams) {
+                    const value = await this.prompt(`${param}: `);
+                    if (value) {
+                        serverConfig.env[param] = value;
+                    }
+                }
+            }
+        }
+        
+        const serverName = await this.prompt(`\nServer name (default: ${serverKey}): `) || serverKey;
+        
+        config.mcpServers[serverName] = serverConfig;
+        this.saveConfig(config);
+        console.log(`\n🚀 Added ${server.name} server instantly!`);
         if (server.usageInstructions) {
             console.log(`\n💡 Usage: ${server.usageInstructions}`);
         }
