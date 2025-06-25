@@ -966,5 +966,16 @@
     "optionalParams": ["ELASTICSEARCH_URL"],
     "usageInstructions": "Search NixOS packages, configuration options, Home Manager settings, nix-darwin configurations, and package version history. Queries live NixOS APIs for accurate data.",
     "category": "Development Tools"
+  },
+  "shadcn-ui": {
+    "name": "shadcn/ui",
+    "githubLink": "https://github.com/heilgar/shadcn-ui-mcp-server",
+    "package": "@heilgar/mcp-server-shadcn-ui",
+    "description": "Browse and install shadcn/ui components and utilities for React applications",
+    "installCommand": "npx @heilgar/mcp-server-shadcn-ui",
+    "requiredEnvVars": [],
+    "optionalParams": ["FRAMEWORK"],
+    "usageInstructions": "Search, view documentation, and install shadcn/ui components directly into your React project. Supports component browsing, installation, and dependency management.",
+    "category": "UI Components"
   }
 }

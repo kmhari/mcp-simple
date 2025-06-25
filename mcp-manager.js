@@ -110,13 +110,14 @@ class MCPManager {
         console.log('1. Add pre-configured server');
         console.log('2. Add custom server');
         console.log('3. List current servers');
-        console.log('4. Remove server');
-        console.log('5. View configuration file');
-        console.log('6. Search MCP servers');
-        console.log('7. Exit');
+        console.log('4. Edit server');
+        console.log('5. Remove server');
+        console.log('6. View configuration file');
+        console.log('7. Search MCP servers');
+        console.log('8. Exit');
         console.log('\nPress q to quit at any time');
         
-        const choice = await this.prompt('\nSelect an option (1-7 or q): ');
+        const choice = await this.prompt('\nSelect an option (1-8 or q): ');
         return choice.trim();
     }
 
@@ -285,6 +286,123 @@ class MCPManager {
         console.log(`✅ Removed server "${serverName}" successfully!`);
     }
 
+    async editServer() {
+        const config = this.loadConfig();
+        const servers = Object.keys(config.mcpServers);
+        
+        if (servers.length === 0) {
+            console.log('❌ No servers to edit.');
+            return;
+        }
+        
+        console.log('\n✏️  Edit Server:');
+        console.log('================');
+        
+        servers.forEach((name, index) => {
+            const server = config.mcpServers[name];
+            console.log(`${index + 1}. ${name}`);
+            console.log(`   Command: ${server.command} ${server.args.join(' ')}`);
+            if (server.env && Object.keys(server.env).length > 0) {
+                console.log(`   Env vars: ${Object.keys(server.env).join(', ')}`);
+            }
+            console.log('');
+        });
+        
+        const choice = await this.prompt(`\nSelect server to edit (1-${servers.length}) or q to quit: `);
+        const serverIndex = parseInt(choice) - 1;
+        
+        if (serverIndex < 0 || serverIndex >= servers.length) {
+            console.log('❌ Invalid selection');
+            return;
+        }
+        
+        const oldName = servers[serverIndex];
+        const currentServer = config.mcpServers[oldName];
+        
+        console.log(`\n📝 Editing server: ${oldName}`);
+        console.log('Leave fields empty to keep current values\n');
+        
+        // Edit server name
+        const newName = await this.prompt(`Server name (${oldName}): `) || oldName;
+        
+        // Edit command
+        const newCommand = await this.prompt(`Command (${currentServer.command}): `) || currentServer.command;
+        
+        // Edit args
+        console.log(`Current args: ${currentServer.args.join(', ')}`);
+        const newArgsInput = await this.prompt('New arguments (comma-separated, or press Enter to keep): ');
+        const newArgs = newArgsInput ? newArgsInput.split(',').map(arg => arg.trim()).filter(arg => arg) : currentServer.args;
+        
+        // Edit environment variables
+        const currentEnvVars = currentServer.env || {};
+        const envVarKeys = Object.keys(currentEnvVars);
+        let newEnv = {};
+        
+        if (envVarKeys.length > 0) {
+            console.log('\nCurrent environment variables:');
+            for (const key of envVarKeys) {
+                console.log(`  ${key}: ${currentEnvVars[key]}`);
+            }
+            
+            const editEnv = await this.prompt('\nEdit environment variables? (y/n): ');
+            if (editEnv.toLowerCase() === 'y') {
+                // Edit existing env vars
+                for (const key of envVarKeys) {
+                    const newValue = await this.prompt(`${key} (${currentEnvVars[key]}): `);
+                    if (newValue) {
+                        newEnv[key] = newValue;
+                    } else {
+                        newEnv[key] = currentEnvVars[key];
+                    }
+                }
+                
+                // Option to add new env vars
+                const addMore = await this.prompt('\nAdd new environment variables? (y/n): ');
+                if (addMore.toLowerCase() === 'y') {
+                    const newEnvInput = await this.prompt('New env vars (key=value, comma-separated): ');
+                    if (newEnvInput.trim()) {
+                        newEnvInput.split(',').forEach(pair => {
+                            const [key, value] = pair.split('=').map(s => s.trim());
+                            if (key && value) {
+                                newEnv[key] = value;
+                            }
+                        });
+                    }
+                }
+            } else {
+                newEnv = currentEnvVars;
+            }
+        } else {
+            const addEnv = await this.prompt('\nAdd environment variables? (y/n): ');
+            if (addEnv.toLowerCase() === 'y') {
+                const envInput = await this.prompt('Environment variables (key=value, comma-separated): ');
+                if (envInput.trim()) {
+                    envInput.split(',').forEach(pair => {
+                        const [key, value] = pair.split('=').map(s => s.trim());
+                        if (key && value) {
+                            newEnv[key] = value;
+                        }
+                    });
+                }
+            }
+        }
+        
+        // If the name changed, delete the old entry
+        if (newName !== oldName) {
+            delete config.mcpServers[oldName];
+        }
+        
+        // Save the updated server configuration
+        config.mcpServers[newName] = {
+            command: newCommand,
+            args: newArgs,
+            ...(Object.keys(newEnv).length > 0 && { env: newEnv })
+        };
+        
+        this.saveConfig(config);
+        console.log(`✅ Server "${newName}" updated successfully!`);
+    }
+
     viewConfig() {
         console.log('\n📄 Current Configuration:');
         console.log('=========================');
@@ -338,6 +456,24 @@ class MCPManager {
         console.log('Welcome to MCP Server Manager! 🚀');
         console.log(''); // Add empty line for better formatting
         
+        // Display installed servers at startup
+        const config = this.loadConfig();
+        const installedCount = Object.keys(config.mcpServers).length;
+        
+        if (installedCount > 0) {
+            console.log('📋 Installed MCP Servers:');
+            console.log('========================');
+            Object.entries(config.mcpServers).forEach(([name, server]) => {
+                console.log(`• ${name}`);
+            });
+            console.log(`\nTotal: ${installedCount} server${installedCount !== 1 ? 's' : ''} installed`);
+            console.log(''); // Add empty line for better formatting
+        } else {
+            console.log('ℹ️  No MCP servers currently installed.');
+            console.log('   Use option 1 or 2 to add your first server.');
+            console.log(''); // Add empty line for better formatting
+        }
+        
         while (true) {
             try {
                 const choice = await this.showMainMenu();
@@ -353,15 +489,18 @@ class MCPManager {
                         this.listServers();
                         break;
                     case '4':
-                        await this.removeServer();
+                        await this.editServer();
                         break;
                     case '5':
-                        this.viewConfig();
+                        await this.removeServer();
                         break;
                     case '6':
-                        await this.searchMCPServers();
+                        this.viewConfig();
                         break;
                     case '7':
+                        await this.searchMCPServers();
+                        break;
+                    case '8':
                     case 'q':
                     case 'Q':
                         console.log('👋 Goodbye!');
@@ -846,6 +985,25 @@ class MCPManager {
             font-family: 'Courier New', monospace;
         }
         
+        .server-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn-edit {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .btn-edit:hover {
+            background: #2980b9;
+        }
+        
         .btn-remove {
             background: #e74c3c;
             color: white;
@@ -1055,7 +1213,10 @@ class MCPManager {
                             \${config.env ? '<br>Env: ' + JSON.stringify(config.env) : ''}
                         </div>
                     </div>
-                    <button class="btn-remove" onclick="removeServer('\${name}')">Remove</button>
+                    <div class="server-actions">
+                        <button class="btn-edit" onclick="editServer('\${name}')">Edit</button>
+                        <button class="btn-remove" onclick="removeServer('\${name}')">Remove</button>
+                    </div>
                 \`;
                 list.appendChild(item);
             });
@@ -1261,6 +1422,138 @@ class MCPManager {
                     showMessage(error.message, 'error');
                 });
             }
+        }
+        
+        function editServer(name) {
+            const server = currentConfig.mcpServers[name];
+            if (!server) {
+                showMessage('Server not found', 'error');
+                return;
+            }
+            
+            const modal = document.getElementById('serverModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalBody = document.getElementById('modalBody');
+            
+            modalTitle.textContent = \`Edit Server: \${name}\`;
+            
+            let envVarsHtml = '';
+            if (server.env && Object.keys(server.env).length > 0) {
+                envVarsHtml = '<h4>Environment Variables</h4>';
+                Object.entries(server.env).forEach(([key, value]) => {
+                    envVarsHtml += \`
+                        <div class="form-group">
+                            <label>\${key}</label>
+                            <input type="text" name="env_\${key}" value="\${value}">
+                            <button type="button" class="btn-remove" style="padding: 4px 8px; font-size: 12px;" onclick="this.parentElement.remove()">Remove</button>
+                        </div>
+                    \`;
+                });
+            }
+            
+            modalBody.innerHTML = \`
+                <form onsubmit="updateServer(event, '\${name}')">
+                    <div class="form-group">
+                        <label>Server Name</label>
+                        <input type="text" id="editServerName" value="\${name}" required>
+                        <small>Rename this server configuration</small>
+                    </div>
+                    <div class="form-group">
+                        <label>Command</label>
+                        <input type="text" id="editCommand" value="\${server.command}" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Arguments (comma-separated)</label>
+                        <input type="text" id="editArgs" value="\${server.args.join(', ')}">
+                    </div>
+                    <div id="envVarsContainer">
+                        \${envVarsHtml}
+                    </div>
+                    <button type="button" class="btn-secondary" style="margin: 10px 0;" onclick="addEnvVar()">Add Environment Variable</button>
+                    <div class="button-group">
+                        <button type="submit" class="btn-primary">Save Changes</button>
+                        <button type="button" class="btn-secondary" onclick="closeModal()">Cancel</button>
+                    </div>
+                </form>
+            \`;
+            
+            modal.style.display = 'block';
+        }
+        
+        function addEnvVar() {
+            const container = document.getElementById('envVarsContainer');
+            if (!container.querySelector('h4')) {
+                container.innerHTML = '<h4>Environment Variables</h4>' + container.innerHTML;
+            }
+            
+            const newEnvVar = document.createElement('div');
+            newEnvVar.className = 'form-group';
+            newEnvVar.innerHTML = \`
+                <input type="text" name="env_key" placeholder="Variable name" style="width: 45%; margin-right: 2%;">
+                <input type="text" name="env_value" placeholder="Value" style="width: 45%; margin-right: 2%;">
+                <button type="button" class="btn-remove" style="padding: 4px 8px; font-size: 12px;" onclick="this.parentElement.remove()">Remove</button>
+            \`;
+            container.appendChild(newEnvVar);
+        }
+        
+        function updateServer(event, oldName) {
+            event.preventDefault();
+            
+            const form = event.target;
+            const newName = form.editServerName.value;
+            const command = form.editCommand.value;
+            const argsInput = form.editArgs.value;
+            
+            const args = argsInput.split(',').map(arg => arg.trim()).filter(arg => arg);
+            const env = {};
+            
+            // Collect existing environment variables
+            const envInputs = form.querySelectorAll('input[name^="env_"]:not([name="env_key"]):not([name="env_value"])');
+            envInputs.forEach(input => {
+                const key = input.name.substring(4);
+                if (input.value) {
+                    env[key] = input.value;
+                }
+            });
+            
+            // Collect new environment variables
+            const newEnvKeys = form.querySelectorAll('input[name="env_key"]');
+            const newEnvValues = form.querySelectorAll('input[name="env_value"]');
+            newEnvKeys.forEach((keyInput, index) => {
+                if (keyInput.value && newEnvValues[index].value) {
+                    env[keyInput.value] = newEnvValues[index].value;
+                }
+            });
+            
+            // If name changed, delete old entry
+            if (newName !== oldName) {
+                delete currentConfig.mcpServers[oldName];
+            }
+            
+            // Update configuration
+            currentConfig.mcpServers[newName] = {
+                command,
+                args,
+                ...(Object.keys(env).length > 0 && { env })
+            };
+            
+            // Save configuration
+            fetch('/api/config', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(currentConfig)
+            }).then(response => {
+                if (response.ok) {
+                    showMessage(\`Updated "\${newName}" successfully\`, 'success');
+                    updateCurrentServers();
+                    document.getElementById('configEditor').value = JSON.stringify(currentConfig, null, 2);
+                    closeModal();
+                } else {
+                    throw new Error('Failed to save configuration');
+                }
+            }).catch(error => {
+                showMessage(error.message, 'error');
+            });
         }
         
         function switchTab(tabId) {
