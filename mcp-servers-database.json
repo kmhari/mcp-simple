@@ -218,5 +218,16 @@
     "optionalParams": ["FRAMEWORK"],
     "usageInstructions": "Search, view documentation, and install shadcn/ui components directly into your React project. Supports component browsing, installation, and dependency management.",
     "category": "UI Components"
+  },
+  "gpt-researcher": {
+    "name": "GPT Researcher",
+    "githubLink": "https://github.com/assafelovic/gpt-researcher",
+    "package": "gptr-mcp",
+    "description": "AI-powered research assistant that conducts comprehensive online research on any topic",
+    "installCommand": "git clone https://github.com/assafelovic/gptr-mcp.git && cd gptr-mcp && pip install -r requirements.txt",
+    "requiredEnvVars": ["OPENAI_API_KEY", "TAVILY_API_KEY"],
+    "optionalParams": ["RESEARCH_DEPTH", "REPORT_FORMAT", "MAX_SOURCES"],
+    "usageInstructions": "Perform deep research on topics, generate comprehensive reports, quick searches, and track sources. Requires manual setup with git clone and Python environment.",
+    "category": "Research & Analysis"
   }
 }
