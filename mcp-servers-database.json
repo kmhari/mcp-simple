@@ -229,5 +229,49 @@
     "optionalParams": ["RESEARCH_DEPTH", "REPORT_FORMAT", "MAX_SOURCES"],
     "usageInstructions": "Perform deep research on topics, generate comprehensive reports, quick searches, and track sources. Requires manual setup with git clone and Python environment.",
     "category": "Research & Analysis"
+  },
+  "pr-reviewer": {
+    "name": "PR Reviewer",
+    "githubLink": "https://github.com/elhadjaoui/pr_reviewer",
+    "package": null,
+    "description": "Automatically analyzes Pull Requests, reviews changes, and adds comments directly to modified files",
+    "installCommand": "pip install requests python-dotenv 'mcp[cli]' pydrive",
+    "requiredEnvVars": ["GITHUB_TOKEN"],
+    "optionalParams": ["GOOGLE_PARENT_FOLDER_ID"],
+    "usageInstructions": "Review pull requests automatically, add inline comments, approve PRs, and optionally store reviews in Google Drive. Requires GitHub personal access token with appropriate permissions.",
+    "category": "Development Tools"
+  },
+  "gdrive-ej": {
+    "name": "Google Drive (Enhanced)",
+    "githubLink": "https://github.com/ejoyee/ej-mcp-server-gdrive",
+    "package": "@modelcontextprotocol/server-gdrive",
+    "description": "Enhanced Google Drive integration with file listing, reading, and searching capabilities with automatic format conversion",
+    "installCommand": "npx -y @modelcontextprotocol/server-gdrive",
+    "requiredEnvVars": ["GDRIVE_CREDENTIALS_PATH"],
+    "optionalParams": ["FOLDER_ID", "MAX_RESULTS"],
+    "usageInstructions": "Access Google Drive files with advanced search, read documents with automatic format conversion, and manage Drive content. Requires Google OAuth credentials JSON file.",
+    "category": "Cloud Storage"
+  },
+  "sharepoint": {
+    "name": "SharePoint",
+    "githubLink": "https://github.com/Sofias-ai/mcp-sharepoint",
+    "package": "mcp-sharepoint-server",
+    "description": "Lightweight Microsoft SharePoint integration for document and folder management",
+    "installCommand": "pip install mcp-sharepoint-server",
+    "requiredEnvVars": ["SHP_ID_APP", "SHP_ID_APP_SECRET", "SHP_SITE_URL", "SHP_TENANT_ID"],
+    "optionalParams": ["SHP_DOC_LIBRARY"],
+    "usageInstructions": "List, read, search, and download SharePoint documents and folders. Requires Azure AD application credentials for authentication.",
+    "category": "Cloud Storage"
+  },
+  "just-prompt": {
+    "name": "Just Prompt",
+    "githubLink": "https://github.com/disler/just-prompt",
+    "package": null,
+    "description": "Unified interface to multiple LLM providers with parallel querying capabilities",
+    "installCommand": "git clone https://github.com/disler/just-prompt && cd just-prompt && uv sync",
+    "requiredEnvVars": [],
+    "optionalParams": ["OPENAI_API_KEY", "ANTHROPIC_API_KEY", "GEMINI_API_KEY", "GROQ_API_KEY", "DEEPSEEK_API_KEY", "OLLAMA_HOST"],
+    "usageInstructions": "Query multiple LLM providers (OpenAI, Anthropic, Google, Groq, DeepSeek, Ollama) simultaneously or individually. Configure API keys for the providers you want to use.",
+    "category": "AI/ML"
   }
 }
