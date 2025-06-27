@@ -2,6 +2,8 @@
 
 Interactive CLI tool for managing MCP (Model Context Protocol) server configurations.
 
+![MCP Manager Web Interface](screenshots/mcp-web-interface.png)
+
 ## Installation
 
 ### Global Installation (Recommended)
@@ -34,7 +36,7 @@ npx @oglabs/mcp
 
 ### Web Interface Mode
 
-Launch the web interface:
+Launch the web interface for a modern, visual experience:
 
 ```bash
 @oglabs/mcp --web
@@ -46,33 +48,63 @@ Or if installed locally:
 npx @oglabs/mcp --web
 ```
 
-The web interface will automatically open in your default browser at `http://localhost:3333`. The interface provides:
+The web interface automatically opens in your default browser at `http://localhost:3333` and provides:
 
-- **Browse Servers**: Search and browse all available MCP servers organized by category
-- **Current Servers**: View and manage your currently configured servers
-- **Add Custom**: Add custom MCP server configurations
-- **Edit Config**: Directly edit the `.mcp.json` configuration file
+#### 🚀 Key Features:
+- **⚡ Supafast Installation**: 14 servers (S1-S14) can be installed instantly without configuration
+- **📦 Server Browser**: Search and browse 26+ pre-configured MCP servers by category
+- **⚙️ Current Servers**: View, edit, and manage your configured servers
+- **➕ Custom Servers**: Add custom MCP server configurations with guided forms
+- **📝 Direct Config Editing**: Edit `.mcp.json` files directly in the browser
+- **🔍 Advanced Search**: Filter servers by name, category, or description
+- **📱 Responsive Design**: Works on desktop, tablet, and mobile devices
+
+#### 🎯 Supafast Servers (No Setup Required):
+- **S1-S7**: Core tools (Everything, Fetch, Filesystem, Git, Memory, Sequential Thinking, Time)
+- **S8-S11**: Development tools (Playwright, Context7, Task Master, Xcode Build)  
+- **S12-S14**: Specialized tools (NixOS, shadcn/ui, Just Prompt)
+
+#### 🌐 API Endpoints:
+- `GET /api/config` - Retrieve current MCP configuration
+- `POST /api/config` - Save MCP configuration
+- `GET /api/servers` - Get pre-configured servers database
 
 ## Features
 
+### 🖥️ CLI Mode
 - 📋 Interactive menu-driven interface
-- 🔧 Pre-configured MCP servers (PostgreSQL, Redis, SQLite, and 50+ more)
+- ⚡ **Supafast installation** (S1-S14 servers with zero configuration)
+- 🔧 26+ pre-configured MCP servers
 - ➕ Add custom MCP servers
-- ❌ Remove existing servers
+- ✏️ Edit existing servers
+- ❌ Remove servers
 - 📄 View current configuration
+- 🔍 Search MCP servers
 - 🎯 Automatic `.mcp.json` file management
+
+### 🌐 Web Mode
+- 🎨 Modern, responsive web interface
+- 📱 Mobile-friendly design
+- 🚀 One-click server installation
+- 📊 Visual server management dashboard
+- 🔍 Advanced search and filtering
+- 📝 In-browser configuration editing
+- 🌙 Dark/light theme support
 
 ## Pre-configured Servers
 
-MCP Manager comes with 50+ pre-configured MCP servers including:
+MCP Manager comes with 26+ verified pre-configured MCP servers including:
 
-- **Databases**: PostgreSQL, Redis, SQLite, MySQL, MongoDB, DuckDB
-- **Development Tools**: Git, GitHub, GitLab, Linear, Sentry
-- **Cloud Services**: AWS (S3, EC2, Lambda), Google Cloud (BigQuery, Vertex AI)
-- **File Systems**: Local filesystem, Google Drive, OneDrive
-- **Communication**: Slack, Discord, Telegram
-- **AI/ML**: OpenAI, Anthropic, Perplexity, Stable Diffusion
-- **And many more...**
+- **🗄️ Databases**: Supabase, PostgreSQL, Redis, SQLite
+- **🛠️ Development Tools**: Git, Playwright, Xcode Build, PR Reviewer, NixOS
+- **☁️ Cloud Services**: AWS, Google Drive Enhanced, SharePoint
+- **📁 File Systems**: Filesystem, Memory, Fetch
+- **🤖 AI/ML**: Everything, Sequential Thinking, Context7, Just Prompt, GPT Researcher
+- **🎯 Productivity**: Task Master, ClickUp, shadcn/ui
+- **🎵 Entertainment**: Spotify
+- **🔐 Authentication**: Clerk
+- **🚀 Automation**: Skyvern
+- **📚 Knowledge**: Obsidian
 
 ## Configuration
 
