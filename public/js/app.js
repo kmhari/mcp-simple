@@ -153,9 +153,8 @@ function displayServersFlat(servers, grid) {
             <div class="card-footer">
                 <div class="button-container">
                     ${isInstalled ? 
-                        `<button class="btn-installed" disabled>Installed</button>
-                         <button class="btn-configure" onclick="configureServer('${key}')">Reconfigure</button>
-                         <button class="btn-uninstall" onclick="uninstallServer('${key}')">Uninstall</button>` :
+                        `<button class="btn-configure" onclick="configureServer('${key}')">Reconfigure</button>
+                         <button class="btn-uninstall" onclick="uninstallServer('${key}')">Remove</button>` :
                         `<button class="btn-configure" onclick="configureServer('${key}')">Configure</button>
                          ${!requiresConfig ? 
                             `<button onclick="quickInstallServer('${key}')">Install</button>` : ''
@@ -219,9 +218,8 @@ function displayServersByCategory(servers, grid) {
                 <div class="card-footer">
                     <div class="button-container">
                         ${isInstalled ? 
-                            `<button class="btn-installed" disabled>Installed</button>
-                             <button class="btn-configure" onclick="configureServer('${key}')">Reconfigure</button>
-                             <button class="btn-uninstall" onclick="uninstallServer('${key}')">Uninstall</button>` :
+                            `<button class="btn-configure" onclick="configureServer('${key}')">Reconfigure</button>
+                             <button class="btn-uninstall" onclick="uninstallServer('${key}')">Remove</button>` :
                             `<button class="btn-configure" onclick="configureServer('${key}')">Configure</button>
                              ${!requiresConfig ? 
                                 `<button onclick="quickInstallServer('${key}')">Install</button>` : ''
