@@ -337,7 +337,7 @@ h1 {
 .stars-info {
     display: inline-flex;
     align-items: center;
-    gap: 4px;
+    gap: 3px;
     font-size: 12px;
     font-weight: 500;
     color: #6b7280;
@@ -350,6 +350,7 @@ h1 {
     text-shadow: none;
     transition: color 0.2s ease;
     cursor: default;
+    line-height: 1;
 }
 
 .stars-info:hover {
@@ -357,6 +358,19 @@ h1 {
     background: transparent;
     transform: none;
     box-shadow: none;
+}
+
+.star-icon {
+    width: 14px;
+    height: 14px;
+    color: #6b7280;
+    transition: color 0.2s ease;
+    vertical-align: middle;
+    margin-bottom: 1px;
+}
+
+.stars-info:hover .star-icon {
+    color: #374151;
 }
 
 
