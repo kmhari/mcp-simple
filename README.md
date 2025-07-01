@@ -52,12 +52,14 @@ The web interface automatically opens in your default browser at `http://localho
 
 #### 🚀 Key Features:
 - **⚡ Supafast Installation**: 14 servers (S1-S14) can be installed instantly without configuration
+- **🖱️ One-Click Install**: Click directly on server cards to install servers with no required configuration
 - **📦 Server Browser**: Search and browse 26+ pre-configured MCP servers by category
 - **⚙️ Current Servers**: View, edit, and manage your configured servers
 - **➕ Custom Servers**: Add custom MCP server configurations with guided forms
 - **📝 Direct Config Editing**: Edit `.mcp.json` files directly in the browser
 - **🔍 Advanced Search**: Filter servers by name, category, or description
 - **📱 Responsive Design**: Works on desktop, tablet, and mobile devices
+- **🎨 Modern UI**: Neumorphic design with JetBrains Mono font throughout
 
 #### 🎯 Supafast Servers (No Setup Required):
 - **S1-S7**: Core tools (Everything, Fetch, Filesystem, Git, Memory, Sequential Thinking, Time)
@@ -83,13 +85,14 @@ The web interface automatically opens in your default browser at `http://localho
 - 🎯 Automatic `.mcp.json` file management
 
 ### 🌐 Web Mode
-- 🎨 Modern, responsive web interface
-- 📱 Mobile-friendly design
-- 🚀 One-click server installation
+- 🎨 Modern, responsive web interface with neumorphic design
+- 📱 Mobile-friendly design with JetBrains Mono font
+- 🚀 One-click server installation (click cards directly or use install buttons)
 - 📊 Visual server management dashboard
 - 🔍 Advanced search and filtering
 - 📝 In-browser configuration editing
-- 🌙 Dark/light theme support
+- 🔗 .env file integration with fetch buttons
+- ⚙️ Environment variable management
 
 ## Pre-configured Servers
 
