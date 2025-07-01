@@ -32,5 +32,11 @@
   "engines": {
     "node": ">=14.0.0"
   },
-  "preferGlobal": true
+  "preferGlobal": true,
+  "dependencies": {
+    "express": "^4.18.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  }
 }
