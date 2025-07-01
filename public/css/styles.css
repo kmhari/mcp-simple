@@ -200,7 +200,7 @@ h1 {
 }
 
 .server-card {
-    background: #ececec;
+    background: #f4f4f4;
     padding: 16px;
     border: none;
     border-radius: 8px;
@@ -227,7 +227,7 @@ h1 {
 }
 
 .server-card[data-selected] {
-    background: #ececec;
+    background: #f4f4f4;
     box-shadow: inset .5px .5px 1px #fff, 
                 inset -.5px -.5px 1px #00000026, 
                 .222px .222px .314px -.5px #0003, 
@@ -292,7 +292,7 @@ h1 {
 }
 
 .server-card button {
-    background: #ececec;
+    background: #f4f4f4;
     color: #374151;
     border: none;
     padding: 6px 12px;
@@ -325,7 +325,7 @@ h1 {
 }
 
 .btn-installed {
-    background: #ececec !important;
+    background: #f4f4f4 !important;
     color: #10b981 !important;
     cursor: not-allowed !important;
     font-weight: 600;
