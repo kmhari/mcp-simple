@@ -284,5 +284,16 @@
     "optionalParams": ["ENABLE_SSE", "PORT", "DISABLED_TOOLS"],
     "usageInstructions": "Manage ClickUp tasks, spaces, lists, and folders with natural language. Create, update, track time, and manage team members. Supports HTTP/SSE transport and markdown formatting.",
     "category": "Project Management"
+  },
+  "cognition-wheel": {
+    "name": "Cognition Wheel",
+    "githubLink": "https://github.com/Hormold/cognition-wheel",
+    "package": "cognition-wheel",
+    "description": "AI-powered cognitive assessment and development tool that helps track and improve various cognitive abilities",
+    "installCommand": "pip install cognition-wheel",
+    "requiredEnvVars": [],
+    "optionalParams": ["CONFIG_PATH", "MODEL_PATH", "OUTPUT_DIR"],
+    "usageInstructions": "Assess and track cognitive abilities including memory, attention, reasoning, and problem-solving. Generate personalized cognitive development plans and track progress over time.",
+    "category": "AI & Machine Learning"
   }
 }
