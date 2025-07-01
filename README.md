@@ -4,6 +4,49 @@ Interactive CLI tool for managing MCP (Model Context Protocol) server configurat
 
 ![MCP Manager Web Interface](screenshots/mcp-web-interface.png)
 
+## 🌐 Web Interface Preview
+
+### Modern Neumorphic Design
+The web interface features a beautiful neumorphic design with JetBrains Mono font, providing a modern and professional look:
+
+![Web Interface Overview](screenshots/mcp-web-interface.png)
+
+### Interactive Features
+
+#### 📦 Server Browser
+- **One-click Installation**: Simply click on any server card to install instantly
+- **Category Organization**: Servers grouped by functionality (AI/ML, Databases, Cloud Services, etc.)  
+- **Smart Search**: Real-time filtering by name, description, or category
+- **Status Indicators**: Visual dots showing installation status (green = installed, gray = not installed)
+
+#### ⚡ Supafast Installation
+Special "S1-S14" servers install with zero configuration:
+- **S1-S7**: Core utilities (Everything, Fetch, Filesystem, Git, Memory, Sequential Thinking, Time)
+- **S8-S11**: Development tools (Playwright, Context7, Task Master, Xcode Build)
+- **S12-S14**: Specialized tools (NixOS, shadcn/ui, Just Prompt)
+
+#### 🔧 Configuration Management
+- **Visual Config Editor**: Edit `.mcp.json` directly in browser with syntax highlighting
+- **Environment Variables**: Manage variables with .env file integration and "Fetch" buttons
+- **Current Servers**: View, edit, and remove installed servers with intuitive controls
+
+#### 🚀 Auto-Update System
+- **Mandatory Updates**: Automatic version checking with enforced updates
+- **Progress Tracking**: Visual feedback during update process
+- **Seamless Experience**: Auto-reload after successful updates
+
+### Try the Live Demo
+
+```bash
+# Install globally
+npm install -g @oglabs/mcp
+
+# Launch web interface
+@oglabs/mcp --web
+```
+
+The interface automatically opens at `http://localhost:3333` with full functionality.
+
 ## Installation
 
 ### Global Installation (Recommended)
@@ -68,8 +111,35 @@ The web interface automatically opens in your default browser at `http://localho
 
 #### 🌐 API Endpoints:
 - `GET /api/config` - Retrieve current MCP configuration
-- `POST /api/config` - Save MCP configuration
+- `POST /api/config` - Save MCP configuration  
 - `GET /api/servers` - Get pre-configured servers database
+- `GET /api/variables` - Get saved environment variables
+- `POST /api/variables` - Save environment variables
+- `GET /api/env-variables` - Get .env file variables
+- `GET /api/version-check` - Check for available updates
+- `POST /api/auto-update` - Perform automatic update
+
+#### 🎮 Interactive Web Experience:
+
+**1. Server Installation Flow:**
+```
+Browse Servers → Click Card → Instant Install → Status Updates → Ready to Use
+```
+
+**2. Configuration Workflow:**
+```
+Current Servers Tab → Edit Server → Update Config → Auto-Save → Live Reload
+```
+
+**3. Environment Setup:**
+```
+Variables Tab → Add Variables → Fetch from .env → Auto-Fill → Save
+```
+
+**4. Auto-Update Process:**
+```
+Version Check → Update Available → Mandatory Modal → Progress Bar → Auto-Reload
+```
 
 ## Features
 
@@ -85,14 +155,17 @@ The web interface automatically opens in your default browser at `http://localho
 - 🎯 Automatic `.mcp.json` file management
 
 ### 🌐 Web Mode
-- 🎨 Modern, responsive web interface with neumorphic design
-- 📱 Mobile-friendly design with JetBrains Mono font
-- 🚀 One-click server installation (click cards directly or use install buttons)
-- 📊 Visual server management dashboard
-- 🔍 Advanced search and filtering
-- 📝 In-browser configuration editing
-- 🔗 .env file integration with fetch buttons
-- ⚙️ Environment variable management
+- 🎨 **Modern Neumorphic Design**: Beautiful depth-based UI with soft shadows and JetBrains Mono font
+- 📱 **Fully Responsive**: Optimized for desktop, tablet, and mobile devices
+- 🖱️ **Interactive Server Cards**: Click any card to install, hover for animations
+- ⚡ **Instant Installation**: Supafast servers (S1-S14) install with zero configuration
+- 🎯 **Smart Status Indicators**: Color-coded dots showing installation status
+- 🔍 **Real-time Search**: Filter 26+ servers by name, category, or description
+- 📊 **Visual Dashboard**: Manage installed servers with intuitive controls
+- 📝 **Live Config Editor**: Edit `.mcp.json` directly with syntax highlighting
+- 🔗 **Environment Integration**: .env file support with convenient fetch buttons
+- 🚀 **Auto-Update System**: Mandatory updates with progress tracking
+- 🎨 **Smooth Animations**: Card interactions with CSS transitions and transforms
 
 ## Pre-configured Servers
 
@@ -127,25 +200,57 @@ MCP Manager manages `.mcp.json` files in your current working directory. The con
 
 ## Examples
 
-### Adding a Pre-configured Server
+### 🖥️ CLI Mode Examples
 
+#### Adding a Pre-configured Server
 1. Run `@oglabs/mcp`
 2. Select "Add a pre-configured MCP server"
 3. Choose from the list (e.g., "PostgreSQL")
 4. Follow the prompts for any required configuration
 
-### Adding a Custom Server
-
+#### Adding a Custom Server
 1. Run `@oglabs/mcp`
 2. Select "Add a custom MCP server"
 3. Enter the server name, command, and arguments
 4. Optionally add environment variables
 
-### Removing a Server
-
+#### Removing a Server
 1. Run `@oglabs/mcp`
 2. Select "Remove an MCP server"
 3. Choose the server to remove
+
+### 🌐 Web Interface Examples
+
+#### Installing a Supafast Server (Zero Config)
+1. Launch web interface: `@oglabs/mcp --web`
+2. **Browse Servers** tab → Find any server marked **S1-S14**
+3. **Single click** the server card → Instant installation ⚡
+4. **Green status dot** appears → Server ready to use
+
+#### Installing a Regular Server (With Config)
+1. **Browse Servers** tab → Find desired server (e.g., "Supabase")
+2. Click **Configure** button → Configuration modal opens
+3. Fill in **required environment variables** (DATABASE_URL, API_KEY, etc.)
+4. Click **Install** → Server installs with your configuration
+5. **Current Servers** tab → Manage your new server
+
+#### Managing Environment Variables  
+1. **Variables** tab → View all saved variables
+2. **Fetch from .env** button → Auto-populate from local .env file
+3. **Add/Edit variables** → Set API keys, URLs, tokens
+4. **Save** → Variables available across all server configurations
+
+#### Live Configuration Editing
+1. **Current Servers** tab → See all installed servers
+2. **Edit** button → Modify server configuration in-browser
+3. **Raw Config** tab → Direct `.mcp.json` editing with syntax highlighting
+4. **Save** → Changes applied immediately
+
+#### Auto-Update Experience
+1. **Automatic check** on app load → Version comparison with npm
+2. **Mandatory update modal** → Cannot be closed if update required
+3. **"Update Now"** button → Progress bar shows update status
+4. **Auto-reload** → Latest version loads automatically
 
 ## Development
 
