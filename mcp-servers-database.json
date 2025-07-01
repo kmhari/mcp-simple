@@ -158,7 +158,7 @@
     "githubLink": "https://github.com/eyaltoledano/claude-task-master",
     "package": "task-master-mcp",
     "description": "Comprehensive task management with projects, contexts, and advanced organization",
-    "installCommand": "npx -y task-master-ai",
+    "installCommand": "npx -y --package=task-master-ai task-master-ai",
     "requiredEnvVars": [],
     "optionalParams": [""],
     "usageInstructions": "Manage tasks with projects, contexts, priorities, due dates, and dependencies. Supports natural language input for task creation and filtering.",
@@ -184,6 +184,28 @@
     "requiredEnvVars": ["SUPABASE_ACCESS_TOKEN"],
     "optionalParams": ["PROJECT_REF"],
     "usageInstructions": "Manage Supabase projects, design tables, run SQL queries, create database branches, generate TypeScript types, and handle migrations",
+    "category": "Databases"
+  },
+  "postgres-crystal": {
+    "name": "PostgreSQL (Crystal DBA)",
+    "githubLink": "https://github.com/crystaldba/postgres-mcp",
+    "package": "postgres-mcp",
+    "description": "PostgreSQL database operations with advanced DBA capabilities",
+    "installCommand": "pip install postgres-mcp",
+    "requiredEnvVars": ["PG_CONNECTION_STRING"],
+    "optionalParams": [],
+    "usageInstructions": "Execute SQL queries, manage database schema, perform DBA operations on PostgreSQL databases. Requires a PostgreSQL connection string.",
+    "category": "Databases"
+  },
+  "qdrant": {
+    "name": "Qdrant",
+    "githubLink": "https://github.com/qdrant/mcp-server-qdrant",
+    "package": "@qdrant/mcp-server-qdrant",
+    "description": "Vector database operations for Qdrant - store and search high-dimensional vectors",
+    "installCommand": "npx -y @qdrant/mcp-server-qdrant",
+    "requiredEnvVars": ["QDRANT_URL"],
+    "optionalParams": ["QDRANT_API_KEY"],
+    "usageInstructions": "Manage collections, insert vectors, perform similarity searches, and handle vector data in Qdrant. Requires Qdrant instance URL.",
     "category": "Databases"
   },
   "skyvern": {
