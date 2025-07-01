@@ -26,27 +26,35 @@ h1 {
 .tabs {
     display: flex;
     margin-bottom: 30px;
-    border-bottom: 2px solid #e0e0e0;
+    gap: 8px;
 }
 
 .tab {
     padding: 10px 20px;
     cursor: pointer;
-    background: none;
+    background: #ececec;
     border: none;
+    border-radius: 8px;
     font-size: 16px;
     color: #666;
     transition: all 0.3s;
+    margin-right: 8px;
+    box-shadow: inset 1px 1px 1px 0 rgb(255, 255, 255), 
+                inset -1px -1px 1px 0 rgba(0, 0, 0, .15), 
+                1px 1px 2px rgba(0, 0, 0, .1);
 }
 
 .tab:hover {
     color: #2c3e50;
+    box-shadow: inset .5px .5px 1px #fff, 
+                inset -.5px -.5px 1px #00000026;
 }
 
 .tab.active {
     color: #3498db;
-    border-bottom: 2px solid #3498db;
-    margin-bottom: -2px;
+    font-weight: 600;
+    box-shadow: inset .5px .5px 1px #fff, 
+                inset -.5px -.5px 1px #00000026;
 }
 
 .tab-content {
@@ -353,16 +361,33 @@ h1 {
 
 .group-by-container select {
     padding: 6px 12px;
-    border: 1px solid #ddd;
+    border: none;
+    border-radius: 6px;
     font-size: 14px;
-    background: white;
+    background: #ececec;
     cursor: pointer;
+    box-shadow: inset .5px .5px 1px #fff, 
+                inset -.5px -.5px 1px #00000026;
+    transition: box-shadow 0.2s;
+}
+
+.group-by-container select:focus {
+    outline: none;
+    box-shadow: inset 1px 1px 2px rgba(0, 0, 0, .2);
 }
 
 .config-editor {
-    background: white;
+    background: #ececec;
     padding: 20px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border-radius: 8px;
+    box-shadow: inset 1px 1px 1px 0 rgb(255, 255, 255), 
+                inset -1px -1px 1px 0 rgba(0, 0, 0, .15), 
+                .444584px .444584px .628737px -1px rgba(0, 0, 0, .26), 
+                1.21072px 1.21072px 1.71222px -1.5px rgba(0, 0, 0, .247), 
+                2.6583px 2.6583px 3.75941px -2.25px rgba(0, 0, 0, .23), 
+                5.90083px 5.90083px 8.34503px -3px rgba(0, 0, 0, .192), 
+                10px 10px 21.2132px -3.75px rgba(0, 0, 0, .056), 
+                -.5px -.5px 0 0 rgb(0 0 0 / 5%);
 }
 
 .config-editor h3 {
@@ -374,9 +399,19 @@ h1 {
     width: 100%;
     min-height: 400px;
     padding: 10px;
-    border: 1px solid #ddd;
+    border: none;
+    border-radius: 8px;
     font-size: 14px;
     resize: vertical;
+    background: #ececec;
+    box-shadow: inset .5px .5px 1px #fff, 
+                inset -.5px -.5px 1px #00000026;
+    transition: box-shadow 0.2s;
+}
+
+.config-editor textarea:focus {
+    outline: none;
+    box-shadow: inset 1px 1px 2px rgba(0, 0, 0, .2);
 }
 
 .button-group {
@@ -394,29 +429,55 @@ h1 {
 }
 
 .btn-primary {
-    background: #3498db;
-    color: white;
+    background: #ececec;
+    color: #3498db;
+    border: none;
+    border-radius: 6px;
+    box-shadow: inset 1px 1px 1px 0 rgb(255, 255, 255), 
+                inset -1px -1px 1px 0 rgba(0, 0, 0, .15), 
+                1px 1px 2px rgba(0, 0, 0, .1);
+    transition: all 0.2s;
+    font-weight: 600;
 }
 
 .btn-primary:hover {
-    background: #2980b9;
+    box-shadow: inset .5px .5px 1px #fff, 
+                inset -.5px -.5px 1px #00000026;
 }
 
 .btn-secondary {
-    background: #95a5a6;
-    color: white;
+    background: #ececec;
+    color: #95a5a6;
+    border: none;
+    border-radius: 6px;
+    box-shadow: inset 1px 1px 1px 0 rgb(255, 255, 255), 
+                inset -1px -1px 1px 0 rgba(0, 0, 0, .15), 
+                1px 1px 2px rgba(0, 0, 0, .1);
+    transition: all 0.2s;
+    font-weight: 500;
 }
 
 .btn-secondary:hover {
-    background: #7f8c8d;
+    box-shadow: inset .5px .5px 1px #fff, 
+                inset -.5px -.5px 1px #00000026;
 }
 
 .search-box {
     width: 100%;
     padding: 12px;
-    border: 1px solid #ddd;
+    border: none;
+    border-radius: 8px;
     font-size: 16px;
     margin-bottom: 20px;
+    background: #ececec;
+    box-shadow: inset .5px .5px 1px #fff, 
+                inset -.5px -.5px 1px #00000026;
+    transition: box-shadow 0.2s;
+}
+
+.search-box:focus {
+    outline: none;
+    box-shadow: inset 1px 1px 2px rgba(0, 0, 0, .2);
 }
 
 .modal {
@@ -431,12 +492,21 @@ h1 {
 }
 
 .modal-content {
-    background: white;
+    background: #ececec;
     width: 90%;
     max-width: 500px;
     margin: 50px auto;
     padding: 30px;
     position: relative;
+    border-radius: 12px;
+    box-shadow: inset 1px 1px 1px 0 rgb(255, 255, 255), 
+                inset -1px -1px 1px 0 rgba(0, 0, 0, .15), 
+                .444584px .444584px .628737px -1px rgba(0, 0, 0, .26), 
+                1.21072px 1.21072px 1.71222px -1.5px rgba(0, 0, 0, .247), 
+                2.6583px 2.6583px 3.75941px -2.25px rgba(0, 0, 0, .23), 
+                5.90083px 5.90083px 8.34503px -3px rgba(0, 0, 0, .192), 
+                10px 10px 21.2132px -3.75px rgba(0, 0, 0, .056), 
+                -.5px -.5px 0 0 rgb(0 0 0 / 5%);
 }
 
 .modal-close {
@@ -466,8 +536,18 @@ h1 {
 .form-group input {
     width: 100%;
     padding: 8px 12px;
-    border: 1px solid #ddd;
+    border: none;
+    border-radius: 6px;
     font-size: 14px;
+    background: #ececec;
+    box-shadow: inset .5px .5px 1px #fff, 
+                inset -.5px -.5px 1px #00000026;
+    transition: box-shadow 0.2s;
+}
+
+.form-group input:focus {
+    outline: none;
+    box-shadow: inset 1px 1px 2px rgba(0, 0, 0, .2);
 }
 
 .form-group small {
@@ -496,9 +576,17 @@ h1 {
 }
 
 .current-servers {
-    background: white;
+    background: #ececec;
     padding: 20px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border-radius: 8px;
+    box-shadow: inset 1px 1px 1px 0 rgb(255, 255, 255), 
+                inset -1px -1px 1px 0 rgba(0, 0, 0, .15), 
+                .444584px .444584px .628737px -1px rgba(0, 0, 0, .26), 
+                1.21072px 1.21072px 1.71222px -1.5px rgba(0, 0, 0, .247), 
+                2.6583px 2.6583px 3.75941px -2.25px rgba(0, 0, 0, .23), 
+                5.90083px 5.90083px 8.34503px -3px rgba(0, 0, 0, .192), 
+                10px 10px 21.2132px -3.75px rgba(0, 0, 0, .056), 
+                -.5px -.5px 0 0 rgb(0 0 0 / 5%);
     margin-bottom: 30px;
 }
 
@@ -534,35 +622,57 @@ h1 {
 }
 
 .btn-edit {
-    background: #3498db;
-    color: white;
+    background: #ececec;
+    color: #3498db;
     border: none;
+    border-radius: 6px;
     padding: 6px 12px;
     cursor: pointer;
     font-size: 14px;
+    font-weight: 600;
+    box-shadow: inset 1px 1px 1px 0 rgb(255, 255, 255), 
+                inset -1px -1px 1px 0 rgba(0, 0, 0, .15), 
+                1px 1px 2px rgba(0, 0, 0, .1);
+    transition: all 0.2s;
 }
 
 .btn-edit:hover {
-    background: #2980b9;
+    box-shadow: inset .5px .5px 1px #fff, 
+                inset -.5px -.5px 1px #00000026;
 }
 
 .btn-remove {
-    background: #e74c3c;
-    color: white;
+    background: #ececec;
+    color: #e74c3c;
     border: none;
+    border-radius: 6px;
     padding: 6px 12px;
     cursor: pointer;
     font-size: 14px;
+    font-weight: 600;
+    box-shadow: inset 1px 1px 1px 0 rgb(255, 255, 255), 
+                inset -1px -1px 1px 0 rgba(0, 0, 0, .15), 
+                1px 1px 2px rgba(0, 0, 0, .1);
+    transition: all 0.2s;
 }
 
 .btn-remove:hover {
-    background: #c0392b;
+    box-shadow: inset .5px .5px 1px #fff, 
+                inset -.5px -.5px 1px #00000026;
 }
 
 .variables-container {
-    background: white;
+    background: #ececec;
     padding: 20px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border-radius: 8px;
+    box-shadow: inset 1px 1px 1px 0 rgb(255, 255, 255), 
+                inset -1px -1px 1px 0 rgba(0, 0, 0, .15), 
+                .444584px .444584px .628737px -1px rgba(0, 0, 0, .26), 
+                1.21072px 1.21072px 1.71222px -1.5px rgba(0, 0, 0, .247), 
+                2.6583px 2.6583px 3.75941px -2.25px rgba(0, 0, 0, .23), 
+                5.90083px 5.90083px 8.34503px -3px rgba(0, 0, 0, .192), 
+                10px 10px 21.2132px -3.75px rgba(0, 0, 0, .056), 
+                -.5px -.5px 0 0 rgb(0 0 0 / 5%);
 }
 
 .variables-description {
@@ -576,10 +686,19 @@ h1 {
 }
 
 .variable-item {
-    background: #f8f9fa;
-    border: 1px solid #dee2e6;
+    background: #ececec;
+    border: none;
+    border-radius: 8px;
     padding: 15px;
     margin-bottom: 15px;
+    box-shadow: inset .5px .5px 1px #fff, 
+                inset -.5px -.5px 1px #00000026, 
+                .222px .222px .314px -.5px #0003, 
+                .605px .605px .856px -1px #0000002e, 
+                1.329px 1.329px 1.88px -1.5px #00000040, 
+                2.95px 2.95px 4.172px -2px #0000001a, 
+                2.5px 2.5px 3px -2.5px #00000026, 
+                -.5px -.5px 0 0 rgb(0 0 0 / 10%);
 }
 
 .variable-name {
@@ -592,9 +711,19 @@ h1 {
 .variable-input {
     width: 100%;
     padding: 8px 12px;
-    border: 1px solid #ddd;
+    border: none;
+    border-radius: 6px;
     font-size: 14px;
     margin-bottom: 8px;
+    background: #ececec;
+    box-shadow: inset .5px .5px 1px #fff, 
+                inset -.5px -.5px 1px #00000026;
+    transition: box-shadow 0.2s;
+}
+
+.variable-input:focus {
+    outline: none;
+    box-shadow: inset 1px 1px 2px rgba(0, 0, 0, .2);
 }
 
 .variable-usage {
@@ -628,15 +757,20 @@ h1 {
     right: 4px;
     top: 50%;
     transform: translateY(-50%);
-    background: #e0e0e0;
+    background: #ececec;
     border: none;
+    border-radius: 4px;
     padding: 4px 8px;
     cursor: pointer;
     font-size: 12px;
     color: #555;
-    transition: background 0.3s;
+    transition: all 0.2s;
+    box-shadow: inset 1px 1px 1px 0 rgb(255, 255, 255), 
+                inset -1px -1px 1px 0 rgba(0, 0, 0, .15), 
+                1px 1px 2px rgba(0, 0, 0, .1);
 }
 
 .btn-env-fetch:hover {
-    background: #d0d0d0;
+    box-shadow: inset .5px .5px 1px #fff, 
+                inset -.5px -.5px 1px #00000026;
 }
