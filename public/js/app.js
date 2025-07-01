@@ -154,7 +154,8 @@ function displayServersFlat(servers, grid) {
                 <div class="button-container">
                     ${isInstalled ? 
                         `<button class="btn-installed" disabled>Installed</button>
-                         <button class="btn-configure" onclick="configureServer('${key}')">Reconfigure</button>` :
+                         <button class="btn-configure" onclick="configureServer('${key}')">Reconfigure</button>
+                         <button class="btn-uninstall" onclick="uninstallServer('${key}')">Uninstall</button>` :
                         `<button class="btn-configure" onclick="configureServer('${key}')">Configure</button>
                          ${!requiresConfig ? 
                             `<button onclick="quickInstallServer('${key}')">Install</button>` : ''
@@ -219,7 +220,8 @@ function displayServersByCategory(servers, grid) {
                     <div class="button-container">
                         ${isInstalled ? 
                             `<button class="btn-installed" disabled>Installed</button>
-                             <button class="btn-configure" onclick="configureServer('${key}')">Reconfigure</button>` :
+                             <button class="btn-configure" onclick="configureServer('${key}')">Reconfigure</button>
+                             <button class="btn-uninstall" onclick="uninstallServer('${key}')">Uninstall</button>` :
                             `<button class="btn-configure" onclick="configureServer('${key}')">Configure</button>
                              ${!requiresConfig ? 
                                 `<button onclick="quickInstallServer('${key}')">Install</button>` : ''
@@ -546,6 +548,42 @@ function removeServer(name) {
                 showMessage(`Removed "${name}" successfully`, 'success');
                 updateCurrentServers();
                 document.getElementById('configEditor').value = JSON.stringify(currentConfig, null, 2);
+                displayServers(); // Re-display to update installation status
+            } else {
+                throw new Error('Failed to save configuration');
+            }
+        }).catch(error => {
+            showMessage(error.message, 'error');
+        });
+    }
+}
+
+function uninstallServer(key) {
+    const server = preConfiguredServers[key];
+    if (confirm(`Are you sure you want to uninstall ${server.name}?`)) {
+        // Check if server exists with exact key match
+        if (currentConfig.mcpServers[key]) {
+            delete currentConfig.mcpServers[key];
+        } else {
+            // If not found by key, search by matching command
+            Object.entries(currentConfig.mcpServers).forEach(([name, config]) => {
+                const installedCommand = config.command + " " + config.args.join(" ");
+                if (installedCommand === server.installCommand) {
+                    delete currentConfig.mcpServers[name];
+                }
+            });
+        }
+        
+        fetch('/api/config', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(currentConfig)
+        }).then(response => {
+            if (response.ok) {
+                showMessage(`Uninstalled ${server.name} successfully`, 'success');
+                updateCurrentServers();
+                document.getElementById('configEditor').value = JSON.stringify(currentConfig, null, 2);
+                displayServers(); // Re-display to update installation status
             } else {
                 throw new Error('Failed to save configuration');
             }
@@ -1072,8 +1110,9 @@ async function fetchFromEnv(varName) {
     }
 }
 
-// Make fetchFromEnv globally available
+// Make functions globally available
 window.fetchFromEnv = fetchFromEnv;
+window.uninstallServer = uninstallServer;
 
 // Initialize on load
 document.addEventListener('DOMContentLoaded', () => {

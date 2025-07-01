@@ -5,7 +5,7 @@
 }
 
 body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    font-family: 'JetBrains Mono', monospace;
     background-color: #f4f4f4;
     color: #333;
     line-height: 1.6;
@@ -324,6 +324,16 @@ h1 {
                 inset -.5px -.5px 1px #00000026 !important;
 }
 
+.btn-uninstall {
+    background: #f4f4f4 !important;
+    color: #ef4444 !important;
+    font-weight: 500;
+}
+
+.btn-uninstall:hover {
+    color: #dc2626 !important;
+}
+
 .group-by-container {
     display: flex;
     align-items: center;
@@ -355,7 +365,6 @@ h1 {
     min-height: 400px;
     padding: 10px;
     border: 1px solid #ddd;
-    font-family: 'Courier New', monospace;
     font-size: 14px;
     resize: vertical;
 }
@@ -507,7 +516,6 @@ h1 {
 .server-info .details {
     font-size: 12px;
     color: #666;
-    font-family: 'Courier New', monospace;
 }
 
 .server-actions {
@@ -569,7 +577,6 @@ h1 {
     color: #2c3e50;
     margin-bottom: 8px;
     font-size: 16px;
-    font-family: 'Courier New', monospace;
 }
 
 .variable-input {
@@ -577,7 +584,6 @@ h1 {
     padding: 8px 12px;
     border: 1px solid #ddd;
     font-size: 14px;
-    font-family: 'Courier New', monospace;
     margin-bottom: 8px;
 }
 
