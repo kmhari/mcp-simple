@@ -4,8 +4,8 @@ Modern web interface and CLI tool for managing MCP (Model Context Protocol) serv
 
 ## 🌐 Web Interface Preview
 
-### Modern Neumorphic Design
-The web interface features a beautiful neumorphic design with JetBrains Mono font, providing a modern and professional look:
+### Modern Design
+The web interface features a beautiful modern design with JetBrains Mono font, providing a clean and professional look:
 
 ![Web Interface Overview](screenshots/web-interface-main.png)
 
@@ -125,7 +125,7 @@ npx @oglabs/mcp
 - **📝 Direct Config Editing**: Edit `.mcp.json` files directly in the browser
 - **🔍 Advanced Search**: Filter servers by name, category, or description
 - **📱 Responsive Design**: Works on desktop, tablet, and mobile devices
-- **🎨 Modern UI**: Neumorphic design with JetBrains Mono font throughout
+- **🎨 Modern UI**: Clean design with JetBrains Mono font throughout
 
 #### 🎯 Supafast Servers (No Setup Required):
 - **S1-S7**: Core tools (Everything, Fetch, Filesystem, Git, Memory, Sequential Thinking, Time)
@@ -167,7 +167,7 @@ Version Check → Update Available → Mandatory Modal → Progress Bar → Auto
 ## Features
 
 ### 🌐 Web Mode (Recommended)
-- 🎨 **Modern Neumorphic Design**: Beautiful depth-based UI with soft shadows and JetBrains Mono font
+- 🎨 **Modern Design**: Beautiful depth-based UI with soft shadows and JetBrains Mono font
 - 📱 **Fully Responsive**: Optimized for desktop, tablet, and mobile devices
 - 🖱️ **Interactive Server Cards**: Click any card to install, hover for animations
 - ⚡ **Instant Installation**: Supafast servers (S1-S14) install with zero configuration
