@@ -339,5 +339,82 @@
     "optionalParams": ["--toolsets", "--read-only", "--gh-host", "--dynamic-toolsets"],
     "usageInstructions": "Access GitHub APIs through MCP for repository management, issues, pull requests, actions, and more. Requires Docker and a GitHub Personal Access Token.",
     "category": "Development Tools"
+  },
+  "firecrawl": {
+    "name": "Firecrawl",
+    "githubLink": "https://github.com/mendableai/firecrawl-mcp-server",
+    "package": "firecrawl-mcp-server",
+    "description": "Advanced web scraping and crawling with intelligent content extraction and data processing",
+    "installCommand": "npx -y firecrawl-mcp-server",
+    "requiredEnvVars": ["FIRECRAWL_API_KEY"],
+    "optionalParams": ["MAX_PAGES", "TIMEOUT", "INCLUDE_HTML", "INCLUDE_RAW_HTML"],
+    "usageInstructions": "Crawl websites, extract structured data, and process web content at scale. Supports intelligent content extraction with configurable crawling parameters.",
+    "category": "Web Scraping"
+  },
+  "google-maps": {
+    "name": "Google Maps",
+    "githubLink": "https://github.com/modelcontextprotocol/servers/tree/main/src/google-maps",
+    "package": "@modelcontextprotocol/server-google-maps",
+    "description": "Google Maps integration for location services, directions, and place information",
+    "installCommand": "npx -y @modelcontextprotocol/server-google-maps",
+    "requiredEnvVars": ["GOOGLE_MAPS_API_KEY"],
+    "optionalParams": ["DEFAULT_LOCATION", "SEARCH_RADIUS", "LANGUAGE"],
+    "usageInstructions": "Search places, get directions, geocode addresses, and access Google Maps services. Requires Google Maps API key with appropriate services enabled.",
+    "category": "Location Services"
+  },
+  "apple-mcp": {
+    "name": "Apple MCP",
+    "githubLink": "https://github.com/supermemoryai/apple-mcp",
+    "package": "apple-mcp",
+    "description": "Apple ecosystem integration for accessing iOS/macOS system information and device management",
+    "installCommand": "pip install apple-mcp",
+    "requiredEnvVars": [],
+    "optionalParams": ["DEVICE_ID", "BUNDLE_ID", "SYSTEM_INTEGRATION_LEVEL"],
+    "usageInstructions": "Access Apple device information, system status, and integrate with iOS/macOS applications. Provides device management and system monitoring capabilities.",
+    "category": "System Integration"
+  },
+  "mindsdb": {
+    "name": "MindsDB",
+    "githubLink": "https://github.com/mindsdb/mindsdb",
+    "package": "mindsdb",
+    "description": "AI query engine for federated data sources with built-in MCP server for database and ML operations",
+    "installCommand": "pip install mindsdb",
+    "requiredEnvVars": [],
+    "optionalParams": ["MINDSDB_DB_CON", "MINDSDB_STORAGE_PATH", "MINDSDB_CONFIG_PATH"],
+    "usageInstructions": "Connect multiple data sources (SQL databases, APIs, files) and query them with natural language. Includes ML capabilities and predictive analytics.",
+    "category": "AI & Machine Learning"
+  },
+  "fastmcp": {
+    "name": "FastMCP",
+    "githubLink": "https://github.com/jlowin/fastmcp",
+    "package": "fastmcp",
+    "description": "Python framework for rapidly building MCP servers and clients with simplified development workflow",
+    "installCommand": "uv pip install fastmcp",
+    "requiredEnvVars": [],
+    "optionalParams": ["SERVER_NAME", "DEBUG", "LOG_LEVEL"],
+    "usageInstructions": "Build custom MCP servers quickly using Python. Provides scaffolding, decorators, and utilities for MCP development.",
+    "category": "Development Tools"
+  },
+  "figma-context": {
+    "name": "Figma Context MCP",
+    "githubLink": "https://github.com/GLips/Figma-Context-MCP",
+    "package": "figma-developer-mcp",
+    "description": "Provides Figma design data and context to AI coding tools for design-to-code workflows",
+    "installCommand": "npx -y figma-developer-mcp",
+    "requiredEnvVars": ["FIGMA_API_KEY"],
+    "optionalParams": ["PORT"],
+    "usageInstructions": "Access Figma files, frames, and design tokens to enhance AI-powered code generation. Requires Figma API access token.",
+    "category": "Design Tools"
+  },
+  "ghidra-mcp": {
+    "name": "Ghidra MCP",
+    "githubLink": "https://github.com/LaurieWired/GhidraMCP",
+    "package": null,
+    "description": "MCP server for autonomous reverse engineering with Ghidra - enables AI-powered binary analysis",
+    "installCommand": "git clone https://github.com/LaurieWired/GhidraMCP.git && cd GhidraMCP && python3 -m pip install mcp",
+    "requiredEnvVars": [],
+    "optionalParams": ["GHIDRA_HOST", "GHIDRA_PORT"],
+    "usageInstructions": "Perform automated reverse engineering and binary analysis using Ghidra with AI assistance. Requires Ghidra installation and manual setup.",
+    "category": "Security"
   }
 }
