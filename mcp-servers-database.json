@@ -416,5 +416,71 @@
     "optionalParams": ["GHIDRA_HOST", "GHIDRA_PORT"],
     "usageInstructions": "Perform automated reverse engineering and binary analysis using Ghidra with AI assistance. Requires Ghidra installation and manual setup.",
     "category": "Security"
+  },
+  "notion": {
+    "name": "Notion",
+    "githubLink": "https://github.com/makenotion/notion-mcp-server",
+    "package": "@makenotion/notion-mcp-server",
+    "description": "Official Notion MCP server for comprehensive workspace and database management",
+    "installCommand": "npx -y @makenotion/notion-mcp-server",
+    "requiredEnvVars": ["NOTION_API_KEY"],
+    "optionalParams": ["NOTION_DATABASE_ID"],
+    "usageInstructions": "Access Notion pages, databases, and blocks. Create, read, update content in your Notion workspace. Requires Notion integration API key.",
+    "category": "Productivity"
+  },
+  "obsidian-advanced": {
+    "name": "Obsidian (Advanced)",
+    "githubLink": "https://github.com/cyanheads/obsidian-mcp-server",
+    "package": "obsidian-mcp-server",
+    "description": "Comprehensive Obsidian vault interactions via Local REST API with advanced note management",
+    "installCommand": "uvx obsidian-mcp-server",
+    "requiredEnvVars": ["OBSIDIAN_API_URL", "OBSIDIAN_API_KEY"],
+    "optionalParams": ["VAULT_PATH", "TIMEOUT"],
+    "usageInstructions": "Advanced Obsidian operations including note reading/writing, tag management, frontmatter operations, and graph navigation. Requires Obsidian Local REST API plugin.",
+    "category": "Knowledge Management"
+  },
+  "git-advanced": {
+    "name": "Git (Advanced)",
+    "githubLink": "https://github.com/cyanheads/git-mcp-server",
+    "package": "git-mcp-server",
+    "description": "Comprehensive Git operations with clone, commit, branch, merge, rebase, and worktree support",
+    "installCommand": "uvx git-mcp-server",
+    "requiredEnvVars": [],
+    "optionalParams": ["GIT_USER_NAME", "GIT_USER_EMAIL", "DEFAULT_BRANCH"],
+    "usageInstructions": "Full Git workflow support including advanced operations like interactive rebase, worktree management, tag operations, and repository cloning.",
+    "category": "Version Control"
+  },
+  "npm-docs": {
+    "name": "NPM Documentation",
+    "githubLink": "https://github.com/bsmi021/mcp-npm_docs-server",
+    "package": "mcp-npm-docs-server",
+    "description": "Fetches NPM package metadata and documentation with intelligent caching",
+    "installCommand": "uvx mcp-npm-docs-server",
+    "requiredEnvVars": [],
+    "optionalParams": ["NPM_CACHE_TTL", "NPM_CACHE_DB_PATH"],
+    "usageInstructions": "Retrieve package information, README content, and documentation from NPM registry with local caching for performance.",
+    "category": "Development Tools"
+  },
+  "npm-search": {
+    "name": "NPM Search",
+    "githubLink": "https://github.com/btwiuse/npm-search-mcp-server",
+    "package": "npm-search-mcp-server",
+    "description": "Search and discover NPM packages with dependency analysis and popularity metrics",
+    "installCommand": "uvx npm-search-mcp-server",
+    "requiredEnvVars": [],
+    "optionalParams": ["SEARCH_LIMIT", "CACHE_DURATION"],
+    "usageInstructions": "Search NPM registry, analyze package dependencies, view popularity metrics, and discover related packages.",
+    "category": "Development Tools"
+  },
+  "docker": {
+    "name": "Docker",
+    "githubLink": "https://github.com/docker/mcp-servers",
+    "package": null,
+    "description": "Secure code execution in Docker containers for AI development workflows",
+    "installCommand": "docker pull docker/mcp-server && docker run -d docker/mcp-server",
+    "requiredEnvVars": ["DOCKER_HOST"],
+    "optionalParams": ["DOCKER_CERT_PATH", "DOCKER_TLS_VERIFY"],
+    "usageInstructions": "Execute code securely in isolated Docker containers, manage containers and images, enable sandboxed AI operations.",
+    "category": "DevOps"
   }
 }
