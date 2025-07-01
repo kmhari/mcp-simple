@@ -1,6 +1,7 @@
 let currentConfig = { mcpServers: {} };
 let preConfiguredServers = {};
 let savedVariables = {};
+let starsData = {};
 
 function findCardElement(serverKey) {
     // Find the card element for the given server key
@@ -21,6 +22,7 @@ function findCardElement(serverKey) {
 async function init() {
     await loadConfig();
     await loadServers();
+    await loadStarsData();
     await loadVariables();
     updateCurrentServers();
     
@@ -35,6 +37,21 @@ async function loadServers() {
         displayServers();
     } catch (error) {
         showMessage('Failed to load servers', 'error');
+    }
+}
+
+async function loadStarsData() {
+    try {
+        const response = await fetch('/mcp-servers-with-stars.json');
+        starsData = await response.json();
+        console.log('Stars data loaded:', Object.keys(starsData).length, 'servers');
+        // Re-display servers to show stars after loading
+        if (Object.keys(preConfiguredServers).length > 0) {
+            displayServers();
+        }
+    } catch (error) {
+        console.log('Stars data not available:', error.message);
+        starsData = {};
     }
 }
 
@@ -94,6 +111,8 @@ function displayServers(servers = preConfiguredServers) {
     
     if (currentGroupBy === 'category') {
         displayServersByCategory(servers, grid);
+    } else if (currentGroupBy === 'stars') {
+        displayServersByStars(servers, grid);
     } else {
         displayServersFlat(servers, grid);
     }
@@ -164,9 +183,25 @@ function displayServersFlat(servers, grid) {
             card.setAttribute('data-selected', '');
         }
         
+        // Get stars info for this server
+        const serverStars = starsData[key];
+        const formatStars = (count) => {
+            if (count >= 1000) {
+                return (count / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
+            }
+            return count.toString();
+        };
+        
+        const starsDisplay = serverStars && serverStars.github && serverStars.github.stars !== undefined
+            ? `<div class="stars-info">⭐ ${formatStars(serverStars.github.stars)}</div>`
+            : '';
+
         card.innerHTML = `
             <div>
-                <h3>${server.name}</h3>
+                <div class="card-header">
+                    <h3>${server.name}</h3>
+                    ${starsDisplay}
+                </div>
                 <p class="description">${server.description}</p>
             </div>
             <div class="card-footer">
@@ -257,10 +292,17 @@ function displayServersByCategory(servers, grid) {
                 card.setAttribute('data-selected', '');
             }
             
+            // Get stars info for this server
+            const serverStars = starsData[key];
+            const starsDisplay = serverStars && serverStars.github && serverStars.github.stars !== undefined
+                ? `<div class="stars-info">⭐ ${serverStars.github.stars.toLocaleString()}</div>`
+                : '';
+
             card.innerHTML = `
                 <div>
                     <h3>${server.name}</h3>
                     <p class="description">${server.description}</p>
+                    ${starsDisplay}
                 </div>
                 <div class="card-footer">
                     <div class="button-container">
@@ -298,6 +340,106 @@ function displayServersByCategory(servers, grid) {
         categorySection.innerHTML += '</div>';
         grid.appendChild(categorySection);
     });
+    
+    // Clean up any lingering animation classes
+    setTimeout(() => {
+        const cards = document.querySelectorAll('.server-card');
+        cards.forEach(card => {
+            card.classList.remove('installing', 'uninstalling');
+            const indicator = card.querySelector('.status-indicator');
+            if (indicator) {
+                indicator.classList.remove('installing', 'uninstalling');
+            }
+        });
+    }, 100);
+}
+
+function displayServersByStars(servers, grid) {
+    // Convert servers object to array and sort by stars
+    const serversArray = Object.entries(servers).map(([key, server]) => ({
+        key,
+        server,
+        stars: (starsData[key] && starsData[key].github && starsData[key].github.stars) || 0
+    }));
+    
+    // Sort by stars (descending)
+    serversArray.sort((a, b) => b.stars - a.stars);
+    
+    // Create a single container for all servers
+    const container = document.createElement('div');
+    container.className = 'category-grid';
+    container.style.marginTop = '0';
+    
+    // Add sorted servers
+    serversArray.forEach(({ key, server }) => {
+        const card = document.createElement('div');
+        card.className = 'server-card';
+        
+        // Check if server is already installed
+        const isInstalled = isServerInstalled(key, server);
+        // Check if server requires configuration
+        const requiresConfig = server.requiredEnvVars && server.requiredEnvVars.length > 0;
+        
+        // Add data-selected attribute if installed
+        if (isInstalled) {
+            card.setAttribute('data-selected', '');
+        }
+        
+        // Get stars info for this server
+        const serverStars = starsData[key];
+        const formatStars = (count) => {
+            if (count >= 1000) {
+                return (count / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
+            }
+            return count.toString();
+        };
+        
+        const starsDisplay = serverStars && serverStars.github && serverStars.github.stars !== undefined
+            ? `<div class="stars-info">⭐ ${formatStars(serverStars.github.stars)}</div>`
+            : '';
+
+        card.innerHTML = `
+            <div>
+                <div class="card-header">
+                    <h3>${server.name}</h3>
+                    ${starsDisplay}
+                </div>
+                <p class="description">${server.description}</p>
+            </div>
+            <div class="card-footer">
+                <div class="button-container">
+                    ${isInstalled ? 
+                        `<button class="btn-configure" onclick="configureServer('${key}')">Reconfigure</button>
+                         <button class="btn-uninstall" onclick="uninstallServer('${key}')">Remove</button>` :
+                        `<button class="btn-configure" onclick="configureServer('${key}')">Configure</button>
+                         ${!requiresConfig ? 
+                            `<button onclick="quickInstallServer('${key}')">Install</button>` : ''
+                         }`
+                    }
+                </div>
+                <div class="status-indicator ${isInstalled ? 'installed' : ''}"></div>
+            </div>
+        `;
+        
+        // Add click handler for direct installation/uninstallation
+        if (!requiresConfig) {
+            card.style.cursor = 'pointer';
+            card.addEventListener('click', (e) => {
+                // Don't trigger if clicking on buttons
+                if (!e.target.closest('button')) {
+                    if (isInstalled) {
+                        uninstallServer(key, true);
+                    } else {
+                        quickInstallServer(key);
+                    }
+                }
+            });
+        }
+        
+        container.appendChild(card);
+    });
+    
+    grid.appendChild(container);
     
     // Clean up any lingering animation classes
     setTimeout(() => {
