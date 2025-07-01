@@ -1,6 +1,6 @@
 # MCP Manager
 
-Interactive CLI tool for managing MCP (Model Context Protocol) server configurations.
+Modern web interface and CLI tool for managing MCP (Model Context Protocol) server configurations.
 
 ![MCP Manager Web Interface](screenshots/mcp-web-interface.png)
 
@@ -88,23 +88,9 @@ npm install @oglabs/mcp
 
 ## Usage
 
-### Interactive CLI Mode
+### 🌐 Web Interface Mode (Recommended)
 
-After global installation, you can run the tool from anywhere:
-
-```bash
-@oglabs/mcp
-```
-
-Or if installed locally:
-
-```bash
-npx @oglabs/mcp
-```
-
-### Web Interface Mode
-
-Launch the web interface for a modern, visual experience:
+Launch the modern web interface for the best experience:
 
 ```bash
 @oglabs/mcp --web
@@ -117,6 +103,20 @@ npx @oglabs/mcp --web
 ```
 
 The web interface automatically opens in your default browser at `http://localhost:3333` and provides:
+
+### 🖥️ Interactive CLI Mode
+
+For traditional command-line usage:
+
+```bash
+@oglabs/mcp
+```
+
+Or if installed locally:
+
+```bash
+npx @oglabs/mcp
+```
 
 #### 🚀 Key Features:
 - **⚡ Supafast Installation**: 14 servers (S1-S14) can be installed instantly without configuration
@@ -168,18 +168,7 @@ Version Check → Update Available → Mandatory Modal → Progress Bar → Auto
 
 ## Features
 
-### 🖥️ CLI Mode
-- 📋 Interactive menu-driven interface
-- ⚡ **Supafast installation** (S1-S14 servers with zero configuration)
-- 🔧 26+ pre-configured MCP servers
-- ➕ Add custom MCP servers
-- ✏️ Edit existing servers
-- ❌ Remove servers
-- 📄 View current configuration
-- 🔍 Search MCP servers
-- 🎯 Automatic `.mcp.json` file management
-
-### 🌐 Web Mode
+### 🌐 Web Mode (Recommended)
 - 🎨 **Modern Neumorphic Design**: Beautiful depth-based UI with soft shadows and JetBrains Mono font
 - 📱 **Fully Responsive**: Optimized for desktop, tablet, and mobile devices
 - 🖱️ **Interactive Server Cards**: Click any card to install, hover for animations
@@ -192,9 +181,20 @@ Version Check → Update Available → Mandatory Modal → Progress Bar → Auto
 - 🚀 **Auto-Update System**: Mandatory updates with progress tracking
 - 🎨 **Smooth Animations**: Card interactions with CSS transitions and transforms
 
+### 🖥️ CLI Mode
+- 📋 Interactive menu-driven interface
+- ⚡ **Supafast installation** (S1-S14 servers with zero configuration)
+- 🔧 35+ pre-configured MCP servers
+- ➕ Add custom MCP servers
+- ✏️ Edit existing servers
+- ❌ Remove servers
+- 📄 View current configuration
+- 🔍 Search MCP servers
+- 🎯 Automatic `.mcp.json` file management
+
 ## Pre-configured Servers
 
-MCP Manager comes with 26+ verified pre-configured MCP servers including:
+MCP Manager comes with 35+ verified pre-configured MCP servers including:
 
 - **🗄️ Databases**: Supabase, PostgreSQL, Redis, SQLite
 - **🛠️ Development Tools**: Git, Playwright, Xcode Build, PR Reviewer, NixOS
@@ -224,25 +224,6 @@ MCP Manager manages `.mcp.json` files in your current working directory. The con
 ```
 
 ## Examples
-
-### 🖥️ CLI Mode Examples
-
-#### Adding a Pre-configured Server
-1. Run `@oglabs/mcp`
-2. Select "Add a pre-configured MCP server"
-3. Choose from the list (e.g., "PostgreSQL")
-4. Follow the prompts for any required configuration
-
-#### Adding a Custom Server
-1. Run `@oglabs/mcp`
-2. Select "Add a custom MCP server"
-3. Enter the server name, command, and arguments
-4. Optionally add environment variables
-
-#### Removing a Server
-1. Run `@oglabs/mcp`
-2. Select "Remove an MCP server"
-3. Choose the server to remove
 
 ### 🌐 Web Interface Examples
 
@@ -276,6 +257,25 @@ MCP Manager manages `.mcp.json` files in your current working directory. The con
 2. **Mandatory update modal** → Cannot be closed if update required
 3. **"Update Now"** button → Progress bar shows update status
 4. **Auto-reload** → Latest version loads automatically
+
+### 🖥️ CLI Mode Examples
+
+#### Adding a Pre-configured Server
+1. Run `@oglabs/mcp`
+2. Select "Add a pre-configured MCP server"
+3. Choose from the list (e.g., "PostgreSQL")
+4. Follow the prompts for any required configuration
+
+#### Adding a Custom Server
+1. Run `@oglabs/mcp`
+2. Select "Add a custom MCP server"
+3. Enter the server name, command, and arguments
+4. Optionally add environment variables
+
+#### Removing a Server
+1. Run `@oglabs/mcp`
+2. Select "Remove an MCP server"
+3. Choose the server to remove
 
 ## Development
 
