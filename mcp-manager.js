@@ -595,6 +595,21 @@ class MCPManager {
         }
     }
 
+    compareVersions(version1, version2) {
+        const v1Parts = version1.split('.').map(Number);
+        const v2Parts = version2.split('.').map(Number);
+        
+        for (let i = 0; i < Math.max(v1Parts.length, v2Parts.length); i++) {
+            const v1Part = v1Parts[i] || 0;
+            const v2Part = v2Parts[i] || 0;
+            
+            if (v1Part > v2Part) return 1;
+            if (v1Part < v2Part) return -1;
+        }
+        
+        return 0;
+    }
+
     startWebServer() {
         const express = require('express');
         const app = express();
@@ -694,6 +709,105 @@ class MCPManager {
             } catch (error) {
                 console.error('Error reading .env file:', error);
                 res.json({ exists: false, variables: {} });
+            }
+        });
+        
+        // Check for updates endpoint
+        app.get('/api/version-check', async (req, res) => {
+            try {
+                const packageJson = JSON.parse(fs.readFileSync(path.join(__dirname, 'package.json'), 'utf8'));
+                const currentVersion = packageJson.version;
+                const packageName = packageJson.name;
+                
+                // Fetch latest version from npm
+                const https = require('https');
+                const npmUrl = `https://registry.npmjs.org/${packageName}/latest`;
+                
+                https.get(npmUrl, (npmRes) => {
+                    let data = '';
+                    npmRes.on('data', chunk => data += chunk);
+                    npmRes.on('end', () => {
+                        try {
+                            const npmData = JSON.parse(data);
+                            const latestVersion = npmData.version;
+                            
+                            const needsUpdate = this.compareVersions(latestVersion, currentVersion) > 0;
+                            
+                            res.json({
+                                currentVersion,
+                                latestVersion,
+                                needsUpdate,
+                                packageName,
+                                isMandatory: needsUpdate // For now, all updates are mandatory
+                            });
+                        } catch (parseError) {
+                            console.error('Error parsing npm response:', parseError);
+                            res.status(500).json({ error: 'Failed to parse npm response' });
+                        }
+                    });
+                }).on('error', (error) => {
+                    console.error('Error fetching npm data:', error);
+                    res.status(500).json({ error: 'Failed to fetch version info' });
+                });
+            } catch (error) {
+                console.error('Error in version check:', error);
+                res.status(500).json({ error: 'Failed to check version' });
+            }
+        });
+        
+        // Auto-update endpoint
+        app.post('/api/auto-update', (req, res) => {
+            try {
+                const packageJson = JSON.parse(fs.readFileSync(path.join(__dirname, 'package.json'), 'utf8'));
+                const packageName = packageJson.name;
+                
+                // Execute npm update command
+                const { spawn } = require('child_process');
+                const updateProcess = spawn('npm', ['install', '-g', `${packageName}@latest`], {
+                    stdio: 'pipe'
+                });
+                
+                let output = '';
+                let errorOutput = '';
+                
+                updateProcess.stdout.on('data', (data) => {
+                    output += data.toString();
+                });
+                
+                updateProcess.stderr.on('data', (data) => {
+                    errorOutput += data.toString();
+                });
+                
+                updateProcess.on('close', (code) => {
+                    if (code === 0) {
+                        res.json({ 
+                            success: true, 
+                            message: 'Update completed successfully. Please restart the application.',
+                            output: output
+                        });
+                    } else {
+                        res.status(500).json({ 
+                            success: false, 
+                            message: 'Update failed', 
+                            error: errorOutput 
+                        });
+                    }
+                });
+                
+                updateProcess.on('error', (error) => {
+                    res.status(500).json({ 
+                        success: false, 
+                        message: 'Failed to start update process', 
+                        error: error.message 
+                    });
+                });
+                
+            } catch (error) {
+                res.status(500).json({ 
+                    success: false, 
+                    message: 'Update initiation failed', 
+                    error: error.message 
+                });
             }
         });
         

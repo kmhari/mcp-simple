@@ -2,11 +2,30 @@ let currentConfig = { mcpServers: {} };
 let preConfiguredServers = {};
 let savedVariables = {};
 
+function findCardElement(serverKey) {
+    // Find the card element for the given server key
+    const cards = document.querySelectorAll('.server-card');
+    for (const card of cards) {
+        const h3 = card.querySelector('h3');
+        if (h3) {
+            // Check if this card corresponds to our server
+            const server = preConfiguredServers[serverKey];
+            if (server && h3.textContent.trim() === server.name) {
+                return card;
+            }
+        }
+    }
+    return null;
+}
+
 async function init() {
     await loadConfig();
     await loadServers();
     await loadVariables();
     updateCurrentServers();
+    
+    // Check for updates after a short delay
+    setTimeout(checkForUpdates, 2000);
 }
 
 async function loadServers() {
@@ -165,13 +184,17 @@ function displayServersFlat(servers, grid) {
             </div>
         `;
         
-        // Add click handler for direct installation if no config required and not installed
-        if (!isInstalled && !requiresConfig) {
+        // Add click handler for direct installation/uninstallation
+        if (!requiresConfig) {
             card.style.cursor = 'pointer';
             card.addEventListener('click', (e) => {
                 // Don't trigger if clicking on buttons
                 if (!e.target.closest('button')) {
-                    quickInstallServer(key);
+                    if (isInstalled) {
+                        uninstallServer(key, true);
+                    } else {
+                        quickInstallServer(key);
+                    }
                 }
             });
         }
@@ -180,6 +203,18 @@ function displayServersFlat(servers, grid) {
     });
     
     grid.appendChild(container);
+    
+    // Clean up any lingering animation classes
+    setTimeout(() => {
+        const cards = document.querySelectorAll('.server-card');
+        cards.forEach(card => {
+            card.classList.remove('installing', 'uninstalling');
+            const indicator = card.querySelector('.status-indicator');
+            if (indicator) {
+                indicator.classList.remove('installing', 'uninstalling');
+            }
+        });
+    }, 100);
 }
 
 
@@ -241,12 +276,40 @@ function displayServersByCategory(servers, grid) {
                     <div class="status-indicator ${isInstalled ? 'installed' : ''}"></div>
                 </div>
             `;
+            
+            // Add click handler for direct installation/uninstallation
+            if (!requiresConfig) {
+                card.style.cursor = 'pointer';
+                card.addEventListener('click', (e) => {
+                    // Don't trigger if clicking on buttons
+                    if (!e.target.closest('button')) {
+                        if (isInstalled) {
+                            uninstallServer(key, true);
+                        } else {
+                            quickInstallServer(key);
+                        }
+                    }
+                });
+            }
+            
             categorySection.querySelector('.category-grid').appendChild(card);
         });
         
         categorySection.innerHTML += '</div>';
         grid.appendChild(categorySection);
     });
+    
+    // Clean up any lingering animation classes
+    setTimeout(() => {
+        const cards = document.querySelectorAll('.server-card');
+        cards.forEach(card => {
+            card.classList.remove('installing', 'uninstalling');
+            const indicator = card.querySelector('.status-indicator');
+            if (indicator) {
+                indicator.classList.remove('installing', 'uninstalling');
+            }
+        });
+    }, 100);
 }
 
 function updateCurrentServers() {
@@ -399,6 +462,16 @@ async function configureServer(key) {
 function quickInstallServer(key) {
     const server = preConfiguredServers[key];
     
+    // Find the card element and trigger animation
+    const cardElement = findCardElement(key);
+    if (cardElement) {
+        cardElement.classList.add('installing');
+        const statusIndicator = cardElement.querySelector('.status-indicator');
+        if (statusIndicator) {
+            statusIndicator.classList.add('installing');
+        }
+    }
+    
     // Parse the install command to get command and args
     const installParts = server.installCommand.split(' ');
     const command = installParts[0];
@@ -424,15 +497,25 @@ function quickInstallServer(key) {
         body: JSON.stringify(currentConfig)
     }).then(response => {
         if (response.ok) {
-            showMessage(`Installed ${server.name} successfully`, 'success');
-            updateCurrentServers();
-            document.getElementById('configEditor').value = JSON.stringify(currentConfig, null, 2);
-            displayServers(); // Re-display to update installation status
+            // Delay the UI update to allow animation to complete
+            setTimeout(() => {
+                updateCurrentServers();
+                document.getElementById('configEditor').value = JSON.stringify(currentConfig, null, 2);
+                displayServers(); // Re-display to update installation status
+            }, 300);
         } else {
             throw new Error('Failed to save configuration');
         }
     }).catch(error => {
         showMessage(error.message, 'error');
+        // Remove animation classes on error
+        if (cardElement) {
+            cardElement.classList.remove('installing');
+            const statusIndicator = cardElement.querySelector('.status-indicator');
+            if (statusIndicator) {
+                statusIndicator.classList.remove('installing');
+            }
+        }
     });
 }
 
@@ -486,7 +569,6 @@ function installServer(event, key) {
         body: JSON.stringify(currentConfig)
     }).then(response => {
         if (response.ok) {
-            showMessage(`Added ${server.name} successfully`, 'success');
             updateCurrentServers();
             document.getElementById('configEditor').value = JSON.stringify(currentConfig, null, 2);
             closeModal();
@@ -532,7 +614,6 @@ function addCustomServer(event) {
         body: JSON.stringify(currentConfig)
     }).then(response => {
         if (response.ok) {
-            showMessage(`Added custom server "${name}" successfully`, 'success');
             updateCurrentServers();
             document.getElementById('configEditor').value = JSON.stringify(currentConfig, null, 2);
             event.target.reset();
@@ -555,7 +636,6 @@ function removeServer(name) {
             body: JSON.stringify(currentConfig)
         }).then(response => {
             if (response.ok) {
-                showMessage(`Removed "${name}" successfully`, 'success');
                 updateCurrentServers();
                 document.getElementById('configEditor').value = JSON.stringify(currentConfig, null, 2);
                 displayServers(); // Re-display to update installation status
@@ -568,9 +648,19 @@ function removeServer(name) {
     }
 }
 
-function uninstallServer(key) {
+function uninstallServer(key, silent = false) {
     const server = preConfiguredServers[key];
-    if (confirm(`Are you sure you want to uninstall ${server.name}?`)) {
+    if (silent || confirm(`Are you sure you want to uninstall ${server.name}?`)) {
+        // Find the card element and trigger animation
+        const cardElement = findCardElement(key);
+        if (cardElement) {
+            cardElement.classList.add('uninstalling');
+            const statusIndicator = cardElement.querySelector('.status-indicator');
+            if (statusIndicator) {
+                statusIndicator.classList.add('uninstalling');
+            }
+        }
+        
         // Check if server exists with exact key match
         if (currentConfig.mcpServers[key]) {
             delete currentConfig.mcpServers[key];
@@ -590,15 +680,25 @@ function uninstallServer(key) {
             body: JSON.stringify(currentConfig)
         }).then(response => {
             if (response.ok) {
-                showMessage(`Uninstalled ${server.name} successfully`, 'success');
-                updateCurrentServers();
-                document.getElementById('configEditor').value = JSON.stringify(currentConfig, null, 2);
-                displayServers(); // Re-display to update installation status
+                // Delay the UI update to allow animation to complete
+                setTimeout(() => {
+                    updateCurrentServers();
+                    document.getElementById('configEditor').value = JSON.stringify(currentConfig, null, 2);
+                    displayServers(); // Re-display to update installation status
+                }, 300);
             } else {
                 throw new Error('Failed to save configuration');
             }
         }).catch(error => {
             showMessage(error.message, 'error');
+            // Remove animation classes on error
+            if (cardElement) {
+                cardElement.classList.remove('uninstalling');
+                const statusIndicator = cardElement.querySelector('.status-indicator');
+                if (statusIndicator) {
+                    statusIndicator.classList.remove('uninstalling');
+                }
+            }
         });
     }
 }
@@ -987,7 +1087,7 @@ async function loadVariables() {
     }
 }
 
-function updateVariablesList() {
+async function updateVariablesList() {
     const container = document.getElementById('variablesList');
     container.innerHTML = '';
     
@@ -1020,20 +1120,45 @@ function updateVariablesList() {
         }
     });
     
+    // Check for .env file availability
+    let envVariables = {};
+    try {
+        const response = await fetch('/api/env-variables');
+        const data = await response.json();
+        if (data.exists) {
+            envVariables = data.variables;
+        }
+    } catch (error) {
+        console.error('Error fetching .env variables:', error);
+    }
+    
     // Create UI for each variable
     Object.entries(variableUsage).sort().forEach(([varName, servers]) => {
         const item = document.createElement('div');
         item.className = 'variable-item';
         
         const value = savedVariables[varName] || '';
+        const hasEnvValue = envVariables[varName] !== undefined;
+        const isEmpty = !value;
         
         item.innerHTML = `
             <div class="variable-name">${varName}</div>
-            <input type="text" 
-                   class="variable-input" 
-                   data-var-name="${varName}"
-                   value="${value}"
-                   placeholder="Enter value for ${varName}">
+            <div style="position: relative;">
+                <input type="text" 
+                       class="variable-input" 
+                       data-var-name="${varName}"
+                       value="${value}"
+                       placeholder="Enter value for ${varName}"
+                       style="padding-right: ${hasEnvValue && isEmpty ? '110px' : '8px'};">
+                ${hasEnvValue && isEmpty ? `
+                    <button type="button" class="btn-env-fetch" onclick="fetchFromEnvForVariables('${varName}')" title="Fetch from .env file">
+                        <span style="font-size: 12px;">📋 fetch from .env</span>
+                    </button>
+                ` : ''}
+                ${!isEmpty && hasEnvValue ? `
+                    <small style="color: #27ae60; font-size: 12px; display: block; margin-top: 4px;">✓ Value available in .env file</small>
+                ` : ''}
+            </div>
             <div class="variable-usage">
                 <strong>Used by:</strong> ${servers.join(', ')}
             </div>
@@ -1120,8 +1245,34 @@ async function fetchFromEnv(varName) {
     }
 }
 
+// Function to fetch value from .env for Variables tab
+async function fetchFromEnvForVariables(varName) {
+    try {
+        const response = await fetch('/api/env-variables');
+        const data = await response.json();
+        
+        if (data.exists && data.variables[varName]) {
+            // Find the variable input field and set its value
+            const variableInput = document.querySelector(`input[data-var-name="${varName}"]`);
+            
+            if (variableInput) {
+                variableInput.value = data.variables[varName];
+                // Update saved variables immediately
+                savedVariables[varName] = data.variables[varName];
+                // Refresh the list to hide the fetch button
+                updateVariablesList();
+            }
+        } else {
+            showMessage(`${varName} not found in .env file`, 'error');
+        }
+    } catch (error) {
+        showMessage('Error fetching from .env file', 'error');
+    }
+}
+
 // Make functions globally available
 window.fetchFromEnv = fetchFromEnv;
+window.fetchFromEnvForVariables = fetchFromEnvForVariables;
 window.uninstallServer = uninstallServer;
 
 // Initialize on load
