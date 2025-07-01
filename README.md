@@ -9,7 +9,32 @@ Interactive CLI tool for managing MCP (Model Context Protocol) server configurat
 ### Modern Neumorphic Design
 The web interface features a beautiful neumorphic design with JetBrains Mono font, providing a modern and professional look:
 
-![Web Interface Overview](screenshots/mcp-web-interface.png)
+![Web Interface Overview](screenshots/web-interface-main.png)
+
+### 📦 Server Browser - Main View
+Browse and install from 35+ pre-configured MCP servers with smart categorization and visual status indicators:
+
+![Browse Servers](screenshots/web-interface-main.png)
+
+### 🏷️ Category Organization
+Organize servers by functionality for easier navigation and discovery:
+
+![Categorized Servers](screenshots/categorized-servers.png)
+
+### ⚙️ Server Management
+Manage your installed servers with detailed configuration information:
+
+![Current Servers](screenshots/current-servers-tab.png)
+
+### 🔧 Environment Variables
+Centralized environment variable management with .env file integration:
+
+![Variables Management](screenshots/variables-tab.png)
+
+### 📝 Live Configuration Editor
+Edit `.mcp.json` files directly in the browser with syntax highlighting:
+
+![Config Editor](screenshots/edit-config-tab.png)
 
 ### Interactive Features
 
