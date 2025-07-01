@@ -140,10 +140,13 @@ function displayServersFlat(servers, grid) {
         // Check if server requires configuration
         const requiresConfig = server.requiredEnvVars && server.requiredEnvVars.length > 0;
         
+        // Add data-selected attribute if installed
+        if (isInstalled) {
+            card.setAttribute('data-selected', '');
+        }
+        
         card.innerHTML = `
-            <div class="status-indicator ${isInstalled ? 'installed' : ''}"></div>
             <h3>${server.name}</h3>
-            <p class="description">${server.description}</p>
             <div class="button-container">
                 ${isInstalled ? 
                     `<button class="btn-installed" disabled>Installed</button>
@@ -154,6 +157,7 @@ function displayServersFlat(servers, grid) {
                      }`
                 }
             </div>
+            <div class="status-indicator ${isInstalled ? 'installed' : ''}"></div>
         `;
         container.appendChild(card);
     });
@@ -196,10 +200,13 @@ function displayServersByCategory(servers, grid) {
             // Check if server requires configuration
             const requiresConfig = server.requiredEnvVars && server.requiredEnvVars.length > 0;
             
+            // Add data-selected attribute if installed
+            if (isInstalled) {
+                card.setAttribute('data-selected', '');
+            }
+            
             card.innerHTML = `
-                <div class="status-indicator ${isInstalled ? 'installed' : ''}"></div>
                 <h3>${server.name}</h3>
-                <p class="description">${server.description}</p>
                 <div class="button-container">
                     ${isInstalled ? 
                         `<button class="btn-installed" disabled>Installed</button>
@@ -210,6 +217,7 @@ function displayServersByCategory(servers, grid) {
                          }`
                     }
                 </div>
+                <div class="status-indicator ${isInstalled ? 'installed' : ''}"></div>
             `;
             categorySection.querySelector('.category-grid').appendChild(card);
         });
