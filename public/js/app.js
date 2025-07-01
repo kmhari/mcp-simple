@@ -146,7 +146,10 @@ function displayServersFlat(servers, grid) {
         }
         
         card.innerHTML = `
-            <h3>${server.name}</h3>
+            <div>
+                <h3>${server.name}</h3>
+                <p class="description">${server.description}</p>
+            </div>
             <div class="button-container">
                 ${isInstalled ? 
                     `<button class="btn-installed" disabled>Installed</button>
@@ -206,7 +209,10 @@ function displayServersByCategory(servers, grid) {
             }
             
             card.innerHTML = `
-                <h3>${server.name}</h3>
+                <div>
+                    <h3>${server.name}</h3>
+                    <p class="description">${server.description}</p>
+                </div>
                 <div class="button-container">
                     ${isInstalled ? 
                         `<button class="btn-installed" disabled>Installed</button>
