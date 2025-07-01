@@ -2,10 +2,10 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    font-family: 'JetBrains Mono', 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
 }
 
 body {
-    font-family: 'JetBrains Mono', monospace;
     background-color: #ececec;
     color: #333;
     line-height: 1.6;
