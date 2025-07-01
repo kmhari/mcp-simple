@@ -173,86 +173,133 @@ h1 {
 
 .category-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: 16px;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 12px;
     margin-bottom: 15px;
+}
+
+@media (min-width: 640px) {
+    .category-grid {
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    }
+}
+
+@media (min-width: 1024px) {
+    .category-grid {
+        grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+        gap: 16px;
+    }
 }
 
 .server-card {
     background: white;
-    padding: 20px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    transition: box-shadow 0.2s;
+    padding: 16px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    transition: all 0.2s;
     display: flex;
     flex-direction: column;
+    justify-content: space-between;
     position: relative;
+    min-height: 60px;
+    max-height: 100px;
+    cursor: pointer;
+    aspect-ratio: 4/3;
+}
+
+@media (min-width: 640px) {
+    .server-card {
+        aspect-ratio: 2/1;
+    }
+}
+
+@media (min-width: 1024px) {
+    .server-card {
+        aspect-ratio: 2.5/1;
+    }
 }
 
 .server-card:hover {
-    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transform: translateY(-2px);
 }
+
+.server-card[data-selected] {
+    border-color: #3b82f6;
+    background: #f0f9ff;
+}
+
 
 .server-card h3 {
-    color: #2c3e50;
-    margin-bottom: 6px;
-    font-size: 16px;
-}
-
-.status-indicator {
-    position: absolute;
-    bottom: 20px;
-    right: 20px;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: #e0e0e0;
-}
-
-.status-indicator.installed {
-    background: #27ae60;
+    color: #1f2937;
+    margin: 0;
+    font-size: 15px;
+    font-weight: 500;
+    word-break: break-word;
+    padding-right: 8px;
 }
 
 .server-card .description {
-    color: #666;
-    font-size: 13px;
-    margin-bottom: 10px;
-    line-height: 1.4;
-    flex: 1;
+    display: none; /* Hide description for cleaner design */
+}
+
+
+.status-indicator {
+    position: absolute;
+    left: 16px;
+    bottom: 16px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #d1d5db;
+    flex-shrink: 0;
+    transition: all 0.3s;
+}
+
+.status-indicator.installed {
+    background: #10b981;
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
 }
 
 .server-card .button-container {
-    display: flex;
+    display: none; /* Hide buttons initially */
     gap: 8px;
-    margin-top: auto;
+    flex-shrink: 0;
+    margin-top: 12px;
+}
+
+.server-card:hover .button-container {
+    display: flex; /* Show buttons on hover */
 }
 
 .server-card button {
-    background: #3498db;
+    background: #3b82f6;
     color: white;
     border: none;
     padding: 6px 12px;
     cursor: pointer;
-    transition: background 0.3s;
+    border-radius: 6px;
     font-size: 13px;
+    transition: background 0.3s;
     flex: 1;
 }
 
 .server-card button:hover {
-    background: #2980b9;
+    background: #2563eb;
 }
 
 .server-card button.btn-configure {
-    background: #95a5a6;
+    background: #6b7280;
 }
 
 .server-card button.btn-configure:hover {
-    background: #7f8c8d;
+    background: #4b5563;
 }
 
 .btn-installed {
-    background: #27ae60 !important;
+    background: #10b981 !important;
     cursor: not-allowed !important;
-    opacity: 0.8;
+    opacity: 0.9;
 }
 
 .group-by-container {
