@@ -6,7 +6,7 @@
 
 body {
     font-family: 'JetBrains Mono', monospace;
-    background-color: #f4f4f4;
+    background-color: #ececec;
     color: #333;
     line-height: 1.6;
 }
@@ -192,7 +192,7 @@ h1 {
 }
 
 .server-card {
-    background: #f4f4f4;
+    background: #ececec;
     padding: 16px;
     border: none;
     border-radius: 8px;
@@ -219,7 +219,7 @@ h1 {
 }
 
 .server-card[data-selected] {
-    background: #f4f4f4;
+    background: #ececec;
     box-shadow: inset .5px .5px 1px #fff, 
                 inset -.5px -.5px 1px #00000026, 
                 .222px .222px .314px -.5px #0003, 
@@ -284,7 +284,7 @@ h1 {
 }
 
 .server-card button {
-    background: #f4f4f4;
+    background: #ececec;
     color: #374151;
     border: none;
     padding: 6px 12px;
@@ -308,15 +308,16 @@ h1 {
 }
 
 .server-card button.btn-configure {
-    background: #f4f4f4;
+    background: #222 !important;
+    color: #fff !important;
 }
 
 .server-card button.btn-configure:hover {
-    background: #f4f4f4;
+    background: #333 !important;
 }
 
 .btn-installed {
-    background: #f4f4f4 !important;
+    background: #ececec !important;
     color: #10b981 !important;
     cursor: not-allowed !important;
     font-weight: 600;
@@ -324,14 +325,23 @@ h1 {
                 inset -.5px -.5px 1px #00000026 !important;
 }
 
+.server-card button:not(.btn-configure):not(.btn-installed):not(.btn-uninstall) {
+    background: #ff4a00 !important;
+    color: #fff !important;
+}
+
+.server-card button:not(.btn-configure):not(.btn-installed):not(.btn-uninstall):hover {
+    background: #e6420d !important;
+}
+
 .btn-uninstall {
-    background: #f4f4f4 !important;
-    color: #ef4444 !important;
+    background: #ff0000 !important;
+    color: #fff !important;
     font-weight: 500;
 }
 
 .btn-uninstall:hover {
-    color: #dc2626 !important;
+    background: #cc0000 !important;
 }
 
 .group-by-container {
