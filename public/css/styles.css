@@ -32,7 +32,7 @@ h1 {
 .tab {
     padding: 10px 20px;
     cursor: pointer;
-    background: #ececec;
+    background: white;
     border: none;
     border-radius: 8px;
     font-size: 16px;
@@ -364,7 +364,7 @@ h1 {
     border: none;
     border-radius: 6px;
     font-size: 14px;
-    background: #ececec;
+    background: white;
     cursor: pointer;
     box-shadow: inset .5px .5px 1px #fff, 
                 inset -.5px -.5px 1px #00000026;
@@ -403,7 +403,7 @@ h1 {
     border-radius: 8px;
     font-size: 14px;
     resize: vertical;
-    background: #ececec;
+    background: white;
     box-shadow: inset .5px .5px 1px #fff, 
                 inset -.5px -.5px 1px #00000026;
     transition: box-shadow 0.2s;
@@ -429,7 +429,7 @@ h1 {
 }
 
 .btn-primary {
-    background: #ececec;
+    background: white;
     color: #3498db;
     border: none;
     border-radius: 6px;
@@ -446,7 +446,7 @@ h1 {
 }
 
 .btn-secondary {
-    background: #ececec;
+    background: white;
     color: #95a5a6;
     border: none;
     border-radius: 6px;
@@ -469,7 +469,7 @@ h1 {
     border-radius: 8px;
     font-size: 16px;
     margin-bottom: 20px;
-    background: #ececec;
+    background: white;
     box-shadow: inset .5px .5px 1px #fff, 
                 inset -.5px -.5px 1px #00000026;
     transition: box-shadow 0.2s;
@@ -539,7 +539,7 @@ h1 {
     border: none;
     border-radius: 6px;
     font-size: 14px;
-    background: #ececec;
+    background: white;
     box-shadow: inset .5px .5px 1px #fff, 
                 inset -.5px -.5px 1px #00000026;
     transition: box-shadow 0.2s;
@@ -622,7 +622,7 @@ h1 {
 }
 
 .btn-edit {
-    background: #ececec;
+    background: white;
     color: #3498db;
     border: none;
     border-radius: 6px;
@@ -642,7 +642,7 @@ h1 {
 }
 
 .btn-remove {
-    background: #ececec;
+    background: white;
     color: #e74c3c;
     border: none;
     border-radius: 6px;
@@ -715,7 +715,7 @@ h1 {
     border-radius: 6px;
     font-size: 14px;
     margin-bottom: 8px;
-    background: #ececec;
+    background: white;
     box-shadow: inset .5px .5px 1px #fff, 
                 inset -.5px -.5px 1px #00000026;
     transition: box-shadow 0.2s;
@@ -757,7 +757,7 @@ h1 {
     right: 4px;
     top: 50%;
     transform: translateY(-50%);
-    background: #ececec;
+    background: white;
     border: none;
     border-radius: 4px;
     padding: 4px 8px;
