@@ -295,5 +295,16 @@
     "optionalParams": ["CONFIG_PATH", "MODEL_PATH", "OUTPUT_DIR"],
     "usageInstructions": "Assess and track cognitive abilities including memory, attention, reasoning, and problem-solving. Generate personalized cognitive development plans and track progress over time.",
     "category": "AI & Machine Learning"
+  },
+  "github-project-manager": {
+    "name": "GitHub Project Manager",
+    "githubLink": "https://github.com/kunwarVivek/mcp-github-project-manager",
+    "package": "mcp-github-project-manager",
+    "description": "Comprehensive GitHub project management tool for managing repositories, issues, pull requests, and GitHub Projects",
+    "installCommand": "npx mcp-github-project-manager",
+    "requiredEnvVars": ["GITHUB_TOKEN"],
+    "optionalParams": ["DEFAULT_ORG", "DEFAULT_REPO", "MAX_RESULTS"],
+    "usageInstructions": "Manage GitHub repositories, create and update issues, handle pull requests, manage GitHub Projects (v2), and automate project workflows. Requires a GitHub personal access token with appropriate permissions.",
+    "category": "Development Tools"
   }
 }
