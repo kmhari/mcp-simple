@@ -274,14 +274,10 @@ h1 {
 }
 
 .server-card .button-container {
-    display: none; /* Hide buttons initially */
+    display: flex;
     gap: 8px;
     flex-shrink: 0;
     margin-top: 12px;
-}
-
-.server-card:hover .button-container {
-    display: flex; /* Show buttons on hover */
 }
 
 .server-card button {
