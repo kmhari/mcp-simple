@@ -680,6 +680,23 @@ class MCPManager {
             }
         });
         
+        // Check for .env file and get variables
+        app.get('/api/env-variables', (req, res) => {
+            try {
+                const envPath = path.join(process.cwd(), '.env');
+                if (fs.existsSync(envPath)) {
+                    const dotenv = require('dotenv');
+                    const envConfig = dotenv.parse(fs.readFileSync(envPath, 'utf8'));
+                    res.json({ exists: true, variables: envConfig });
+                } else {
+                    res.json({ exists: false, variables: {} });
+                }
+            } catch (error) {
+                console.error('Error reading .env file:', error);
+                res.json({ exists: false, variables: {} });
+            }
+        });
+        
         // Start server
         this.httpServer = app.listen(PORT, () => {
             console.log(`🌐 MCP Manager Web Interface running at http://localhost:${PORT}`);

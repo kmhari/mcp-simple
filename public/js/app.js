@@ -275,13 +275,25 @@ function searchServers(query) {
     }
 }
 
-function configureServer(key) {
+async function configureServer(key) {
     const server = preConfiguredServers[key];
     const modal = document.getElementById('serverModal');
     const modalTitle = document.getElementById('modalTitle');
     const modalBody = document.getElementById('modalBody');
     
     modalTitle.textContent = `Configure ${server.name}`;
+    
+    // Check if .env file exists
+    let envVariables = {};
+    try {
+        const response = await fetch('/api/env-variables');
+        const data = await response.json();
+        if (data.exists) {
+            envVariables = data.variables;
+        }
+    } catch (error) {
+        console.error('Error fetching .env variables:', error);
+    }
     
     let formHtml = `
         <form onsubmit="installServer(event, '${key}')">
@@ -297,10 +309,18 @@ function configureServer(key) {
         server.requiredEnvVars.forEach(envVar => {
             // Check if we have a saved value for this variable
             const savedValue = savedVariables[envVar] || '';
+            const hasEnvValue = envVariables[envVar] !== undefined;
             formHtml += `
                 <div class="form-group">
                     <label>${envVar}</label>
-                    <input type="text" name="env_${envVar}" id="env_${envVar}" value="${savedValue}" required>
+                    <div style="position: relative;">
+                        <input type="text" name="env_${envVar}" id="env_${envVar}" value="${savedValue}" required style="padding-right: ${hasEnvValue ? '110px' : '8px'};">
+                        ${hasEnvValue ? `
+                            <button type="button" class="btn-env-fetch" onclick="fetchFromEnv('${envVar}')" title="Fetch from .env file">
+                                <span style="font-size: 12px;">📋 fetch from .env</span>
+                            </button>
+                        ` : ''}
+                    </div>
                     ${savedValue ? '<small style="color: #27ae60;">✓ Using saved value from Variables tab</small>' : ''}
                     ${key === 'slack' && envVar === 'SLACK_BOT_TOKEN' ? 
                         `<button type="button" class="btn-secondary" style="margin-top: 8px;" onclick="getSlackTokenWithSkyvern()">
@@ -316,10 +336,18 @@ function configureServer(key) {
         server.optionalParams.forEach(param => {
             // Check if we have a saved value for this parameter
             const savedValue = savedVariables[param] || '';
+            const hasEnvValue = envVariables[param] !== undefined;
             formHtml += `
                 <div class="form-group">
                     <label>${param}</label>
-                    <input type="text" name="opt_${param}" value="${savedValue}">
+                    <div style="position: relative;">
+                        <input type="text" name="opt_${param}" value="${savedValue}" style="padding-right: ${hasEnvValue ? '110px' : '8px'};">
+                        ${hasEnvValue ? `
+                            <button type="button" class="btn-env-fetch" onclick="fetchFromEnv('${param}')" title="Fetch from .env file">
+                                <span style="font-size: 12px;">📋 fetch from .env</span>
+                            </button>
+                        ` : ''}
+                    </div>
                     ${savedValue ? '<small style="color: #27ae60;">✓ Using saved value from Variables tab</small>' : ''}
                 </div>
             `;
@@ -999,6 +1027,35 @@ window.onclick = function(event) {
         closeModal();
     }
 }
+
+// Function to fetch value from .env and populate input
+async function fetchFromEnv(varName) {
+    try {
+        const response = await fetch('/api/env-variables');
+        const data = await response.json();
+        
+        if (data.exists && data.variables[varName]) {
+            // Find the input field and set its value
+            const envInput = document.getElementById(`env_${varName}`);
+            const optInput = document.querySelector(`input[name="opt_${varName}"]`);
+            
+            if (envInput) {
+                envInput.value = data.variables[varName];
+            } else if (optInput) {
+                optInput.value = data.variables[varName];
+            }
+            
+            showMessage(`Fetched ${varName} from .env file`, 'success');
+        } else {
+            showMessage(`${varName} not found in .env file`, 'error');
+        }
+    } catch (error) {
+        showMessage('Error fetching from .env file', 'error');
+    }
+}
+
+// Make fetchFromEnv globally available
+window.fetchFromEnv = fetchFromEnv;
 
 // Initialize on load
 document.addEventListener('DOMContentLoaded', () => {
