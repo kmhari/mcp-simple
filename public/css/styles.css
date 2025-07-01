@@ -1,0 +1,541 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background-color: #f5f5f5;
+    color: #333;
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 15px;
+}
+
+h1 {
+    color: #2c3e50;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.tabs {
+    display: flex;
+    margin-bottom: 30px;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.tab {
+    padding: 10px 20px;
+    cursor: pointer;
+    background: none;
+    border: none;
+    font-size: 16px;
+    color: #666;
+    transition: all 0.3s;
+}
+
+.tab:hover {
+    color: #2c3e50;
+}
+
+.tab.active {
+    color: #3498db;
+    border-bottom: 2px solid #3498db;
+    margin-bottom: -2px;
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+.server-grid {
+    margin-bottom: 20px;
+}
+
+.category-section {
+    margin-bottom: 20px;
+}
+
+.category-title {
+    color: #2c3e50;
+    font-size: 24px;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #3498db;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.category-title::before {
+    content: '';
+    width: 6px;
+    height: 24px;
+    background: #3498db;
+}
+
+.category-count {
+    font-size: 18px;
+    color: #7f8c8d;
+    font-weight: normal;
+    margin-left: 10px;
+}
+
+/* Category-specific colors */
+.category-section[data-category="AI & Machine Learning"] .category-title::before,
+.category-section[data-category="AI & Machine Learning"] .category-title {
+    border-color: #9b59b6;
+}
+.category-section[data-category="AI & Machine Learning"] .category-title::before {
+    background: #9b59b6;
+}
+
+.category-section[data-category="Cloud Services"] .category-title::before,
+.category-section[data-category="Cloud Services"] .category-title {
+    border-color: #3498db;
+}
+.category-section[data-category="Cloud Services"] .category-title::before {
+    background: #3498db;
+}
+
+.category-section[data-category="Communication"] .category-title::before,
+.category-section[data-category="Communication"] .category-title {
+    border-color: #e74c3c;
+}
+.category-section[data-category="Communication"] .category-title::before {
+    background: #e74c3c;
+}
+
+.category-section[data-category="Data & Analytics"] .category-title::before,
+.category-section[data-category="Data & Analytics"] .category-title {
+    border-color: #f39c12;
+}
+.category-section[data-category="Data & Analytics"] .category-title::before {
+    background: #f39c12;
+}
+
+.category-section[data-category="Databases"] .category-title::before,
+.category-section[data-category="Databases"] .category-title {
+    border-color: #27ae60;
+}
+.category-section[data-category="Databases"] .category-title::before {
+    background: #27ae60;
+}
+
+.category-section[data-category="Development Tools"] .category-title::before,
+.category-section[data-category="Development Tools"] .category-title {
+    border-color: #2c3e50;
+}
+.category-section[data-category="Development Tools"] .category-title::before {
+    background: #2c3e50;
+}
+
+.category-section[data-category="File Systems"] .category-title::before,
+.category-section[data-category="File Systems"] .category-title {
+    border-color: #16a085;
+}
+.category-section[data-category="File Systems"] .category-title::before {
+    background: #16a085;
+}
+
+.category-section[data-category="Knowledge & Research"] .category-title::before,
+.category-section[data-category="Knowledge & Research"] .category-title {
+    border-color: #8e44ad;
+}
+.category-section[data-category="Knowledge & Research"] .category-title::before {
+    background: #8e44ad;
+}
+
+.category-section[data-category="Productivity"] .category-title::before,
+.category-section[data-category="Productivity"] .category-title {
+    border-color: #e67e22;
+}
+.category-section[data-category="Productivity"] .category-title::before {
+    background: #e67e22;
+}
+
+.category-section[data-category="Utilities"] .category-title::before,
+.category-section[data-category="Utilities"] .category-title {
+    border-color: #95a5a6;
+}
+.category-section[data-category="Utilities"] .category-title::before {
+    background: #95a5a6;
+}
+
+.category-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 16px;
+    margin-bottom: 15px;
+}
+
+.server-card {
+    background: white;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    transition: box-shadow 0.2s;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.server-card:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+}
+
+.server-card h3 {
+    color: #2c3e50;
+    margin-bottom: 6px;
+    font-size: 16px;
+    padding-left: 20px;
+}
+
+.status-indicator {
+    position: absolute;
+    top: 24px;
+    left: 20px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #e0e0e0;
+}
+
+.status-indicator.installed {
+    background: #27ae60;
+}
+
+.server-card .description {
+    color: #666;
+    font-size: 13px;
+    margin-bottom: 10px;
+    line-height: 1.4;
+    flex: 1;
+    padding-left: 20px;
+}
+
+.server-card .button-container {
+    display: flex;
+    gap: 8px;
+    margin-top: auto;
+    padding-left: 20px;
+}
+
+.server-card button {
+    background: #3498db;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    cursor: pointer;
+    transition: background 0.3s;
+    font-size: 13px;
+    flex: 1;
+}
+
+.server-card button:hover {
+    background: #2980b9;
+}
+
+.server-card button.btn-configure {
+    background: #95a5a6;
+}
+
+.server-card button.btn-configure:hover {
+    background: #7f8c8d;
+}
+
+.btn-installed {
+    background: #27ae60 !important;
+    cursor: not-allowed !important;
+    opacity: 0.8;
+}
+
+.group-by-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.group-by-container select {
+    padding: 6px 12px;
+    border: 1px solid #ddd;
+    font-size: 14px;
+    background: white;
+    cursor: pointer;
+}
+
+.config-editor {
+    background: white;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.config-editor h3 {
+    margin-bottom: 15px;
+    color: #2c3e50;
+}
+
+.config-editor textarea {
+    width: 100%;
+    min-height: 400px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    resize: vertical;
+}
+
+.button-group {
+    margin-top: 15px;
+    display: flex;
+    gap: 10px;
+}
+
+.button-group button {
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background 0.3s;
+}
+
+.btn-primary {
+    background: #3498db;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #2980b9;
+}
+
+.btn-secondary {
+    background: #95a5a6;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #7f8c8d;
+}
+
+.search-box {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    font-size: 16px;
+    margin-bottom: 20px;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 1000;
+}
+
+.modal-content {
+    background: white;
+    width: 90%;
+    max-width: 500px;
+    margin: 50px auto;
+    padding: 30px;
+    position: relative;
+}
+
+.modal-close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 24px;
+    cursor: pointer;
+    color: #999;
+}
+
+.modal-close:hover {
+    color: #333;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    color: #555;
+    font-weight: 500;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    font-size: 14px;
+}
+
+.form-group small {
+    color: #888;
+    font-size: 12px;
+    display: block;
+    margin-top: 5px;
+}
+
+.message {
+    padding: 12px;
+    margin-bottom: 20px;
+    display: none;
+}
+
+.message.success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.message.error {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.current-servers {
+    background: white;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 30px;
+}
+
+.server-list {
+    list-style: none;
+}
+
+.server-item {
+    padding: 15px;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.server-item:last-child {
+    border-bottom: none;
+}
+
+.server-info h4 {
+    color: #2c3e50;
+    margin-bottom: 5px;
+}
+
+.server-info .details {
+    font-size: 12px;
+    color: #666;
+    font-family: 'Courier New', monospace;
+}
+
+.server-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-edit {
+    background: #3498db;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.btn-edit:hover {
+    background: #2980b9;
+}
+
+.btn-remove {
+    background: #e74c3c;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.btn-remove:hover {
+    background: #c0392b;
+}
+
+.variables-container {
+    background: white;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.variables-description {
+    color: #666;
+    font-size: 14px;
+    margin-bottom: 20px;
+}
+
+.variables-list {
+    margin-bottom: 20px;
+}
+
+.variable-item {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    padding: 15px;
+    margin-bottom: 15px;
+}
+
+.variable-name {
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 8px;
+    font-size: 16px;
+    font-family: 'Courier New', monospace;
+}
+
+.variable-input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    font-size: 14px;
+    font-family: 'Courier New', monospace;
+    margin-bottom: 8px;
+}
+
+.variable-usage {
+    font-size: 13px;
+    color: #666;
+}
+
+.variable-usage strong {
+    color: #495057;
+}
+
+/* Slack guide specific styles */
+.slack-token-guide ol {
+    margin: 20px 0;
+    padding-left: 20px;
+}
+
+.slack-token-guide li {
+    margin: 15px 0;
+    line-height: 1.5;
+}
+
+.slack-token-guide a {
+    display: inline-block;
+    margin: 5px 0;
+}
