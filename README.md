@@ -2,8 +2,6 @@
 
 Modern web interface and CLI tool for managing MCP (Model Context Protocol) server configurations.
 
-![MCP Manager Web Interface](screenshots/mcp-web-interface.png)
-
 ## 🌐 Web Interface Preview
 
 ### Modern Neumorphic Design
@@ -276,6 +274,19 @@ MCP Manager manages `.mcp.json` files in your current working directory. The con
 1. Run `@oglabs/mcp`
 2. Select "Remove an MCP server"
 3. Choose the server to remove
+
+## 🖥️ CLI Interface
+
+For users who prefer command-line interfaces, MCP Manager provides a comprehensive CLI experience:
+
+![CLI Interface](screenshots/cli-interface.png)
+
+The CLI offers:
+- **Interactive Menu**: Navigate through options with keyboard
+- **Server Management**: Add, remove, and configure servers
+- **Search Functionality**: Find servers by name or category
+- **Configuration Editing**: Modify settings through prompts
+- **Cross-Platform**: Works on Windows, macOS, and Linux
 
 ## Development
 
