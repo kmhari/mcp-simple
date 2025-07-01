@@ -194,7 +194,6 @@ h1 {
 .server-card {
     background: #f4f4f4;
     padding: 16px;
-    padding-bottom: 36px; /* Extra padding for status indicator */
     border: none;
     border-radius: 8px;
     transition: box-shadow 0.3s ease;
@@ -254,10 +253,21 @@ h1 {
 }
 
 
+.server-card .card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 12px;
+    gap: 12px;
+}
+
+.server-card .button-container {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
 .status-indicator {
-    position: absolute;
-    left: 16px;
-    bottom: 16px;
     width: 10px;
     height: 10px;
     border-radius: 50%;
@@ -271,13 +281,6 @@ h1 {
     background: #10b981;
     box-shadow: 0 0 8px rgba(16, 185, 129, 0.4),
                 inset -1px -1px 2px rgba(0, 0, 0, 0.2);
-}
-
-.server-card .button-container {
-    display: flex;
-    gap: 8px;
-    flex-shrink: 0;
-    margin-top: 12px;
 }
 
 .server-card button {
