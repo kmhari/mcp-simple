@@ -648,6 +648,16 @@ class MCPManager {
             res.json(this.preConfiguredServers);
         });
         
+        // Serve stars data
+        app.get('/mcp-servers-with-stars.json', (req, res) => {
+            const starsPath = path.join(__dirname, 'mcp-servers-with-stars.json');
+            if (fs.existsSync(starsPath)) {
+                res.sendFile(starsPath);
+            } else {
+                res.status(404).json({ error: 'Stars data not available' });
+            }
+        });
+        
         app.get('/api/variables', (req, res) => {
             const variablesPath = path.join(os.homedir(), '.config', 'mcpsimple', 'mcp.json');
             let variables = {};

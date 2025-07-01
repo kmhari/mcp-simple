@@ -26,10 +26,11 @@
         <div id="browse" class="tab-content active">
             <input type="text" class="search-box" placeholder="Search servers..." onkeyup="searchServers(this.value)">
             <div class="group-by-container">
-                <label>Group by:</label>
+                <label>Sort by:</label>
                 <select id="groupBySelect" onchange="handleGroupByChange(this.value)">
-                    <option value="none">None</option>
+                    <option value="none">Default</option>
                     <option value="category">Category</option>
+                    <option value="stars">Most Stars</option>
                 </select>
             </div>
             <div id="serverGrid" class="server-grid">

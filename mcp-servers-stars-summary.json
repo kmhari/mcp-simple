@@ -1,0 +1,276 @@
+{
+  "summary": {
+    "total_servers": 44,
+    "successful_fetches": 43,
+    "total_stars": 638509,
+    "average_stars": 14849,
+    "last_updated": "2025-07-01"
+  },
+  "servers_by_stars": [
+    {
+      "id": "everything",
+      "name": "Everything",
+      "stars": 57035,
+      "repo": "modelcontextprotocol/servers"
+    },
+    {
+      "id": "fetch",
+      "name": "Fetch", 
+      "stars": 57035,
+      "repo": "modelcontextprotocol/servers"
+    },
+    {
+      "id": "filesystem",
+      "name": "Filesystem",
+      "stars": 57035,
+      "repo": "modelcontextprotocol/servers"
+    },
+    {
+      "id": "git",
+      "name": "Git",
+      "stars": 57035,
+      "repo": "modelcontextprotocol/servers"
+    },
+    {
+      "id": "memory",
+      "name": "Memory",
+      "stars": 57035,
+      "repo": "modelcontextprotocol/servers"
+    },
+    {
+      "id": "sequentialthinking",
+      "name": "Sequential Thinking",
+      "stars": 57035,
+      "repo": "modelcontextprotocol/servers"
+    },
+    {
+      "id": "time",
+      "name": "Time",
+      "stars": 57035,
+      "repo": "modelcontextprotocol/servers"
+    },
+    {
+      "id": "google-maps",
+      "name": "Google Maps",
+      "stars": 57035,
+      "repo": "modelcontextprotocol/servers"
+    },
+    {
+      "id": "mindsdb",
+      "name": "MindsDB",
+      "stars": 33090,
+      "repo": "mindsdb/mindsdb"
+    },
+    {
+      "id": "gpt-researcher",
+      "name": "GPT Researcher",
+      "stars": 22148,
+      "repo": "assafelovic/gpt-researcher"
+    },
+    {
+      "id": "taskmaster",
+      "name": "Task Master",
+      "stars": 17163,
+      "repo": "eyaltoledano/claude-task-master"
+    },
+    {
+      "id": "github",
+      "name": "GitHub",
+      "stars": 16662,
+      "repo": "github/github-mcp-server"
+    },
+    {
+      "id": "context7",
+      "name": "Context7",
+      "stars": 16462,
+      "repo": "upstash/context7"
+    },
+    {
+      "id": "skyvern",
+      "name": "Skyvern",
+      "stars": 13720,
+      "repo": "Skyvern-AI/skyvern"
+    },
+    {
+      "id": "fastmcp",
+      "name": "FastMCP",
+      "stars": 13696,
+      "repo": "jlowin/fastmcp"
+    },
+    {
+      "id": "playwright",
+      "name": "Microsoft Playwright",
+      "stars": 13531,
+      "repo": "microsoft/playwright-mcp"
+    },
+    {
+      "id": "figma-context",
+      "name": "Figma Context MCP",
+      "stars": 8709,
+      "repo": "GLips/Figma-Context-MCP"
+    },
+    {
+      "id": "ghidra-mcp",
+      "name": "Ghidra MCP",
+      "stars": 5282,
+      "repo": "LaurieWired/GhidraMCP"
+    },
+    {
+      "id": "aws",
+      "name": "AWS",
+      "stars": 4300,
+      "repo": "awslabs/mcp"
+    },
+    {
+      "id": "firecrawl",
+      "name": "Firecrawl",
+      "stars": 3622,
+      "repo": "mendableai/firecrawl-mcp-server"
+    },
+    {
+      "id": "notion",
+      "name": "Notion",
+      "stars": 2379,
+      "repo": "makenotion/notion-mcp-server"
+    },
+    {
+      "id": "apple-mcp",
+      "name": "Apple MCP",
+      "stars": 2067,
+      "repo": "supermemoryai/apple-mcp"
+    },
+    {
+      "id": "xcodebuild",
+      "name": "Xcode Build",
+      "stars": 1845,
+      "repo": "cameroncooke/XcodeBuildMCP"
+    },
+    {
+      "id": "supabase",
+      "name": "Supabase",
+      "stars": 1701,
+      "repo": "supabase-community/supabase-mcp"
+    },
+    {
+      "id": "clerk",
+      "name": "Clerk",
+      "stars": 1491,
+      "repo": "clerk/javascript"
+    },
+    {
+      "id": "kubernetes",
+      "name": "Kubernetes",
+      "stars": 812,
+      "repo": "Flux159/mcp-server-kubernetes"
+    },
+    {
+      "id": "qdrant",
+      "name": "Qdrant",
+      "stars": 736,
+      "repo": "qdrant/mcp-server-qdrant"
+    },
+    {
+      "id": "postgres-crystal",
+      "name": "PostgreSQL (Crystal DBA)",
+      "stars": 575,
+      "repo": "crystaldba/postgres-mcp"
+    },
+    {
+      "id": "docker",
+      "name": "Docker",
+      "stars": 507,
+      "repo": "docker/mcp-servers"
+    },
+    {
+      "id": "just-prompt",
+      "name": "Just Prompt",
+      "stars": 503,
+      "repo": "disler/just-prompt"
+    },
+    {
+      "id": "spotify",
+      "name": "Spotify",
+      "stars": 379,
+      "repo": "varunneal/spotify-mcp"
+    },
+    {
+      "id": "clickup",
+      "name": "ClickUp",
+      "stars": 250,
+      "repo": "taazkareem/clickup-mcp-server"
+    },
+    {
+      "id": "nixos",
+      "name": "NixOS",
+      "stars": 164,
+      "repo": "utensils/mcp-nixos"
+    },
+    {
+      "id": "cognition-wheel",
+      "name": "Cognition Wheel",
+      "stars": 161,
+      "repo": "Hormold/cognition-wheel"
+    },
+    {
+      "id": "obsidian-advanced",
+      "name": "Obsidian (Advanced)",
+      "stars": 124,
+      "repo": "cyanheads/obsidian-mcp-server"
+    },
+    {
+      "id": "git-advanced",
+      "name": "Git (Advanced)",
+      "stars": 88,
+      "repo": "cyanheads/git-mcp-server"
+    },
+    {
+      "id": "github-project-manager",
+      "name": "GitHub Project Manager",
+      "stars": 37,
+      "repo": "kunwarVivek/mcp-github-project-manager"
+    },
+    {
+      "id": "npm-search",
+      "name": "NPM Search",
+      "stars": 10,
+      "repo": "btwiuse/npm-search-mcp-server"
+    },
+    {
+      "id": "sharepoint",
+      "name": "SharePoint",
+      "stars": 8,
+      "repo": "Sofias-ai/mcp-sharepoint"
+    },
+    {
+      "id": "shadcn-ui",
+      "name": "shadcn/ui",
+      "stars": 5,
+      "repo": "heilgar/shadcn-ui-mcp-server"
+    },
+    {
+      "id": "npm-docs",
+      "name": "NPM Documentation",
+      "stars": 1,
+      "repo": "bsmi021/mcp-npm_docs-server"
+    },
+    {
+      "id": "pr-reviewer",
+      "name": "PR Reviewer",
+      "stars": 1,
+      "repo": "elhadjaoui/pr_reviewer"
+    },
+    {
+      "id": "gdrive-ej",
+      "name": "Google Drive (Enhanced)",
+      "stars": 0,
+      "repo": "ejoyee/ej-mcp-server-gdrive"
+    }
+  ],
+  "errors": [
+    {
+      "id": "obsidian",
+      "name": "Obsidian",
+      "error": "HTTP 301: Moved Permanently"
+    }
+  ]
+}
