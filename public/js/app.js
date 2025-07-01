@@ -164,6 +164,18 @@ function displayServersFlat(servers, grid) {
                 <div class="status-indicator ${isInstalled ? 'installed' : ''}"></div>
             </div>
         `;
+        
+        // Add click handler for direct installation if no config required and not installed
+        if (!isInstalled && !requiresConfig) {
+            card.style.cursor = 'pointer';
+            card.addEventListener('click', (e) => {
+                // Don't trigger if clicking on buttons
+                if (!e.target.closest('button')) {
+                    quickInstallServer(key);
+                }
+            });
+        }
+        
         container.appendChild(card);
     });
     
