@@ -149,11 +149,12 @@ class MCPManager {
         console.log('5. Remove server');
         console.log('6. View configuration file');
         console.log('7. Search MCP servers');
-        console.log('8. Create Slack Bot Token');
-        console.log('9. Exit');
+        console.log('8. Update stale server stars');
+        console.log('9. Create Slack Bot Token');
+        console.log('10. Exit');
         console.log('\nPress q to quit at any time');
         
-        const choice = await this.prompt('\nSelect an option (1-9 or q): ');
+        const choice = await this.prompt('\nSelect an option (1-10 or q): ');
         return choice.trim();
     }
 
@@ -620,6 +621,75 @@ class MCPManager {
         await this.prompt('\nPress Enter to return to main menu (or q to quit)...');
     }
 
+    async updateStaleStars() {
+        console.log('\n⭐ Update Stale Server Stars');
+        console.log('=============================');
+        console.log('This will update GitHub star data for servers with outdated information.');
+        console.log('Only servers with data older than the specified threshold will be updated.\n');
+
+        // Show options for different staleness thresholds
+        console.log('Select staleness threshold:');
+        console.log('1. 7 days (update weekly)');
+        console.log('2. 14 days (update bi-weekly)');
+        console.log('3. 30 days (update monthly - default)');
+        console.log('4. Custom days');
+        console.log('5. Cancel');
+
+        const choice = await this.prompt('\nSelect threshold (1-5): ');
+        
+        let days;
+        switch (choice) {
+            case '1':
+                days = 7;
+                break;
+            case '2':
+                days = 14;
+                break;
+            case '3':
+                days = 30;
+                break;
+            case '4':
+                const customDays = await this.prompt('Enter number of days: ');
+                days = parseInt(customDays);
+                if (isNaN(days) || days < 1) {
+                    console.log('❌ Invalid number of days');
+                    return;
+                }
+                break;
+            case '5':
+                return;
+            default:
+                console.log('❌ Invalid selection');
+                return;
+        }
+
+        console.log(`\n🔄 Updating servers with star data older than ${days} days...`);
+        console.log('This may take a few minutes depending on how many servers need updates.\n');
+
+        try {
+            const { spawn } = require('child_process');
+            const updateProcess = spawn('node', ['fetch-github-stars.js', '--stale', '--days', days.toString()], {
+                stdio: 'inherit'
+            });
+
+            updateProcess.on('close', (code) => {
+                if (code === 0) {
+                    console.log('\n✅ Star data update completed successfully!');
+                } else {
+                    console.log('\n❌ Star data update failed');
+                }
+            });
+
+            updateProcess.on('error', (error) => {
+                console.log('❌ Error running star update:', error.message);
+                console.log('Make sure the fetch-github-stars.js script is available');
+            });
+
+        } catch (error) {
+            console.log('❌ Error starting update process:', error.message);
+        }
+    }
+
     async createSlackBotToken() {
         console.log('\n🤖 Create Slack Bot Token');
         console.log('==========================');
@@ -690,9 +760,12 @@ class MCPManager {
                         await this.searchMCPServers();
                         break;
                     case '8':
-                        await this.createSlackBotToken();
+                        await this.updateStaleStars();
                         break;
                     case '9':
+                        await this.createSlackBotToken();
+                        break;
+                    case '10':
                     case 'q':
                     case 'Q':
                         console.log('👋 Goodbye!');
