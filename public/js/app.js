@@ -162,6 +162,30 @@ function isServerInstalled(key, server) {
     });
 }
 
+function findExistingServerName(key, server) {
+    if (!currentConfig || !currentConfig.mcpServers) {
+        return key;
+    }
+
+    // First try exact key match
+    if (currentConfig.mcpServers[key]) {
+        return key;
+    }
+
+    // Then try command match
+    for (const [name, config] of Object.entries(currentConfig.mcpServers)) {
+        const installedCommand = config.command + " " + config.args.join(" ");
+        const normalizeCommand = (cmd) => cmd.trim().replace(/\s+/g, ' ');
+        
+        if (installedCommand === server.installCommand || 
+            normalizeCommand(installedCommand) === normalizeCommand(server.installCommand)) {
+            return name;
+        }
+    }
+
+    return key;
+}
+
 function displayServersFlat(servers, grid) {
     // Create a single container for all servers
     const container = document.createElement('div');
@@ -201,7 +225,7 @@ function displayServersFlat(servers, grid) {
         card.innerHTML = `
             <div>
                 <div class="card-header">
-                    <h3>${server.name}</h3>
+                    <h3>${server.githubLink ? `<a href="${server.githubLink}" target="_blank" rel="noopener noreferrer">${server.name}</a>` : server.name}</h3>
                     ${starsDisplay}
                 </div>
                 <p class="description">${server.description}</p>
@@ -302,7 +326,7 @@ function displayServersByCategory(servers, grid) {
 
             card.innerHTML = `
                 <div>
-                    <h3>${server.name}</h3>
+                    <h3>${server.githubLink ? `<a href="${server.githubLink}" target="_blank" rel="noopener noreferrer">${server.name}</a>` : server.name}</h3>
                     <p class="description">${server.description}</p>
                     ${starsDisplay}
                 </div>
@@ -405,7 +429,7 @@ function displayServersByStars(servers, grid) {
         card.innerHTML = `
             <div>
                 <div class="card-header">
-                    <h3>${server.name}</h3>
+                    <h3>${server.githubLink ? `<a href="${server.githubLink}" target="_blank" rel="noopener noreferrer">${server.name}</a>` : server.name}</h3>
                     ${starsDisplay}
                 </div>
                 <p class="description">${server.description}</p>
@@ -520,7 +544,12 @@ async function configureServer(key) {
     const modalTitle = document.getElementById('modalTitle');
     const modalBody = document.getElementById('modalBody');
     
-    modalTitle.textContent = `Configure ${server.name}`;
+    // Check if server is already installed to determine if this is a reconfigure
+    const isReconfigure = isServerInstalled(key, server);
+    const existingServerName = isReconfigure ? findExistingServerName(key, server) : key;
+    const existingConfig = isReconfigure ? currentConfig.mcpServers[existingServerName] : null;
+    
+    modalTitle.textContent = `${isReconfigure ? 'Reconfigure' : 'Configure'} ${server.name}`;
     
     // Check if .env file exists
     let envVariables = {};
@@ -534,11 +563,23 @@ async function configureServer(key) {
         console.error('Error fetching .env variables:', error);
     }
     
+    // Check if git repository is available
+    let gitInfo = null;
+    try {
+        const response = await fetch('/api/git-info');
+        const data = await response.json();
+        if (data.success && data.gitInfo) {
+            gitInfo = data.gitInfo;
+        }
+    } catch (error) {
+        console.error('Error fetching git info:', error);
+    }
+    
     let formHtml = `
         <form onsubmit="installServer(event, '${key}')">
             <div class="form-group">
                 <label>Server Name</label>
-                <input type="text" id="serverName" value="${key}" required>
+                <input type="text" id="serverName" value="${existingServerName}" required>
                 <small>Name for this server in your configuration</small>
             </div>
     `;
@@ -546,21 +587,57 @@ async function configureServer(key) {
     if (server.requiredEnvVars && server.requiredEnvVars.length > 0) {
         formHtml += '<h4>Required Configuration</h4>';
         server.requiredEnvVars.forEach(envVar => {
-            // Check if we have a saved value for this variable
-            const savedValue = savedVariables[envVar] || '';
-            const hasEnvValue = envVariables[envVar] !== undefined;
+            // Priority: existing config value > saved variable > empty
+            let currentValue = '';
+            if (existingConfig && existingConfig.env && existingConfig.env[envVar]) {
+                currentValue = existingConfig.env[envVar];
+            } else {
+                currentValue = savedVariables[envVar] || '';
+            }
+            
+            // Determine available sources
+            const sources = [];
+            if (savedVariables[envVar]) {
+                sources.push({ type: 'global', label: 'global variables', value: savedVariables[envVar] });
+            }
+            if (envVariables[envVar] !== undefined) {
+                sources.push({ type: 'env', label: '.env file', value: envVariables[envVar] });
+            }
+            if (gitInfo && (envVar === 'GITHUB_REPO' || envVar === 'GITHUB_OWNER')) {
+                const gitValue = envVar === 'GITHUB_REPO' ? gitInfo.fullName : gitInfo.owner;
+                sources.push({ type: 'git', label: 'git repository', value: gitValue });
+            }
+            
+            const hasMultipleSources = sources.length > 1;
+            const buttonWidth = hasMultipleSources ? '90px' : (sources.length === 1 ? '90px' : '8px');
+            
             formHtml += `
                 <div class="form-group">
                     <label>${envVar}</label>
                     <div style="position: relative;">
-                        <input type="text" name="env_${envVar}" id="env_${envVar}" value="${savedValue}" required style="padding-right: ${hasEnvValue ? '110px' : '8px'};">
-                        ${hasEnvValue ? `
-                            <button type="button" class="btn-env-fetch" onclick="fetchFromEnv('${envVar}')" title="Fetch from .env file">
-                                <span style="font-size: 12px;">📋 fetch from .env</span>
-                            </button>
-                        ` : ''}
+                        <input type="text" name="env_${envVar}" id="env_${envVar}" value="${currentValue}" required style="padding-right: ${buttonWidth};">
+                        ${sources.length > 0 ? (
+                            hasMultipleSources ? `
+                                <div class="fetch-dropdown" style="position: absolute; right: 4px; top: 50%; transform: translateY(-50%);">
+                                    <button type="button" class="btn-fetch-multi" onclick="toggleFetchDropdown('${envVar}')" title="Fetch from multiple sources">
+                                        <span style="font-size: 12px;">📥  fetch  ▼</span>
+                                    </button>
+                                    <div class="dropdown-content" id="dropdown-${envVar}" style="display: none;">
+                                        ${sources.map(source => `
+                                            <a href="#" onclick="fetchFromSource('${envVar}', '${source.type}'); return false;" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                                📋 ${source.label}: <span style="color: #666; font-size: 11px;">${source.value.length > 20 ? source.value.substring(0, 20) + '...' : source.value}</span>
+                                            </a>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            ` : `
+                                <button type="button" class="btn-fetch-single" onclick="fetchFromSource('${envVar}', '${sources[0].type}')" title="Fetch from ${sources[0].label}">
+                                    <span style="font-size: 12px;">📋 fetch from ${sources[0].type}</span>
+                                </button>
+                            `
+                        ) : ''}
                     </div>
-                    ${savedValue ? '<small style="color: #27ae60;">✓ Using saved value from Variables tab</small>' : ''}
+                    ${currentValue && (existingConfig && existingConfig.env && existingConfig.env[envVar]) ? '<small style="color: #3498db;">✓ Current server value</small>' : (currentValue ? '<small style="color: #27ae60;">✓ Using saved value from Variables tab</small>' : '')}
                     ${key === 'slack' && envVar === 'SLACK_BOT_TOKEN' ? 
                         `<button type="button" class="btn-secondary" style="margin-top: 8px;" onclick="getSlackTokenWithSkyvern()">
                             Get Token with Skyvern
@@ -573,21 +650,54 @@ async function configureServer(key) {
     if (server.optionalParams && server.optionalParams.length > 0) {
         formHtml += '<h4>Optional Parameters</h4>';
         server.optionalParams.forEach(param => {
-            // Check if we have a saved value for this parameter
-            const savedValue = savedVariables[param] || '';
-            const hasEnvValue = envVariables[param] !== undefined;
+            // Priority: existing config value > saved variable > empty
+            let currentValue = '';
+            if (existingConfig && existingConfig.env && existingConfig.env[param]) {
+                currentValue = existingConfig.env[param];
+            } else {
+                currentValue = savedVariables[param] || '';
+            }
+            
+            // Determine available sources for optional params
+            const sources = [];
+            if (savedVariables[param]) {
+                sources.push({ type: 'global', label: 'global variables', value: savedVariables[param] });
+            }
+            if (envVariables[param] !== undefined) {
+                sources.push({ type: 'env', label: '.env file', value: envVariables[param] });
+            }
+            
+            const hasMultipleSources = sources.length > 1;
+            const buttonWidth = hasMultipleSources ? '90px' : (sources.length === 1 ? '90px' : '8px');
+            
             formHtml += `
                 <div class="form-group">
                     <label>${param}</label>
                     <div style="position: relative;">
-                        <input type="text" name="opt_${param}" value="${savedValue}" style="padding-right: ${hasEnvValue ? '110px' : '8px'};">
-                        ${hasEnvValue ? `
-                            <button type="button" class="btn-env-fetch" onclick="fetchFromEnv('${param}')" title="Fetch from .env file">
-                                <span style="font-size: 12px;">📋 fetch from .env</span>
-                            </button>
-                        ` : ''}
+                        <input type="text" name="opt_${param}" value="${currentValue}" style="padding-right: ${buttonWidth};">
+                        ${sources.length > 0 ? (
+                            hasMultipleSources ? `
+                                <div class="fetch-dropdown" style="position: absolute; right: 4px; top: 50%; transform: translateY(-50%);">
+                                    <button type="button" class="btn-fetch-multi" onclick="toggleFetchDropdown('opt_${param}')" title="Fetch from multiple sources">
+                                        <span style="font-size: 12px;">📥 fetch from ▼</span>
+                                    </button>
+                                    <div class="dropdown-content" id="dropdown-opt_${param}" style="display: none;">
+                                        ${sources.map(source => `
+                                            <a href="#" onclick="fetchFromSourceOpt('${param}', '${source.type}'); return false;">
+                                                📋 ${source.label}
+                                                <small style="display: block; color: #666; font-size: 10px; margin-top: 2px; word-break: break-all;">${source.value.length > 30 ? source.value.substring(0, 30) + '...' : source.value}</small>
+                                            </a>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            ` : `
+                                <button type="button" class="btn-fetch-single" onclick="fetchFromSourceOpt('${param}', '${sources[0].type}')" title="Fetch from ${sources[0].label}">
+                                    <span style="font-size: 12px;">📋 fetch from ${sources[0].type}</span>
+                                </button>
+                            `
+                        ) : ''}
                     </div>
-                    ${savedValue ? '<small style="color: #27ae60;">✓ Using saved value from Variables tab</small>' : ''}
+                    ${currentValue && (existingConfig && existingConfig.env && existingConfig.env[param]) ? '<small style="color: #3498db;">✓ Current server value</small>' : (currentValue ? '<small style="color: #27ae60;">✓ Using saved value from Variables tab</small>' : '')}
                 </div>
             `;
         });
@@ -595,7 +705,7 @@ async function configureServer(key) {
     
     formHtml += `
         <div class="button-group">
-            <button type="submit" class="btn-primary">Add Server</button>
+            <button type="submit" class="btn-primary">${isReconfigure ? 'Update Server' : 'Add Server'}</button>
             <button type="button" class="btn-secondary" onclick="closeModal()">Cancel</button>
         </div>
     </form>
@@ -672,6 +782,10 @@ function installServer(event, key) {
     const form = event.target;
     const serverName = form.serverName.value;
     
+    // Check if this is an update (reconfigure)
+    const isReconfigure = isServerInstalled(key, server);
+    const existingServerName = isReconfigure ? findExistingServerName(key, server) : null;
+    
     const installParts = server.installCommand.split(' ');
     const command = installParts[0];
     const args = installParts.slice(1);
@@ -704,6 +818,11 @@ function installServer(event, key) {
                 saveVariables(); // Save the updated variable
             }
         }
+    }
+    
+    // If reconfiguring and name changed, remove old entry
+    if (isReconfigure && existingServerName && existingServerName !== serverName) {
+        delete currentConfig.mcpServers[existingServerName];
     }
     
     currentConfig.mcpServers[serverName] = serverConfig;
@@ -1282,19 +1401,27 @@ async function updateVariablesList() {
     Object.entries(variableUsage).sort().forEach(([varName, servers]) => {
         const item = document.createElement('div');
         item.className = 'variable-item';
+        item.setAttribute('data-var-name', varName);
         
         const value = savedVariables[varName] || '';
         const hasEnvValue = envVariables[varName] !== undefined;
         const isEmpty = !value;
         
         item.innerHTML = `
-            <div class="variable-name">${varName}</div>
+            <div class="variable-header">
+                <div class="variable-name">${varName}</div>
+                <button type="button" class="variable-save-btn" onclick="saveIndividualVariable('${varName}')" title="Save this variable">
+                    Save
+                </button>
+            </div>
             <div style="position: relative;">
                 <input type="text" 
                        class="variable-input" 
                        data-var-name="${varName}"
+                       data-original-value="${value}"
                        value="${value}"
                        placeholder="Enter value for ${varName}"
+                       oninput="handleVariableChange('${varName}')"
                        style="padding-right: ${hasEnvValue && isEmpty ? '110px' : '8px'};">
                 ${hasEnvValue && isEmpty ? `
                     <button type="button" class="btn-env-fetch" onclick="fetchFromEnvForVariables('${varName}')" title="Fetch from .env file">
@@ -1315,6 +1442,76 @@ async function updateVariablesList() {
     
     if (Object.keys(variableUsage).length === 0) {
         container.innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">No environment variables found in configured servers.</p>';
+    }
+}
+
+// Handle input changes to show save button and change background
+function handleVariableChange(varName) {
+    const input = document.querySelector(`input[data-var-name="${varName}"]`);
+    const item = document.querySelector(`.variable-item[data-var-name="${varName}"]`);
+    const saveBtn = item.querySelector('.variable-save-btn');
+    
+    if (!input || !item || !saveBtn) return;
+    
+    const originalValue = input.getAttribute('data-original-value') || '';
+    const currentValue = input.value.trim();
+    
+    // Check if value has changed
+    if (currentValue !== originalValue) {
+        // Show save button and change background to ember yellow
+        saveBtn.classList.add('show');
+        item.classList.add('changed');
+        item.classList.remove('saved', 'saved-success');
+    } else {
+        // Hide save button and remove changed background
+        saveBtn.classList.remove('show');
+        item.classList.remove('changed', 'saved', 'saved-success');
+    }
+}
+
+// Save individual variable
+async function saveIndividualVariable(varName) {
+    const input = document.querySelector(`input[data-var-name="${varName}"]`);
+    const item = document.querySelector(`.variable-item[data-var-name="${varName}"]`);
+    const saveBtn = item.querySelector('.variable-save-btn');
+    
+    if (!input || !item || !saveBtn) return;
+    
+    const value = input.value.trim();
+    
+    try {
+        // Create a copy of current saved variables and update the specific one
+        const updatedVariables = { ...savedVariables };
+        if (value) {
+            updatedVariables[varName] = value;
+        } else {
+            delete updatedVariables[varName];
+        }
+        
+        const response = await fetch('/api/variables', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(updatedVariables)
+        });
+        
+        if (response.ok) {
+            // Update saved variables
+            savedVariables = updatedVariables;
+            
+            // Update the original value attribute
+            input.setAttribute('data-original-value', value);
+            
+            // Hide save button and show success feedback
+            saveBtn.classList.remove('show');
+            item.classList.remove('changed');
+            item.classList.add('saved-success');
+            
+            showMessage(`Variable ${varName} saved successfully`, 'success');
+        } else {
+            throw new Error('Failed to save variable');
+        }
+    } catch (error) {
+        showMessage(`Error saving ${varName}: ` + error.message, 'error');
     }
 }
 
@@ -1357,11 +1554,19 @@ switchTab = function(tabName) {
     }
 };
 
-// Close modal when clicking outside
+// Close modal when clicking outside, and close dropdowns when clicking outside
 window.onclick = function(event) {
     const modal = document.getElementById('serverModal');
     if (event.target === modal) {
         closeModal();
+    }
+    
+    // Close dropdowns when clicking outside
+    if (!event.target.closest('.fetch-dropdown')) {
+        const allDropdowns = document.querySelectorAll('.dropdown-content');
+        allDropdowns.forEach(dropdown => {
+            dropdown.style.display = 'none';
+        });
     }
 }
 
@@ -1391,6 +1596,149 @@ async function fetchFromEnv(varName) {
     }
 }
 
+// Function to fetch git repository information and populate input
+async function fetchFromGit(varName) {
+    try {
+        const response = await fetch('/api/git-info');
+        const data = await response.json();
+        
+        if (data.success && data.gitInfo) {
+            const gitInfo = data.gitInfo;
+            let value = '';
+            
+            if (varName === 'GITHUB_REPO') {
+                value = gitInfo.fullName;
+            } else if (varName === 'GITHUB_OWNER') {
+                value = gitInfo.owner;
+            }
+            
+            if (value) {
+                // Find the input field and set its value
+                const envInput = document.getElementById(`env_${varName}`);
+                const optInput = document.querySelector(`input[name="opt_${varName}"]`);
+                
+                if (envInput) {
+                    envInput.value = value;
+                } else if (optInput) {
+                    optInput.value = value;
+                }
+                
+                // Auto-fill GITHUB_OWNER if GITHUB_REPO was fetched
+                if (varName === 'GITHUB_REPO') {
+                    const ownerInput = document.getElementById('env_GITHUB_OWNER');
+                    if (ownerInput && !ownerInput.value) {
+                        ownerInput.value = gitInfo.owner;
+                        showMessage(`Fetched ${varName} from git and auto-filled GITHUB_OWNER`, 'success');
+                    } else {
+                        showMessage(`Fetched ${varName} from git repository`, 'success');
+                    }
+                } else {
+                    showMessage(`Fetched ${varName} from git repository`, 'success');
+                }
+            } else {
+                showMessage(`Could not extract ${varName} from git repository`, 'error');
+            }
+        } else {
+            showMessage('No git repository detected or not a GitHub repository', 'error');
+        }
+    } catch (error) {
+        showMessage('Error fetching from git repository', 'error');
+    }
+}
+
+// Function to toggle dropdown visibility
+function toggleFetchDropdown(varName) {
+    const dropdown = document.getElementById(`dropdown-${varName}`);
+    const allDropdowns = document.querySelectorAll('.dropdown-content');
+    
+    // Close all other dropdowns
+    allDropdowns.forEach(d => {
+        if (d !== dropdown) {
+            d.style.display = 'none';
+        }
+    });
+    
+    // Toggle current dropdown
+    dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+}
+
+// Function to fetch from a specific source
+async function fetchFromSource(varName, sourceType) {
+    // Close dropdown
+    const dropdown = document.getElementById(`dropdown-${varName}`);
+    if (dropdown) {
+        dropdown.style.display = 'none';
+    }
+    
+    try {
+        switch (sourceType) {
+            case 'global':
+                // Fetch from saved variables
+                if (savedVariables[varName]) {
+                    const input = document.getElementById(`env_${varName}`);
+                    if (input) {
+                        input.value = savedVariables[varName];
+                        showMessage(`Fetched ${varName} from global variables`, 'success');
+                    }
+                } else {
+                    showMessage(`${varName} not found in global variables`, 'error');
+                }
+                break;
+                
+            case 'env':
+                // Use existing fetchFromEnv function
+                await fetchFromEnv(varName);
+                break;
+                
+            case 'git':
+                // Use existing fetchFromGit function
+                await fetchFromGit(varName);
+                break;
+                
+            default:
+                showMessage(`Unknown source type: ${sourceType}`, 'error');
+        }
+    } catch (error) {
+        showMessage(`Error fetching ${varName} from ${sourceType}`, 'error');
+    }
+}
+
+// Function to fetch from a specific source for optional parameters
+async function fetchFromSourceOpt(paramName, sourceType) {
+    // Close dropdown
+    const dropdown = document.getElementById(`dropdown-opt_${paramName}`);
+    if (dropdown) {
+        dropdown.style.display = 'none';
+    }
+    
+    try {
+        switch (sourceType) {
+            case 'global':
+                // Fetch from saved variables
+                if (savedVariables[paramName]) {
+                    const input = document.querySelector(`input[name="opt_${paramName}"]`);
+                    if (input) {
+                        input.value = savedVariables[paramName];
+                        showMessage(`Fetched ${paramName} from global variables`, 'success');
+                    }
+                } else {
+                    showMessage(`${paramName} not found in global variables`, 'error');
+                }
+                break;
+                
+            case 'env':
+                // Use existing fetchFromEnv function with parameter name
+                await fetchFromEnv(paramName);
+                break;
+                
+            default:
+                showMessage(`Unknown source type: ${sourceType}`, 'error');
+        }
+    } catch (error) {
+        showMessage(`Error fetching ${paramName} from ${sourceType}`, 'error');
+    }
+}
+
 // Function to fetch value from .env for Variables tab
 async function fetchFromEnvForVariables(varName) {
     try {
@@ -1403,10 +1751,9 @@ async function fetchFromEnvForVariables(varName) {
             
             if (variableInput) {
                 variableInput.value = data.variables[varName];
-                // Update saved variables immediately
-                savedVariables[varName] = data.variables[varName];
-                // Refresh the list to hide the fetch button
-                updateVariablesList();
+                // Trigger change detection
+                handleVariableChange(varName);
+                showMessage(`Fetched ${varName} from .env file`, 'success');
             }
         } else {
             showMessage(`${varName} not found in .env file`, 'error');
@@ -1602,9 +1949,15 @@ async function performAutoUpdate() {
 
 // Make functions globally available
 window.fetchFromEnv = fetchFromEnv;
+window.fetchFromGit = fetchFromGit;
 window.fetchFromEnvForVariables = fetchFromEnvForVariables;
+window.toggleFetchDropdown = toggleFetchDropdown;
+window.fetchFromSource = fetchFromSource;
+window.fetchFromSourceOpt = fetchFromSourceOpt;
 window.uninstallServer = uninstallServer;
 window.performAutoUpdate = performAutoUpdate;
+window.handleVariableChange = handleVariableChange;
+window.saveIndividualVariable = saveIndividualVariable;
 
 // Initialize on load
 document.addEventListener('DOMContentLoaded', () => {
