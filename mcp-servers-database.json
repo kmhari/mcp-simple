@@ -43,6 +43,18 @@
     "usageInstructions": "Perform Git operations like commit, push, pull, and branch management",
     "category": "Version Control"
   },
+  "skyvern": {
+    "name": "Skyvern",
+    "githubLink": "https://github.com/Skyvern-AI/skyvern",
+    "package": "skyvern",
+    "description": "Advanced browser automation with AI-powered web interaction",
+    "installCommand": "python -m skyvern run mcp",
+    "requiredEnvVars": ["SKYVERN_API_KEY"],
+    "optionalParams": ["SKYVERN_BASE_URL"],
+    "defaultEnvVars": {"SKYVERN_BASE_URL": "https://api.skyvern.com"},
+    "usageInstructions": "Automate browser-based workflows, fill forms, download files, and interact with websites using AI",
+    "category": "Browser Automation"
+  },
   "memory": {
     "name": "Memory",
     "githubLink": "https://github.com/modelcontextprotocol/servers/tree/main/src/memory",
@@ -207,18 +219,7 @@
     "optionalParams": ["QDRANT_API_KEY"],
     "usageInstructions": "Manage collections, insert vectors, perform similarity searches, and handle vector data in Qdrant. Requires Qdrant instance URL.",
     "category": "Databases"
-  },
-  "skyvern": {
-    "name": "Skyvern",
-    "githubLink": "https://github.com/Skyvern-AI/skyvern",
-    "package": "skyvern",
-    "description": "Browser automation for AI applications - enables form filling, file downloads, and web research",
-    "installCommand": "pip install skyvern",
-    "requiredEnvVars": ["SKYVERN_BASE_URL", "SKYVERN_API_KEY"],
-    "optionalParams": [],
-    "usageInstructions": "Connect AI applications to the browser for automated web interactions. Supports form filling, file downloads, web research, and other browser-based tasks. Run 'skyvern init' to configure, then optionally 'skyvern run server' for local deployment.",
-    "category": "Automation"
-  },
+  },  
   "nixos": {
     "name": "NixOS",
     "githubLink": "https://github.com/utensils/mcp-nixos",
@@ -504,5 +505,27 @@
     "optionalParams": ["DOCKER_CERT_PATH", "DOCKER_TLS_VERIFY"],
     "usageInstructions": "Execute code securely in isolated Docker containers, manage containers and images, enable sandboxed AI operations.",
     "category": "DevOps"
+  },
+  "json": {
+    "name": "JSON",
+    "githubLink": "https://github.com/gongrzhe/json-mcp-server",
+    "package": "@gongrzhe/server-json-mcp",
+    "description": "Query and manipulate JSON data using JSONPath expressions",
+    "installCommand": "npx -y @gongrzhe/server-json-mcp@1.0.3",
+    "requiredEnvVars": [],
+    "optionalParams": [],
+    "usageInstructions": "Query JSON data using JSONPath (start with $), filter arrays, perform string/numeric/date operations, and data aggregation",
+    "category": "Data Processing"
+  },
+  "slack": {
+    "name": "Slack",
+    "githubLink": "https://github.com/modelcontextprotocol/servers/tree/main/src/slack",
+    "package": "@modelcontextprotocol/server-slack",
+    "description": "Official Slack integration for posting messages, managing channels, and interacting with Slack workspaces",
+    "installCommand": "npx -y @modelcontextprotocol/server-slack",
+    "requiredEnvVars": ["SLACK_BOT_TOKEN", "SLACK_TEAM_ID"],
+    "optionalParams": ["SLACK_CHANNEL_IDS"],
+    "usageInstructions": "Post messages, reply to threads, add reactions, get channel history, and manage Slack workspace interactions. Requires creating a Slack App with bot token scopes and workspace installation.",
+    "category": "Communication"
   }
 }

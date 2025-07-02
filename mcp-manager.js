@@ -149,10 +149,11 @@ class MCPManager {
         console.log('5. Remove server');
         console.log('6. View configuration file');
         console.log('7. Search MCP servers');
-        console.log('8. Exit');
+        console.log('8. Create Slack Bot Token');
+        console.log('9. Exit');
         console.log('\nPress q to quit at any time');
         
-        const choice = await this.prompt('\nSelect an option (1-8 or q): ');
+        const choice = await this.prompt('\nSelect an option (1-9 or q): ');
         return choice.trim();
     }
 
@@ -242,6 +243,15 @@ class MCPManager {
             env: {}
         };
         
+        // Apply default environment variables if they exist
+        if (server.defaultEnvVars) {
+            Object.assign(serverConfig.env, server.defaultEnvVars);
+            console.log(`\n✅ Applied default values:`);
+            Object.entries(server.defaultEnvVars).forEach(([key, value]) => {
+                console.log(`   ${key}: ${value}`);
+            });
+        }
+        
         // Handle required environment variables
         if (server.requiredEnvVars && server.requiredEnvVars.length > 0) {
             console.log(`\n⚙️  This server requires the following configuration:`);
@@ -287,7 +297,9 @@ class MCPManager {
         if (server.optionalParams && server.optionalParams.length > 0) {
             console.log(`\n📝 Optional parameters (press Enter to skip):`);
             for (const param of server.optionalParams) {
-                const value = await this.prompt(`${param}: `);
+                const currentValue = serverConfig.env[param];
+                const promptText = currentValue ? `${param} (current: ${currentValue}): ` : `${param}: `;
+                const value = await this.prompt(promptText);
                 if (value) {
                     serverConfig.env[param] = value;
                 }
@@ -320,13 +332,24 @@ class MCPManager {
             env: {}
         };
         
+        // Apply default environment variables if they exist
+        if (server.defaultEnvVars) {
+            Object.assign(serverConfig.env, server.defaultEnvVars);
+            console.log(`\n✅ Applied default values:`);
+            Object.entries(server.defaultEnvVars).forEach(([key, value]) => {
+                console.log(`   ${key}: ${value}`);
+            });
+        }
+        
         // Handle optional parameters if any
         if (server.optionalParams && server.optionalParams.length > 0) {
             const addOptional = await this.prompt(`\n📝 Configure optional parameters? (y/N): `);
             if (addOptional.toLowerCase() === 'y') {
                 console.log(`\n📝 Optional parameters (press Enter to skip):`);
                 for (const param of server.optionalParams) {
-                    const value = await this.prompt(`${param}: `);
+                    const currentValue = serverConfig.env[param];
+                    const promptText = currentValue ? `${param} (current: ${currentValue}): ` : `${param}: `;
+                    const value = await this.prompt(promptText);
                     if (value) {
                         serverConfig.env[param] = value;
                     }
@@ -597,6 +620,27 @@ class MCPManager {
         await this.prompt('\nPress Enter to return to main menu (or q to quit)...');
     }
 
+    async createSlackBotToken() {
+        console.log('\n🤖 Create Slack Bot Token');
+        console.log('==========================');
+        console.log('This feature uses browser automation to create Slack bot tokens.');
+        console.log('You will need your Slack workspace credentials.\n');
+
+        const confirm = await this.prompt('Continue? (y/N): ');
+        if (confirm.toLowerCase() !== 'y') {
+            return;
+        }
+
+        try {
+            const SlackBotTokenAutomation = require('./slack-automation');
+            const automation = new SlackBotTokenAutomation();
+            await automation.run();
+        } catch (error) {
+            console.log('❌ Error running Slack automation:', error.message);
+            console.log('Make sure Playwright is installed: npx playwright install');
+        }
+    }
+
     async run() {
         console.log('Welcome to MCP Server Manager! 🚀');
         console.log(''); // Add empty line for better formatting
@@ -646,6 +690,9 @@ class MCPManager {
                         await this.searchMCPServers();
                         break;
                     case '8':
+                        await this.createSlackBotToken();
+                        break;
+                    case '9':
                     case 'q':
                     case 'Q':
                         console.log('👋 Goodbye!');
@@ -840,6 +887,36 @@ class MCPManager {
             }
         });
         
+        // Slack automation endpoint
+        app.post('/api/slack-automation', async (req, res) => {
+            try {
+                const { action } = req.body;
+                
+                if (action === 'create_slack_token') {
+                    const SlackBotTokenAutomation = require('./slack-automation');
+                    const automation = new SlackBotTokenAutomation();
+                    
+                    // Run automation programmatically
+                    const result = await automation.createSlackBotToken(
+                        '', // workspaceUrl - will prompt in browser
+                        '', // email - will prompt in browser
+                        '', // password - will prompt in browser
+                        'Bot App', // default app name
+                        'Created via MCP Manager' // default description
+                    );
+                    
+                    res.json(result);
+                } else {
+                    res.status(400).json({ error: 'Unknown action' });
+                }
+            } catch (error) {
+                res.status(500).json({ 
+                    success: false, 
+                    error: error.message 
+                });
+            }
+        });
+
         // Auto-update endpoint
         app.post('/api/auto-update', (req, res) => {
             try {
