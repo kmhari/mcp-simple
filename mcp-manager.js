@@ -34,6 +34,41 @@ class MCPManager {
         return {};
     }
 
+    detectGitRepository() {
+        try {
+            // Check if we're in a git repository
+            const gitDir = execSync('git rev-parse --show-toplevel', { 
+                encoding: 'utf8', 
+                stdio: 'pipe',
+                cwd: process.cwd()
+            }).trim();
+            
+            // Get remote origin URL
+            const remoteUrl = execSync('git config --get remote.origin.url', { 
+                encoding: 'utf8', 
+                stdio: 'pipe',
+                cwd: gitDir
+            }).trim();
+            
+            // Parse GitHub repository from remote URL
+            let repoInfo = null;
+            const githubMatch = remoteUrl.match(/github\.com[:/]([^/]+)\/([^/]+?)(?:\.git)?$/);
+            if (githubMatch) {
+                repoInfo = {
+                    owner: githubMatch[1],
+                    repo: githubMatch[2],
+                    fullName: `${githubMatch[1]}/${githubMatch[2]}`,
+                    url: remoteUrl
+                };
+            }
+            
+            return repoInfo;
+        } catch (error) {
+            // Not in a git repository or git not available
+            return null;
+        }
+    }
+
     ensureConfigDir() {
         const configDir = path.dirname(this.locationsFile);
         try {
@@ -211,7 +246,37 @@ class MCPManager {
         if (server.requiredEnvVars && server.requiredEnvVars.length > 0) {
             console.log(`\n⚙️  This server requires the following configuration:`);
             for (const envVar of server.requiredEnvVars) {
-                const value = await this.prompt(`${envVar}: `);
+                let value = '';
+                
+                // Special handling for GITHUB_REPO
+                if (envVar === 'GITHUB_REPO') {
+                    const gitInfo = this.detectGitRepository();
+                    if (gitInfo) {
+                        console.log(`\n🔍 Detected git repository: ${gitInfo.fullName}`);
+                        const useDetected = await this.prompt(`Use detected repository "${gitInfo.fullName}"? (Y/n): `);
+                        if (useDetected.toLowerCase() !== 'n') {
+                            value = gitInfo.fullName;
+                            
+                            // Auto-fill GITHUB_OWNER if it's also required and not yet set
+                            if (server.requiredEnvVars.includes('GITHUB_OWNER') && !serverConfig.env['GITHUB_OWNER']) {
+                                serverConfig.env['GITHUB_OWNER'] = gitInfo.owner;
+                                console.log(`✅ Auto-filled GITHUB_OWNER: ${gitInfo.owner}`);
+                            }
+                        }
+                    }
+                    
+                    if (!value) {
+                        value = await this.prompt(`${envVar} (format: owner/repo): `);
+                    }
+                } else {
+                    // Skip GITHUB_OWNER if already set from git detection
+                    if (envVar === 'GITHUB_OWNER' && serverConfig.env['GITHUB_OWNER']) {
+                        console.log(`✅ Using GITHUB_OWNER: ${serverConfig.env['GITHUB_OWNER']}`);
+                        continue;
+                    }
+                    value = await this.prompt(`${envVar}: `);
+                }
+                
                 if (value) {
                     serverConfig.env[envVar] = value;
                 }
@@ -719,6 +784,16 @@ class MCPManager {
             } catch (error) {
                 console.error('Error reading .env file:', error);
                 res.json({ exists: false, variables: {} });
+            }
+        });
+        
+        // Git repository detection endpoint
+        app.get('/api/git-info', (req, res) => {
+            try {
+                const gitInfo = this.detectGitRepository();
+                res.json({ success: true, gitInfo });
+            } catch (error) {
+                res.json({ success: false, error: error.message });
             }
         });
         
