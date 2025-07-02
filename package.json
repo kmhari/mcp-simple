@@ -8,7 +8,11 @@
     "create-slack-bot": "./bin/create-slack-bot"
   },
   "scripts": {
-    "test": "echo \"No tests specified\" && exit 0"
+    "test": "echo \"No tests specified\" && exit 0",
+    "fetch-stars": "node fetch-github-stars.js",
+    "update-stale-stars": "node fetch-github-stars.js --stale",
+    "update-stars-7d": "node fetch-github-stars.js --stale --days 7",
+    "update-stars-14d": "node fetch-github-stars.js --stale --days 14"
   },
   "keywords": [
     "mcp",
