@@ -527,5 +527,17 @@
     "optionalParams": ["SLACK_CHANNEL_IDS"],
     "usageInstructions": "Post messages, reply to threads, add reactions, get channel history, and manage Slack workspace interactions. Requires creating a Slack App with bot token scopes and workspace installation.",
     "category": "Communication"
+  },
+  "slack-stealth": {
+    "name": "Slack Stealth",
+    "githubLink": "https://github.com/korotovsky/slack-mcp-server",
+    "package": "slack-mcp-server",
+    "description": "Advanced Slack MCP server with stealth mode, OAuth support, and flexible message retrieval without additional workspace permissions",
+    "installCommand": "npx -y slack-mcp-server@latest",
+    "requiredEnvVars": ["SLACK_MCP_XOXC_TOKEN", "SLACK_MCP_XOXD_TOKEN"],
+    "optionalParams": ["SLACK_MCP_SERVER_PORT", "SLACK_MCP_SERVER_HOST", "SLACK_MCP_XOXP_TOKEN"],
+    "defaultEnvVars": {"SLACK_MCP_SERVER_PORT": "3001", "SLACK_MCP_SERVER_HOST": "127.0.0.1"},
+    "usageInstructions": "Retrieve channel/thread messages, list channels, and access DMs with minimal workspace permissions. Supports browser-based tokens (XOXC/XOXD) or OAuth tokens (XOXP). Use stealth mode for enhanced privacy.",
+    "category": "Communication"
   }
 }
