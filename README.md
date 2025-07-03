@@ -1,6 +1,6 @@
 # MCP Manager
 
-Modern web interface and CLI tool for managing MCP (Model Context Protocol) server configurations.
+Modern web interface, CLI tool, and intelligent MCP server for managing MCP (Model Context Protocol) server configurations with tech stack detection and recommendations.
 
 ## 🌐 Web Interface Preview
 
@@ -86,6 +86,25 @@ npm install @oglabs/mcp
 
 ## Usage
 
+### 🤖 MCP Server Mode (New!)
+
+Use as an intelligent MCP server that helps agents discover tech stacks and recommend relevant MCP servers:
+
+```bash
+# Run as MCP server
+node mcp-server.js
+# or
+npm run mcp-server
+
+# Test the server functionality
+node test-mcp-server.js
+```
+
+**MCP Server Tools Available:**
+- `detect_tech_stack` - Analyzes project files to identify technologies used
+- `recommend_mcp_servers` - Suggests relevant MCP servers based on detected tech stack  
+- `query_mcp_database` - Searches MCP servers database with intelligent matching
+
 ### 🌐 Web Interface Mode (Recommended)
 
 Launch the modern web interface for the best experience:
@@ -166,6 +185,16 @@ Version Check → Update Available → Mandatory Modal → Progress Bar → Auto
 
 ## Features
 
+### 🤖 MCP Server Mode (New!)
+- 🔍 **Tech Stack Detection**: Analyzes project files to identify languages, frameworks, databases, and tools
+- 🎯 **Smart Recommendations**: Suggests relevant MCP servers based on detected technology stack
+- 📊 **Intelligent Scoring**: Ranks recommendations with explanations for why each server is useful
+- 🔎 **Database Search**: Query 35+ MCP servers with fuzzy matching and alias support
+- 🏷️ **Category Filtering**: Filter searches by server categories (Databases, Development, etc.)
+- 📁 **Multi-format Support**: Detects package.json, requirements.txt, Cargo.toml, go.mod, and more
+- 🧠 **Context Awareness**: Considers project context for more accurate recommendations
+- ✅ **Comprehensive Testing**: Built-in test suite for verifying functionality
+
 ### 🌐 Web Mode (Recommended)
 - 🎨 **Modern Design**: Beautiful depth-based UI with soft shadows and JetBrains Mono font
 - 📱 **Fully Responsive**: Optimized for desktop, tablet, and mobile devices
@@ -222,6 +251,58 @@ MCP Manager manages `.mcp.json` files in your current working directory. The con
 ```
 
 ## Examples
+
+### 🤖 MCP Server Examples
+
+#### Tech Stack Detection
+```bash
+# Start the MCP server
+npm run mcp-server
+
+# In another terminal, test detection
+echo '{"method": "tools/call", "params": {"name": "detect_tech_stack", "arguments": {"project_path": "/path/to/project"}}}' | nc localhost 3000
+```
+
+#### Get MCP Server Recommendations
+```json
+{
+  "method": "tools/call",
+  "params": {
+    "name": "recommend_mcp_servers",
+    "arguments": {
+      "tech_stack": ["javascript", "react", "postgresql"],
+      "context": "building a web application"
+    }
+  }
+}
+```
+
+#### Search MCP Database
+```json
+{
+  "method": "tools/call",
+  "params": {
+    "name": "query_mcp_database",
+    "arguments": {
+      "query": "database",
+      "category": "Databases"
+    }
+  }
+}
+```
+
+#### Integration with Claude Desktop
+Add to your `.mcp.json` configuration:
+```json
+{
+  "mcpServers": {
+    "tech-stack-advisor": {
+      "command": "node",
+      "args": ["/path/to/mcp-server.js"]
+    }
+  }
+}
+```
 
 ### 🌐 Web Interface Examples
 
