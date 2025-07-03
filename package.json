@@ -1,6 +1,6 @@
 {
   "name": "@oglabs/mcp",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "Interactive CLI tool and intelligent MCP server for managing MCP (Model Context Protocol) server configurations with tech stack detection and recommendations",
   "main": "mcp-manager.js",
   "bin": {

@@ -1,4 +1,29 @@
 {
+  "mcp-tech-stack-advisor": {
+    "name": "MCP Tech Stack Advisor",
+    "githubLink": "https://github.com/kmhari/mcp-simple",
+    "package": "@oglabs/mcp",
+    "description": "Intelligent MCP server that detects tech stacks and recommends relevant MCP servers with smart analysis",
+    "installCommand": "npx @oglabs/mcp --server",
+    "requiredEnvVars": [],
+    "optionalParams": [],
+    "usageInstructions": "Provides tech stack detection, MCP server recommendations, and database search capabilities for intelligent project analysis",
+    "category": "Development Tools",
+    "github": {
+      "owner": "kmhari",
+      "repo": "mcp-simple",
+      "name": "mcp-simple",
+      "full_name": "kmhari/mcp-simple",
+      "description": "Interactive CLI tool and intelligent MCP server for managing MCP (Model Context Protocol) server configurations with tech stack detection and recommendations",
+      "stars": 0,
+      "forks": 0,
+      "language": "JavaScript",
+      "updated_at": "2025-07-03T00:00:00Z",
+      "created_at": "2024-01-01T00:00:00Z",
+      "url": "https://github.com/kmhari/mcp-simple",
+      "fetched_at": "2025-07-03T00:00:00Z"
+    }
+  },
   "everything": {
     "name": "Everything",
     "githubLink": "https://github.com/modelcontextprotocol/servers/tree/main/src/everything",
