@@ -23,6 +23,42 @@ h1 {
     text-align: center;
 }
 
+.header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.header-container h1 {
+    margin-bottom: 0;
+    flex-grow: 1;
+}
+
+.btn-close-server {
+    background: #e74c3c;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.3s;
+    box-shadow: 0 2px 4px rgba(231, 76, 60, 0.3);
+}
+
+.btn-close-server:hover {
+    background: #c0392b;
+    box-shadow: 0 4px 8px rgba(231, 76, 60, 0.4);
+    transform: translateY(-1px);
+}
+
+.btn-close-server:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(231, 76, 60, 0.3);
+}
+
 .tabs {
     display: flex;
     margin-bottom: 30px;
@@ -295,6 +331,27 @@ h1 {
 
 .server-card.uninstalling {
     animation: uninstallPulse 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Keyboard navigation selection */
+.server-card.keyboard-selected {
+    outline: 3px solid #4299e1;
+    outline-offset: 2px;
+    background: #e6f3ff;
+    transform: translateY(-2px);
+    box-shadow: inset 1px 1px 1px 0 rgb(255, 255, 255), 
+                inset -1px -1px 1px 0 rgba(0, 0, 0, .15), 
+                0 4px 8px rgba(66, 153, 225, 0.3),
+                .444584px .444584px .628737px -1px rgba(0, 0, 0, .26), 
+                1.21072px 1.21072px 1.71222px -1.5px rgba(0, 0, 0, .247), 
+                2.6583px 2.6583px 3.75941px -2.25px rgba(0, 0, 0, .23), 
+                5.90083px 5.90083px 8.34503px -3px rgba(0, 0, 0, .192), 
+                10px 10px 21.2132px -3.75px rgba(0, 0, 0, .056), 
+                -.5px -.5px 0 0 rgb(0 0 0 / 5%);
+}
+
+.server-card.keyboard-selected[data-selected] {
+    background: #d6e9ff;
 }
 
 .status-indicator.installing {

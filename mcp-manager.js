@@ -151,10 +151,11 @@ class MCPManager {
         console.log('7. Search MCP servers');
         console.log('8. Update stale server stars');
         console.log('9. Create Slack Bot Token');
-        console.log('10. Exit');
+        console.log('10. Get ClickUp API Key');
+        console.log('11. Exit');
         console.log('\nPress q to quit at any time');
         
-        const choice = await this.prompt('\nSelect an option (1-10 or q): ');
+        const choice = await this.prompt('\nSelect an option (1-11 or q): ');
         return choice.trim();
     }
 
@@ -711,6 +712,160 @@ class MCPManager {
         }
     }
 
+    async getClickUpAPIKey() {
+        console.log('\n🔑 Get ClickUp API Key');
+        console.log('======================');
+        console.log('This will help you retrieve your ClickUp API key using Skyvern automation.');
+        console.log('');
+        
+        // Check if Skyvern is configured
+        const config = this.loadConfig();
+        const skyvernConfig = config.mcpServers.skyvern;
+        
+        if (!skyvernConfig || !skyvernConfig.env || !skyvernConfig.env.SKYVERN_API_KEY) {
+            console.log('⚠️  Skyvern is not configured. Would you like to:');
+            console.log('1. Use browser automation (Playwright) instead');
+            console.log('2. Configure Skyvern first');
+            console.log('3. Get manual instructions');
+            console.log('4. Cancel');
+            
+            const choice = await this.prompt('\nSelect option (1-4): ');
+            
+            switch (choice) {
+                case '1':
+                    // Use Playwright automation
+                    try {
+                        const ClickUpAPIAutomation = require('./clickup-api-automation');
+                        const automation = new ClickUpAPIAutomation();
+                        await automation.run();
+                    } catch (error) {
+                        console.log('❌ Error running automation:', error.message);
+                        console.log('Make sure Playwright is installed: npx playwright install');
+                    }
+                    return;
+                case '2':
+                    console.log('\n✨ Let\'s configure Skyvern first...');
+                    await this.addPreConfiguredServer();
+                    return;
+                case '3':
+                    this.showClickUpManualInstructions();
+                    return;
+                case '4':
+                    return;
+            }
+        }
+        
+        console.log('🤖 Using Skyvern to help you get your ClickUp API key...\n');
+        
+        const skyvernUrl = skyvernConfig.env.SKYVERN_BASE_URL || 'https://api.skyvern.com';
+        const apiKey = skyvernConfig.env.SKYVERN_API_KEY;
+        
+        try {
+            console.log('🌐 Creating Skyvern task to navigate to ClickUp settings...');
+            
+            const taskPayload = {
+                url: 'https://app.clickup.com',
+                navigation_goal: 'Navigate to ClickUp settings, go to the Apps section, and help the user find and copy their API token',
+                data_extraction_goal: 'Extract the API token if visible on the page',
+                proxy_location: 'NONE',
+                navigation_payload: {
+                    instructions: [
+                        'Wait for user to log in if not already logged in',
+                        'Navigate to Settings (usually in bottom left corner)',
+                        'Go to Apps section',
+                        'Find API Token or Personal Token section',
+                        'Help user generate or reveal their API token',
+                        'Extract the token if possible'
+                    ]
+                }
+            };
+            
+            const https = require('https');
+            const taskData = JSON.stringify(taskPayload);
+            
+            const options = {
+                hostname: new URL(skyvernUrl).hostname,
+                path: '/api/v1/tasks',
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-api-key': apiKey,
+                    'Content-Length': taskData.length
+                }
+            };
+            
+            const response = await new Promise((resolve, reject) => {
+                const req = https.request(options, (res) => {
+                    let data = '';
+                    res.on('data', chunk => data += chunk);
+                    res.on('end', () => {
+                        if (res.statusCode === 200 || res.statusCode === 201) {
+                            resolve(JSON.parse(data));
+                        } else {
+                            reject(new Error(`Skyvern API error: ${res.statusCode} - ${data}`));
+                        }
+                    });
+                });
+                
+                req.on('error', reject);
+                req.write(taskData);
+                req.end();
+            });
+            
+            console.log('✅ Skyvern task created successfully!');
+            console.log(`🔗 Task ID: ${response.task_id}`);
+            console.log('');
+            console.log('📺 Opening Skyvern dashboard in your browser...');
+            console.log(`🔗 ${skyvernUrl}/tasks/${response.task_id}`);
+            
+            // Try to open the browser
+            const { exec } = require('child_process');
+            const taskUrl = `${skyvernUrl}/tasks/${response.task_id}`;
+            if (process.platform === 'darwin') {
+                exec(`open "${taskUrl}"`);
+            } else if (process.platform === 'win32') {
+                exec(`start "${taskUrl}"`);
+            } else {
+                exec(`xdg-open "${taskUrl}"`);
+            }
+            
+            console.log('\n📋 Instructions:');
+            console.log('1. The Skyvern browser automation is now running');
+            console.log('2. Log in to ClickUp if prompted');
+            console.log('3. Skyvern will navigate to Settings → Apps');
+            console.log('4. Look for "API Token" or "Personal Token"');
+            console.log('5. Click "Generate" or "Show" to reveal your token');
+            console.log('6. Copy the token when it appears');
+            
+            console.log('\n💡 Once you have your API token:');
+            console.log('• Use it to configure the ClickUp MCP server');
+            console.log('• Store it as CLICKUP_API_KEY in your .env file');
+            console.log('• Keep it secure - treat it like a password!');
+            
+            await this.prompt('\nPress Enter when done...');
+            
+        } catch (error) {
+            console.log('❌ Error creating Skyvern task:', error.message);
+            console.log('\n💡 Falling back to manual instructions...\n');
+            this.showClickUpManualInstructions();
+        }
+    }
+    
+    showClickUpManualInstructions() {
+        console.log('📚 Manual Instructions to Get ClickUp API Key:');
+        console.log('===========================================\n');
+        console.log('1. Go to: https://app.clickup.com');
+        console.log('2. Sign in to your ClickUp account');
+        console.log('3. Click your profile avatar (bottom left corner)');
+        console.log('4. Select "Settings" from the menu');
+        console.log('5. Navigate to "Apps" in the settings sidebar');
+        console.log('6. Look for "API Token" or "Personal Token"');
+        console.log('7. Click "Generate" or "Show" to reveal your token');
+        console.log('8. Copy the token and save it securely');
+        console.log('\n📖 For more details, visit:');
+        console.log('https://help.clickup.com/hc/en-us/articles/6303426241687-Use-the-ClickUp-API');
+    }
+
     async run() {
         console.log('Welcome to MCP Server Manager! 🚀');
         console.log(''); // Add empty line for better formatting
@@ -766,6 +921,9 @@ class MCPManager {
                         await this.createSlackBotToken();
                         break;
                     case '10':
+                        await this.getClickUpAPIKey();
+                        break;
+                    case '11':
                     case 'q':
                     case 'Q':
                         console.log('👋 Goodbye!');
@@ -990,6 +1148,51 @@ class MCPManager {
             }
         });
 
+        // ClickUp automation endpoint
+        app.post('/api/clickup-automation', async (req, res) => {
+            try {
+                const { action } = req.body;
+                
+                if (action === 'get_api_key_with_skyvern') {
+                    // Check if Skyvern is configured
+                    const config = this.loadConfig();
+                    const skyvernServer = config.mcpServers && config.mcpServers.skyvern;
+                    
+                    if (!skyvernServer || !skyvernServer.env || !skyvernServer.env.SKYVERN_API_KEY) {
+                        return res.status(400).json({
+                            success: false,
+                            error: 'Skyvern is not configured. Please configure Skyvern first to use this feature.'
+                        });
+                    }
+                    
+                    // For now, we'll use the built-in ClickUp automation
+                    const ClickUpAPIAutomation = require('./clickup-api-automation');
+                    const automation = new ClickUpAPIAutomation();
+                    
+                    // Run the browser automation to guide user
+                    automation.getClickUpAPIKey().then(() => {
+                        res.json({
+                            success: false,
+                            message: 'Automation completed. Please check the browser window and copy the API key manually.'
+                        });
+                    }).catch(error => {
+                        res.status(500).json({
+                            success: false,
+                            error: error.message
+                        });
+                    });
+                    
+                } else {
+                    res.status(400).json({ error: 'Unknown action' });
+                }
+            } catch (error) {
+                res.status(500).json({ 
+                    success: false, 
+                    error: error.message 
+                });
+            }
+        });
+
         // Auto-update endpoint
         app.post('/api/auto-update', (req, res) => {
             try {
@@ -1043,6 +1246,32 @@ class MCPManager {
                     message: 'Update initiation failed', 
                     error: error.message 
                 });
+            }
+        });
+        
+        // Shutdown endpoint
+        app.post('/api/shutdown', (req, res) => {
+            console.log('\n📛 Shutdown request received via web interface');
+            res.json({ 
+                success: true, 
+                message: 'Server is shutting down...' 
+            });
+            
+            // Close the server gracefully
+            if (this.httpServer) {
+                console.log('🛑 Stopping MCP Manager server...');
+                this.httpServer.close(() => {
+                    console.log('✅ Server stopped successfully');
+                    process.exit(0);
+                });
+                
+                // Force exit after 5 seconds if server doesn't close gracefully
+                setTimeout(() => {
+                    console.log('⚠️  Forcing server shutdown after timeout');
+                    process.exit(0);
+                }, 5000);
+            } else {
+                process.exit(0);
             }
         });
         
