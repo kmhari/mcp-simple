@@ -1,7 +1,7 @@
 {
   "name": "@oglabs/mcp",
-  "version": "1.9.0",
-  "description": "Interactive CLI tool for managing MCP (Model Context Protocol) server configurations",
+  "version": "2.0.0",
+  "description": "Interactive CLI tool and intelligent MCP server for managing MCP (Model Context Protocol) server configurations with tech stack detection and recommendations",
   "main": "mcp-manager.js",
   "bin": {
     "mcp": "./bin/mcp-manager.js",
@@ -24,7 +24,12 @@
     "manager",
     "server",
     "ai",
-    "llm"
+    "llm",
+    "tech-stack",
+    "detection",
+    "recommendations",
+    "intelligent",
+    "automation"
   ],
   "author": "hari",
   "license": "MIT",
