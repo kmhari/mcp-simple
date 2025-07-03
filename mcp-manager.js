@@ -1298,7 +1298,8 @@ class MCPManager {
 
 }
 
-if (require.main === module) {
+// Function to start the application - can be called from require.main or externally
+function startMCPApplication() {
     const manager = new MCPManager();
     
     // Check for command line arguments
@@ -1340,4 +1341,11 @@ if (require.main === module) {
     }
 }
 
+// Start the application if this is the main module OR if called via bin
+if (require.main === module || process.argv[1].includes('mcp-manager.js') || process.argv[0].includes('mcp')) {
+    startMCPApplication();
+}
+
+// Export for when required from bin
 module.exports = MCPManager;
+module.exports.startMCPApplication = startMCPApplication;
