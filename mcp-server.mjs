@@ -2,13 +2,16 @@
 
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
+import { 
+  CallToolRequestSchema, 
+  ListToolsRequestSchema
+} from '@modelcontextprotocol/sdk/types.js';
 import fs from 'fs';
 import path from 'path';
 
 const SERVER_INFO = {
   name: 'mcp-tech-stack-advisor',
-  version: '1.0.0',
+  version: '2.1.2',
   description: 'MCP server that detects tech stacks and recommends relevant MCP servers'
 };
 
@@ -77,11 +80,17 @@ class TechStackAdvisorServer {
   }
 
   setupHandlers() {
-    this.server.setRequestHandler(ListToolsRequestSchema, async () => ({
-      tools: TOOLS
-    }));
+    // Required: List available tools
+    this.server.setRequestHandler(ListToolsRequestSchema, async (request) => {
+      console.error('[MCP] Handling tools/list request');
+      return {
+        tools: TOOLS
+      };
+    });
 
+    // Required: Handle tool calls
     this.server.setRequestHandler(CallToolRequestSchema, async (request) => {
+      console.error('[MCP] Handling tools/call request for:', request.params.name);
       const { name, arguments: args } = request.params;
       
       try {
@@ -96,6 +105,7 @@ class TechStackAdvisorServer {
             throw new Error(`Unknown tool: ${name}`);
         }
       } catch (error) {
+        console.error(`[MCP] Tool error for ${name}:`, error);
         return {
           content: [{
             type: 'text',
@@ -105,6 +115,7 @@ class TechStackAdvisorServer {
         };
       }
     });
+
   }
 
   async detectTechStack(args) {
@@ -584,9 +595,21 @@ class TechStackAdvisorServer {
   }
 
   async run() {
-    const transport = new StdioServerTransport();
-    await this.server.connect(transport);
-    console.error('MCP Tech Stack Advisor Server running on stdio');
+    try {
+      const transport = new StdioServerTransport();
+      console.error(`[MCP] Starting ${SERVER_INFO.name} v${SERVER_INFO.version}`);
+      
+      // Add error handling for the connection
+      this.server.onerror = (error) => {
+        console.error('[MCP] Server error:', error);
+      };
+      
+      await this.server.connect(transport);
+      console.error('[MCP] Tech Stack Advisor Server running on stdio');
+    } catch (error) {
+      console.error('[MCP] Failed to start server:', error);
+      process.exit(1);
+    }
   }
 }
 
