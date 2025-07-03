@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 
-import { TechStackAdvisorServer } from './mcp-server.js';
-
 async function testMcpServer() {
   console.log('Testing MCP Tech Stack Advisor Server...\n');
   
-  const server = new TechStackAdvisorServer();
-  
   try {
+    // Dynamic import of the ES module
+    const { TechStackAdvisorServer } = await import('./mcp-server.mjs');
+    const server = new TechStackAdvisorServer();
+    
     // Test tech stack detection
     console.log('1. Testing tech stack detection...');
     const techStackResult = await server.detectTechStack({});

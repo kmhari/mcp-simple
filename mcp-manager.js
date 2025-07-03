@@ -1301,10 +1301,37 @@ class MCPManager {
 if (require.main === module) {
     const manager = new MCPManager();
     
-    // Check for --web argument
+    // Check for command line arguments
     const args = process.argv.slice(2);
+    
     if (args.includes('--web')) {
         manager.startWebServer();
+    } else if (args.includes('--server')) {
+        // Start MCP server mode
+        console.log('Starting MCP Tech Stack Advisor Server...');
+        try {
+            // Import and start the MCP server wrapper
+            const { spawn } = require('child_process');
+            const serverPath = path.join(__dirname, 'mcp-server-wrapper.js');
+            
+            const mcpServer = spawn('node', [serverPath], {
+                stdio: 'inherit'
+            });
+            
+            mcpServer.on('error', (error) => {
+                console.error('Failed to start MCP server:', error);
+                process.exit(1);
+            });
+            
+            mcpServer.on('exit', (code) => {
+                console.error(`MCP server exited with code ${code}`);
+                process.exit(code);
+            });
+            
+        } catch (error) {
+            console.error('Error starting MCP server:', error);
+            process.exit(1);
+        }
     } else {
         manager.run().catch(error => {
             console.error('Error:', error);

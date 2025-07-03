@@ -590,6 +590,7 @@ class TechStackAdvisorServer {
   }
 }
 
+// Check if this file is being run directly
 if (import.meta.url === `file://${process.argv[1]}`) {
   const server = new TechStackAdvisorServer();
   server.run().catch(console.error);

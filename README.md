@@ -61,10 +61,11 @@ Special "S1-S14" servers install with zero configuration:
 ### Try the Live Demo
 
 ```bash
-# Install globally
-npm install -g @oglabs/mcp
+# No installation needed - run directly with npx
+npx @oglabs/mcp --web
 
-# Launch web interface
+# Or install globally for faster access
+npm install -g @oglabs/mcp
 @oglabs/mcp --web
 ```
 
@@ -91,13 +92,15 @@ npm install @oglabs/mcp
 Use as an intelligent MCP server that helps agents discover tech stacks and recommend relevant MCP servers:
 
 ```bash
-# Run as MCP server
-node mcp-server.js
-# or
-npm run mcp-server
+# Run as MCP server (recommended)
+npx @oglabs/mcp --server
+
+# Alternative methods
+@oglabs/mcp --server           # if installed globally
+npm run server                 # if installed locally
 
 # Test the server functionality
-node test-mcp-server.js
+npm run test-server
 ```
 
 **MCP Server Tools Available:**
@@ -110,13 +113,12 @@ node test-mcp-server.js
 Launch the modern web interface for the best experience:
 
 ```bash
-@oglabs/mcp --web
-```
-
-Or if installed locally:
-
-```bash
+# Run web interface (recommended)
 npx @oglabs/mcp --web
+
+# Alternative methods
+@oglabs/mcp --web              # if installed globally
+npm run web                    # if installed locally
 ```
 
 The web interface automatically opens in your default browser at `http://localhost:3333` and provides:
@@ -126,13 +128,12 @@ The web interface automatically opens in your default browser at `http://localho
 For traditional command-line usage:
 
 ```bash
-@oglabs/mcp
-```
-
-Or if installed locally:
-
-```bash
+# Run CLI interface (recommended)
 npx @oglabs/mcp
+
+# Alternative methods
+@oglabs/mcp                    # if installed globally
+npm run cli                    # if installed locally
 ```
 
 #### 🚀 Key Features:
@@ -257,7 +258,7 @@ MCP Manager manages `.mcp.json` files in your current working directory. The con
 #### Tech Stack Detection
 ```bash
 # Start the MCP server
-npm run mcp-server
+npx @oglabs/mcp --server
 
 # In another terminal, test detection
 echo '{"method": "tools/call", "params": {"name": "detect_tech_stack", "arguments": {"project_path": "/path/to/project"}}}' | nc localhost 3000
@@ -297,8 +298,8 @@ Add to your `.mcp.json` configuration:
 {
   "mcpServers": {
     "tech-stack-advisor": {
-      "command": "node",
-      "args": ["/path/to/mcp-server.js"]
+      "command": "npx",
+      "args": ["@oglabs/mcp", "--server"]
     }
   }
 }

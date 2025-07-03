@@ -1,6 +1,6 @@
 {
   "name": "@oglabs/mcp",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Interactive CLI tool and intelligent MCP server for managing MCP (Model Context Protocol) server configurations with tech stack detection and recommendations",
   "main": "mcp-manager.js",
   "bin": {
@@ -10,7 +10,10 @@
   },
   "scripts": {
     "test": "echo \"No tests specified\" && exit 0",
-    "mcp-server": "node mcp-server.js",
+    "server": "node mcp-manager.js --server",
+    "web": "node mcp-manager.js --web",
+    "cli": "node mcp-manager.js",
+    "test-server": "node test-mcp-server.js",
     "fetch-stars": "node fetch-github-stars.js",
     "update-stale-stars": "node fetch-github-stars.js --stale",
     "update-stars-7d": "node fetch-github-stars.js --stale --days 7",
@@ -45,7 +48,6 @@
     "node": ">=14.0.0"
   },
   "preferGlobal": true,
-  "type": "module",
   "dependencies": {
     "express": "^4.18.2",
     "dotenv": "^16.3.1",
