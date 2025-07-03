@@ -17,12 +17,13 @@
       "name": "servers",
       "full_name": "modelcontextprotocol/servers",
       "description": "Model Context Protocol Servers",
-      "stars": 57035,
-      "forks": 6587,
-      "language": "Python",
-      "updated_at": "2025-07-01T13:42:44Z",
+      "stars": 57228,
+      "forks": 6608,
+      "language": "TypeScript",
+      "updated_at": "2025-07-02T11:49:35Z",
       "created_at": "2024-11-19T01:10:17Z",
-      "url": "https://github.com/modelcontextprotocol/servers"
+      "url": "https://github.com/modelcontextprotocol/servers",
+      "fetched_at": "2025-07-02T11:53:19.173Z"
     }
   },
   "fetch": {
@@ -44,12 +45,13 @@
       "name": "servers",
       "full_name": "modelcontextprotocol/servers",
       "description": "Model Context Protocol Servers",
-      "stars": 57035,
-      "forks": 6587,
-      "language": "Python",
-      "updated_at": "2025-07-01T13:42:44Z",
+      "stars": 57228,
+      "forks": 6608,
+      "language": "TypeScript",
+      "updated_at": "2025-07-02T11:49:35Z",
       "created_at": "2024-11-19T01:10:17Z",
-      "url": "https://github.com/modelcontextprotocol/servers"
+      "url": "https://github.com/modelcontextprotocol/servers",
+      "fetched_at": "2025-07-02T11:53:20.206Z"
     }
   },
   "filesystem": {
@@ -70,12 +72,13 @@
       "name": "servers",
       "full_name": "modelcontextprotocol/servers",
       "description": "Model Context Protocol Servers",
-      "stars": 57035,
-      "forks": 6587,
-      "language": "Python",
-      "updated_at": "2025-07-01T13:42:44Z",
+      "stars": 57228,
+      "forks": 6608,
+      "language": "TypeScript",
+      "updated_at": "2025-07-02T11:49:35Z",
       "created_at": "2024-11-19T01:10:17Z",
-      "url": "https://github.com/modelcontextprotocol/servers"
+      "url": "https://github.com/modelcontextprotocol/servers",
+      "fetched_at": "2025-07-02T11:53:21.245Z"
     }
   },
   "git": {
@@ -96,12 +99,13 @@
       "name": "servers",
       "full_name": "modelcontextprotocol/servers",
       "description": "Model Context Protocol Servers",
-      "stars": 57035,
-      "forks": 6587,
-      "language": "Python",
-      "updated_at": "2025-07-01T13:42:44Z",
+      "stars": 57228,
+      "forks": 6608,
+      "language": "TypeScript",
+      "updated_at": "2025-07-02T11:49:35Z",
       "created_at": "2024-11-19T01:10:17Z",
-      "url": "https://github.com/modelcontextprotocol/servers"
+      "url": "https://github.com/modelcontextprotocol/servers",
+      "fetched_at": "2025-07-02T11:53:22.278Z"
     }
   },
   "memory": {
@@ -122,12 +126,13 @@
       "name": "servers",
       "full_name": "modelcontextprotocol/servers",
       "description": "Model Context Protocol Servers",
-      "stars": 57035,
-      "forks": 6587,
-      "language": "Python",
-      "updated_at": "2025-07-01T13:42:44Z",
+      "stars": 57228,
+      "forks": 6608,
+      "language": "TypeScript",
+      "updated_at": "2025-07-02T11:49:35Z",
       "created_at": "2024-11-19T01:10:17Z",
-      "url": "https://github.com/modelcontextprotocol/servers"
+      "url": "https://github.com/modelcontextprotocol/servers",
+      "fetched_at": "2025-07-02T11:53:24.626Z"
     }
   },
   "sequentialthinking": {
@@ -148,12 +153,13 @@
       "name": "servers",
       "full_name": "modelcontextprotocol/servers",
       "description": "Model Context Protocol Servers",
-      "stars": 57035,
-      "forks": 6587,
-      "language": "Python",
-      "updated_at": "2025-07-01T13:42:44Z",
+      "stars": 57228,
+      "forks": 6608,
+      "language": "TypeScript",
+      "updated_at": "2025-07-02T11:49:35Z",
       "created_at": "2024-11-19T01:10:17Z",
-      "url": "https://github.com/modelcontextprotocol/servers"
+      "url": "https://github.com/modelcontextprotocol/servers",
+      "fetched_at": "2025-07-02T11:53:25.659Z"
     }
   },
   "time": {
@@ -174,12 +180,13 @@
       "name": "servers",
       "full_name": "modelcontextprotocol/servers",
       "description": "Model Context Protocol Servers",
-      "stars": 57035,
-      "forks": 6587,
-      "language": "Python",
-      "updated_at": "2025-07-01T13:42:44Z",
+      "stars": 57228,
+      "forks": 6608,
+      "language": "TypeScript",
+      "updated_at": "2025-07-02T11:49:35Z",
       "created_at": "2024-11-19T01:10:17Z",
-      "url": "https://github.com/modelcontextprotocol/servers"
+      "url": "https://github.com/modelcontextprotocol/servers",
+      "fetched_at": "2025-07-02T11:53:26.693Z"
     }
   },
   "obsidian": {
@@ -223,12 +230,13 @@
       "name": "spotify-mcp",
       "full_name": "varunneal/spotify-mcp",
       "description": "MCP to connect your LLM with Spotify.",
-      "stars": 379,
-      "forks": 69,
+      "stars": 383,
+      "forks": 70,
       "language": "Python",
-      "updated_at": "2025-06-30T11:07:09Z",
+      "updated_at": "2025-07-02T08:49:28Z",
       "created_at": "2024-12-01T02:06:14Z",
-      "url": "https://github.com/varunneal/spotify-mcp"
+      "url": "https://github.com/varunneal/spotify-mcp",
+      "fetched_at": "2025-07-02T11:53:28.228Z"
     }
   },
   "kubernetes": {
@@ -251,12 +259,13 @@
       "name": "mcp-server-kubernetes",
       "full_name": "Flux159/mcp-server-kubernetes",
       "description": "MCP Server for kubernetes management commands",
-      "stars": 812,
+      "stars": 815,
       "forks": 124,
       "language": "TypeScript",
-      "updated_at": "2025-07-01T04:27:40Z",
+      "updated_at": "2025-07-02T04:19:36Z",
       "created_at": "2024-12-08T00:01:28Z",
-      "url": "https://github.com/Flux159/mcp-server-kubernetes"
+      "url": "https://github.com/Flux159/mcp-server-kubernetes",
+      "fetched_at": "2025-07-02T11:53:29.500Z"
     }
   },
   "aws": {
@@ -516,27 +525,32 @@
     "name": "Skyvern",
     "githubLink": "https://github.com/Skyvern-AI/skyvern",
     "package": "skyvern",
-    "description": "Browser automation for AI applications - enables form filling, file downloads, and web research",
-    "installCommand": "pip install skyvern",
+    "description": "Advanced browser automation with AI-powered web interaction",
+    "installCommand": "python -m skyvern run mcp",
     "requiredEnvVars": [
-      "SKYVERN_BASE_URL",
       "SKYVERN_API_KEY"
     ],
-    "optionalParams": [],
-    "usageInstructions": "Connect AI applications to the browser for automated web interactions. Supports form filling, file downloads, web research, and other browser-based tasks. Run 'skyvern init' to configure, then optionally 'skyvern run server' for local deployment.",
-    "category": "Automation",
+    "optionalParams": [
+      "SKYVERN_BASE_URL"
+    ],
+    "defaultEnvVars": {
+      "SKYVERN_BASE_URL": "https://api.skyvern.com"
+    },
+    "usageInstructions": "Automate browser-based workflows, fill forms, download files, and interact with websites using AI",
+    "category": "Browser Automation",
     "github": {
       "owner": "Skyvern-AI",
       "repo": "skyvern",
       "name": "skyvern",
       "full_name": "Skyvern-AI/skyvern",
       "description": "Automate browser-based workflows with LLMs and Computer Vision",
-      "stars": 13720,
-      "forks": 1127,
+      "stars": 13726,
+      "forks": 1128,
       "language": "Python",
-      "updated_at": "2025-07-01T13:11:26Z",
+      "updated_at": "2025-07-02T11:37:24Z",
       "created_at": "2024-02-28T15:45:19Z",
-      "url": "https://github.com/Skyvern-AI/skyvern"
+      "url": "https://github.com/Skyvern-AI/skyvern",
+      "fetched_at": "2025-07-02T11:53:23.591Z"
     }
   },
   "nixos": {

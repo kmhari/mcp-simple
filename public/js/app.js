@@ -2,6 +2,17 @@ let currentConfig = { mcpServers: {} };
 let preConfiguredServers = {};
 let savedVariables = {};
 let starsData = {};
+let selectedCardIndex = -1;
+let visibleCards = [];
+
+// Keyboard navigation helper functions
+function clearSelection() {
+    selectedCardIndex = -1;
+    const cards = document.querySelectorAll('.server-card');
+    cards.forEach(card => {
+        card.classList.remove('keyboard-selected');
+    });
+}
 
 function findCardElement(serverKey) {
     // Find the card element for the given server key
@@ -28,6 +39,15 @@ async function init() {
     
     // Check for updates after a short delay
     setTimeout(checkForUpdates, 2000);
+    
+    // Auto-focus search input
+    const searchBox = document.querySelector('.search-box');
+    if (searchBox) {
+        searchBox.focus();
+    }
+    
+    // Initialize keyboard navigation
+    initializeKeyboardNavigation();
 }
 
 async function loadServers() {
@@ -192,8 +212,12 @@ function displayServersFlat(servers, grid) {
     container.className = 'category-grid';
     container.style.marginTop = '0';
     console.log({servers,mcp:currentConfig})
+    // Convert servers object to array and sort by name
+    const serversArray = Object.entries(servers).map(([key, server]) => ({ key, server }));
+    serversArray.sort((a, b) => a.server.name.localeCompare(b.server.name));
+
     // Add all servers without grouping
-    Object.entries(servers).forEach(([key, server]) => {
+    serversArray.forEach(({ key, server }) => {
         const card = document.createElement('div');
         card.className = 'server-card';
         
@@ -512,6 +536,9 @@ function updateCurrentServers() {
 }
 
 function searchServers(query) {
+    // Clear keyboard selection when searching
+    clearSelection();
+    
     if (!query) {
         displayServers();
         return;
@@ -584,6 +611,39 @@ async function configureServer(key) {
             </div>
     `;
     
+    // Add authentication method selector for servers that support it
+    if (server.authMethods) {
+        // Determine current auth method based on existing config
+        let currentAuthMethod = '';
+        if (existingConfig && existingConfig.env) {
+            if (existingConfig.env.SLACK_MCP_XOXP_TOKEN) {
+                currentAuthMethod = 'oauth';
+            } else if (existingConfig.env.SLACK_MCP_XOXC_TOKEN || existingConfig.env.SLACK_MCP_XOXD_TOKEN) {
+                currentAuthMethod = 'browser';
+            }
+        }
+        
+        formHtml += `
+            <div class="form-group">
+                <label>Authentication Method</label>
+                <select id="authMethod" onchange="updateAuthMethodFields('${key}')" required>
+                    <option value="">Select authentication method...</option>
+                    ${Object.entries(server.authMethods).map(([methodKey, method]) => `
+                        <option value="${methodKey}" ${currentAuthMethod === methodKey ? 'selected' : ''}>
+                            ${method.name}
+                        </option>
+                    `).join('')}
+                </select>
+                <small id="authMethodDescription" style="display: block; margin-top: 5px; color: #666;">
+                    ${currentAuthMethod && server.authMethods[currentAuthMethod] ? 
+                        server.authMethods[currentAuthMethod].description : 
+                        'Choose an authentication method to see required fields'}
+                </small>
+            </div>
+            <div id="authMethodFields"></div>
+        `;
+    }
+    
     if (server.requiredEnvVars && server.requiredEnvVars.length > 0) {
         formHtml += '<h4>Required Configuration</h4>';
         server.requiredEnvVars.forEach(envVar => {
@@ -641,6 +701,10 @@ async function configureServer(key) {
                     ${key === 'slack' && envVar === 'SLACK_BOT_TOKEN' ? 
                         `<button type="button" class="btn-secondary" style="margin-top: 8px;" onclick="getSlackTokenWithSkyvern()">
                             Get Token with Skyvern
+                        </button>` : ''}
+                    ${key === 'clickup' && envVar === 'CLICKUP_API_KEY' ? 
+                        `<button type="button" class="btn-secondary" style="margin-top: 8px;" onclick="getClickUpAPIKeyWithSkyvern()">
+                            Get API Key with Skyvern
                         </button>` : ''}
                 </div>
             `;
@@ -713,6 +777,14 @@ async function configureServer(key) {
     
     modalBody.innerHTML = formHtml;
     modal.style.display = 'block';
+    
+    // If there's an authentication method selector and a pre-selected value, update the fields
+    if (server.authMethods) {
+        const authMethodSelect = document.getElementById('authMethod');
+        if (authMethodSelect && authMethodSelect.value) {
+            updateAuthMethodFields(key);
+        }
+    }
 }
 
 function quickInstallServer(key) {
@@ -1128,6 +1200,11 @@ async function getSlackTokenWithSkyvern() {
     showSlackTokenGuide();
 }
 
+async function getClickUpAPIKeyWithSkyvern() {
+    // Show step-by-step guide modal
+    showClickUpAPIKeyGuide();
+}
+
 function showSlackTokenGuide() {
     const modal = document.getElementById('serverModal');
     const modalTitle = document.getElementById('modalTitle');
@@ -1214,124 +1291,155 @@ async function launchSkyvernAutomation() {
     const button = event.target;
     const originalText = button.textContent;
     button.disabled = true;
-    button.textContent = 'Checking Skyvern...';
+    button.textContent = 'Launching browser automation...';
     
     try {
-        // Check if Skyvern is configured
-        const skyvernConfig = currentConfig.mcpServers.skyvern;
-        if (!skyvernConfig || !skyvernConfig.env || !skyvernConfig.env.SKYVERN_API_KEY) {
-            throw new Error('Skyvern is not configured. Please configure Skyvern server first.');
-        }
+        // Use the direct Slack automation instead of Skyvern MCP server
+        button.textContent = 'Running Slack token automation...';
         
-        button.textContent = 'Launching browser...';
-        
-        // Create Skyvern task
-        const skyvernUrl = skyvernConfig.env.SKYVERN_BASE_URL || 'https://api.skyvern.com';
-        const apiKey = skyvernConfig.env.SKYVERN_API_KEY;
-        
-        const taskPayload = {
-            url: 'https://api.slack.com/apps',
-            navigation_goal: 'Navigate to Slack API apps, create or select a bot app, go to OAuth & Permissions, and retrieve the Bot User OAuth Token that starts with xoxb-',
-            data_extraction_goal: 'Extract the Bot User OAuth Token from the OAuth & Permissions page',
-            proxy_location: 'NONE',
-            navigation_payload: {
-                instructions: [
-                    'If not logged in, wait for user to login',
-                    'Create new app or select existing app', 
-                    'Navigate to OAuth & Permissions section',
-                    'If no scopes added, add chat:write scope',
-                    'Install app to workspace if not installed',
-                    'Copy Bot User OAuth Token'
-                ]
-            }
-        };
-        
-        const response = await fetch(`${skyvernUrl}/api/v1/tasks`, {
+        // Call the built-in Slack automation endpoint
+        const response = await fetch('/api/slack-automation', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'x-api-key': apiKey
-            },
-            body: JSON.stringify(taskPayload)
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action: 'create_slack_token'
+            })
         });
         
         if (!response.ok) {
-            const error = await response.text();
-            throw new Error(`Failed to create Skyvern task: ${error}`);
+            throw new Error('Failed to start Slack automation');
         }
         
-        const task = await response.json();
-        button.textContent = 'Browser launched - Complete steps in browser';
+        const result = await response.json();
         
-        // Open Skyvern dashboard in new tab
-        if (task.task_id) {
-            window.open(`${skyvernUrl}/tasks/${task.task_id}`, '_blank');
+        if (result.success && result.token) {
+            document.getElementById('manual_slack_token').value = result.token;
+            button.textContent = 'Token Retrieved! Click Apply Token';
+            showMessage('Token found! Click "Apply Token" to use it', 'success');
+        } else {
+            button.textContent = 'Automation completed - Check result and paste token';
+            showMessage('Please check the automation result and paste the token above', 'info');
         }
         
-        // Poll for completion
-        const taskId = task.task_id;
-        let pollCount = 0;
-        const maxPolls = 60; // 5 minutes
+        button.disabled = false;
         
-        const pollInterval = setInterval(async () => {
-            pollCount++;
+    } catch (error) {
+        showMessage('Error: ' + error.message, 'error');
+        button.textContent = originalText;
+        button.disabled = false;
+    }
+}
+
+function showClickUpAPIKeyGuide() {
+    const modal = document.getElementById('serverModal');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalBody = document.getElementById('modalBody');
+    
+    modalTitle.textContent = 'Get ClickUp API Key - Step by Step';
+    
+    modalBody.innerHTML = `
+        <div class="clickup-api-guide">
+            <h3>Manual Steps:</h3>
+            <ol>
+                <li>
+                    <strong>Go to ClickUp Settings</strong><br>
+                    <a href="https://app.clickup.com/settings/apps" target="_blank" class="btn-secondary">Open ClickUp Settings</a>
+                </li>
+                <li>
+                    <strong>Find "API Token" section</strong><br>
+                    <small>Look for "Apps" or "My Apps" in the settings</small>
+                </li>
+                <li>
+                    <strong>Generate Personal Token</strong><br>
+                    <small>Click "Generate" or "Create Personal Token"</small>
+                </li>
+                <li>
+                    <strong>Copy the API token</strong><br>
+                    <small>The token will be displayed once - make sure to copy it!</small>
+                </li>
+            </ol>
             
-            try {
-                const statusResponse = await fetch(`${skyvernUrl}/api/v1/tasks/${taskId}`, {
-                    headers: {
-                        'x-api-key': apiKey
-                    }
-                });
-                
-                if (statusResponse.ok) {
-                    const status = await statusResponse.json();
-                    
-                    if (status.status === 'completed') {
-                        clearInterval(pollInterval);
-                        
-                        // Try to extract token from results
-                        let token = null;
-                        
-                        if (status.extracted_information) {
-                            // Look for token in various possible locations
-                            token = status.extracted_information.token || 
-                                   status.extracted_information.bot_token ||
-                                   status.extracted_information.oauth_token;
-                            
-                            // If not found, search in the text
-                            if (!token && status.extracted_information.text) {
-                                const match = status.extracted_information.text.match(/xoxb-[a-zA-Z0-9-]+/);
-                                if (match) token = match[0];
-                            }
-                        }
-                        
-                        if (token) {
-                            document.getElementById('manual_slack_token').value = token;
-                            button.textContent = 'Token Retrieved! Click Apply Token';
-                            showMessage('Token found! Click "Apply Token" to use it', 'success');
-                        } else {
-                            button.textContent = 'Task completed - Check browser and paste token manually';
-                            showMessage('Please copy the token from the browser and paste it above', 'info');
-                        }
-                        
-                        button.disabled = false;
-                    } else if (status.status === 'failed') {
-                        clearInterval(pollInterval);
-                        throw new Error('Skyvern task failed - Please complete manually');
-                    } else if (pollCount >= maxPolls) {
-                        clearInterval(pollInterval);
-                        button.textContent = 'Complete in browser and paste token';
-                        button.disabled = false;
-                        showMessage('Please complete the process in the browser and paste the token', 'info');
-                    }
-                }
-            } catch (error) {
-                clearInterval(pollInterval);
-                button.textContent = originalText;
-                button.disabled = false;
-                showMessage('Error: ' + error.message, 'error');
+            <div class="form-group">
+                <label>Paste your API Key here:</label>
+                <input type="text" id="manual_clickup_api_key" placeholder="pk_your-api-key-here">
+            </div>
+            
+            <h4>Or use Skyvern automation:</h4>
+            <button type="button" class="btn-primary" onclick="launchClickUpSkyvernAutomation()">
+                Launch Skyvern Browser Automation
+            </button>
+            <small style="display: block; margin-top: 8px; color: #666;">
+                Skyvern will automatically navigate ClickUp and help you retrieve your API key
+            </small>
+            
+            <div class="button-group" style="margin-top: 20px;">
+                <button type="button" class="btn-primary" onclick="applyClickUpAPIKey()">Apply API Key</button>
+                <button type="button" class="btn-secondary" onclick="closeModal()">Cancel</button>
+            </div>
+        </div>
+        
+        <style>
+            .clickup-api-guide ol {
+                margin: 20px 0;
+                padding-left: 20px;
             }
-        }, 5000);
+            .clickup-api-guide li {
+                margin: 15px 0;
+                line-height: 1.5;
+            }
+            .clickup-api-guide a {
+                display: inline-block;
+                margin: 5px 0;
+            }
+        </style>
+    `;
+    
+    modal.style.display = 'block';
+}
+
+function applyClickUpAPIKey() {
+    const apiKey = document.getElementById('manual_clickup_api_key').value;
+    if (apiKey) {
+        document.getElementById('env_CLICKUP_API_KEY').value = apiKey;
+        closeModal();
+        showMessage('ClickUp API key applied successfully', 'success');
+    } else {
+        showMessage('Please enter an API key', 'error');
+    }
+}
+
+async function launchClickUpSkyvernAutomation() {
+    const button = event.target;
+    const originalText = button.textContent;
+    button.disabled = true;
+    button.textContent = 'Launching Skyvern automation...';
+    
+    try {
+        // Call the ClickUp automation endpoint
+        const response = await fetch('/api/clickup-automation', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action: 'get_api_key_with_skyvern'
+            })
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to start ClickUp automation');
+        }
+        
+        const result = await response.json();
+        
+        if (result.success && result.apiKey) {
+            document.getElementById('manual_clickup_api_key').value = result.apiKey;
+            button.textContent = 'API Key Retrieved! Click Apply API Key';
+            showMessage('API key found! Click "Apply API Key" to use it', 'success');
+        } else {
+            button.textContent = 'Automation completed - Check result and paste API key';
+            showMessage('Please check the automation result and paste the API key above', 'info');
+        }
+        
+        button.disabled = false;
         
     } catch (error) {
         showMessage('Error: ' + error.message, 'error');
@@ -1947,6 +2055,108 @@ async function performAutoUpdate() {
     }
 }
 
+// Authentication method update function for dynamic form fields
+async function updateAuthMethodFields(serverKey) {
+    const server = preConfiguredServers[serverKey];
+    const authMethodSelect = document.getElementById('authMethod');
+    const authMethodDescription = document.getElementById('authMethodDescription');
+    const authMethodFields = document.getElementById('authMethodFields');
+    
+    if (!authMethodSelect || !server.authMethods) return;
+    
+    const selectedMethod = authMethodSelect.value;
+    
+    // Update description
+    if (authMethodDescription) {
+        if (selectedMethod && server.authMethods[selectedMethod]) {
+            authMethodDescription.textContent = server.authMethods[selectedMethod].description;
+        } else {
+            authMethodDescription.textContent = 'Choose an authentication method to see required fields';
+        }
+    }
+    
+    // Clear existing fields
+    authMethodFields.innerHTML = '';
+    
+    if (!selectedMethod) return;
+    
+    const authMethod = server.authMethods[selectedMethod];
+    if (!authMethod || !authMethod.requiredVars) return;
+    
+    // Get existing config if reconfiguring
+    const existingServerName = findExistingServerName(serverKey, server);
+    const existingConfig = currentConfig.mcpServers[existingServerName];
+    
+    // Get env variables
+    let envVariables = {};
+    try {
+        const response = await fetch('/api/env-variables');
+        const data = await response.json();
+        if (data.exists) {
+            envVariables = data.variables;
+        }
+    } catch (error) {
+        console.error('Error fetching .env variables:', error);
+    }
+    
+    // Add required fields for selected auth method
+    authMethodFields.innerHTML = '<h4>Authentication Configuration</h4>';
+    
+    authMethod.requiredVars.forEach(envVar => {
+        // Priority: existing config value > saved variable > empty
+        let currentValue = '';
+        if (existingConfig && existingConfig.env && existingConfig.env[envVar]) {
+            currentValue = existingConfig.env[envVar];
+        } else {
+            currentValue = savedVariables[envVar] || '';
+        }
+        
+        // Determine available sources
+        const sources = [];
+        if (savedVariables[envVar]) {
+            sources.push({ type: 'global', label: 'global variables', value: savedVariables[envVar] });
+        }
+        if (envVariables[envVar] !== undefined) {
+            sources.push({ type: 'env', label: '.env file', value: envVariables[envVar] });
+        }
+        
+        const hasMultipleSources = sources.length > 1;
+        const buttonWidth = hasMultipleSources ? '90px' : (sources.length === 1 ? '90px' : '8px');
+        
+        const fieldHtml = `
+            <div class="form-group">
+                <label>${envVar}</label>
+                <div style="position: relative;">
+                    <input type="text" name="env_${envVar}" id="env_${envVar}" value="${currentValue}" required style="padding-right: ${buttonWidth};">
+                    ${sources.length > 0 ? (
+                        hasMultipleSources ? `
+                            <div class="fetch-dropdown" style="position: absolute; right: 4px; top: 50%; transform: translateY(-50%);">
+                                <button type="button" class="btn-fetch-multi" onclick="toggleFetchDropdown('${envVar}')" title="Fetch from multiple sources">
+                                    <span style="font-size: 12px;">📥  fetch  ▼</span>
+                                </button>
+                                <div class="dropdown-content" id="dropdown-${envVar}" style="display: none;">
+                                    ${sources.map(source => `
+                                        <a href="#" onclick="fetchFromSource('${envVar}', '${source.type}'); return false;" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                            📋 ${source.label}: <span style="color: #666; font-size: 11px;">${source.value.length > 20 ? source.value.substring(0, 20) + '...' : source.value}</span>
+                                        </a>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        ` : `
+                            <button type="button" class="btn-fetch-single" onclick="fetchFromSource('${envVar}', '${sources[0].type}')" title="Fetch from ${sources[0].label}">
+                                <span style="font-size: 12px;">📋 fetch from ${sources[0].type}</span>
+                            </button>
+                        `
+                    ) : ''}
+                </div>
+                ${currentValue && (existingConfig && existingConfig.env && existingConfig.env[envVar]) ? '<small style="color: #3498db;">✓ Current server value</small>' : (currentValue ? '<small style="color: #27ae60;">✓ Using saved value from Variables tab</small>' : '')}
+            </div>
+        `;
+        
+        authMethodFields.innerHTML += fieldHtml;
+    });
+}
+
 // Make functions globally available
 window.fetchFromEnv = fetchFromEnv;
 window.fetchFromGit = fetchFromGit;
@@ -1958,6 +2168,234 @@ window.uninstallServer = uninstallServer;
 window.performAutoUpdate = performAutoUpdate;
 window.handleVariableChange = handleVariableChange;
 window.saveIndividualVariable = saveIndividualVariable;
+window.clearSelection = clearSelection;
+window.quickInstallServer = quickInstallServer;
+window.configureServer = configureServer;
+window.searchServers = searchServers;
+window.updateAuthMethodFields = updateAuthMethodFields;
+
+// Keyboard navigation implementation
+function initializeKeyboardNavigation() {
+    const searchBox = document.querySelector('.search-box');
+    
+    // Add Enter key handler to search box
+    searchBox.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            handleSearchEnterKey();
+        } else if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            navigateCards(1);
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            navigateCards(-1);
+        }
+    });
+    
+    // Add global keyboard navigation
+    document.addEventListener('keydown', (e) => {
+        // Only handle navigation if not typing in an input
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+            return;
+        }
+        
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            navigateCards(1);
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            navigateCards(-1);
+        } else if (e.key === 'Enter' && selectedCardIndex >= 0) {
+            e.preventDefault();
+            activateSelectedCard();
+        } else if (e.key === 'Escape') {
+            e.preventDefault();
+            clearSelection();
+            searchBox.focus();
+        }
+    });
+}
+
+function updateVisibleCards() {
+    visibleCards = Array.from(document.querySelectorAll('.server-card:not(.uninstalling)'));
+}
+
+function handleSearchEnterKey() {
+    updateVisibleCards();
+    
+    if (visibleCards.length === 0) {
+        // No results, don't do anything
+        return;
+    } else if (visibleCards.length === 1) {
+        // Single result - auto-action
+        const card = visibleCards[0];
+        const serverKey = getServerKeyFromCard(card);
+        if (serverKey) {
+            const server = preConfiguredServers[serverKey];
+            const isInstalled = isServerInstalled(serverKey, server);
+            
+            if (isInstalled) {
+                // Already installed, configure it
+                configureServer(serverKey);
+            } else {
+                // Not installed, check if it requires config
+                const requiresConfig = server.requiredEnvVars && server.requiredEnvVars.length > 0;
+                if (requiresConfig) {
+                    configureServer(serverKey);
+                } else {
+                    quickInstallServer(serverKey);
+                }
+            }
+        }
+    } else {
+        // Multiple results - start navigation
+        selectedCardIndex = 0;
+        updateCardSelection();
+    }
+}
+
+function navigateCards(direction) {
+    updateVisibleCards();
+    
+    if (visibleCards.length === 0) return;
+    
+    if (selectedCardIndex === -1) {
+        selectedCardIndex = direction > 0 ? 0 : visibleCards.length - 1;
+    } else {
+        selectedCardIndex += direction;
+        
+        // Wrap around
+        if (selectedCardIndex < 0) {
+            selectedCardIndex = visibleCards.length - 1;
+        } else if (selectedCardIndex >= visibleCards.length) {
+            selectedCardIndex = 0;
+        }
+    }
+    
+    updateCardSelection();
+}
+
+function updateCardSelection() {
+    // Remove previous selection
+    visibleCards.forEach((card, index) => {
+        card.classList.remove('keyboard-selected');
+    });
+    
+    // Add selection to current card
+    if (selectedCardIndex >= 0 && selectedCardIndex < visibleCards.length) {
+        const selectedCard = visibleCards[selectedCardIndex];
+        selectedCard.classList.add('keyboard-selected');
+        
+        // Scroll into view if needed
+        selectedCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+}
+
+function activateSelectedCard() {
+    if (selectedCardIndex >= 0 && selectedCardIndex < visibleCards.length) {
+        const card = visibleCards[selectedCardIndex];
+        const serverKey = getServerKeyFromCard(card);
+        
+        if (serverKey) {
+            const server = preConfiguredServers[serverKey];
+            const isInstalled = isServerInstalled(serverKey, server);
+            
+            if (isInstalled) {
+                // Already installed, configure it
+                configureServer(serverKey);
+            } else {
+                // Not installed, check if it requires config
+                const requiresConfig = server.requiredEnvVars && server.requiredEnvVars.length > 0;
+                if (requiresConfig) {
+                    configureServer(serverKey);
+                } else {
+                    quickInstallServer(serverKey);
+                }
+            }
+        }
+    }
+}
+
+function getServerKeyFromCard(card) {
+    // Extract server key from button onclick attributes
+    const configureBtn = card.querySelector('button[onclick*="configureServer"]');
+    if (configureBtn) {
+        const onclickAttr = configureBtn.getAttribute('onclick');
+        const match = onclickAttr.match(/configureServer\('([^']+)'\)/);
+        if (match) {
+            return match[1];
+        }
+    }
+    return null;
+}
+
+// Server shutdown functions
+function confirmStopServer() {
+    const modal = document.getElementById('serverModal');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalBody = document.getElementById('modalBody');
+    
+    modalTitle.textContent = '⚠️ Stop MCP Manager Server';
+    
+    modalBody.innerHTML = `
+        <div style="text-align: center; padding: 20px;">
+            <div style="font-size: 48px; margin-bottom: 20px;">🛑</div>
+            <h3 style="margin-bottom: 20px; color: #e74c3c;">Are you sure you want to stop the server?</h3>
+            <p style="margin-bottom: 30px; color: #666;">
+                This will shut down the MCP Manager web interface.<br>
+                You'll need to restart it from the command line to access it again.
+            </p>
+            <div class="button-group" style="justify-content: center; gap: 15px;">
+                <button type="button" class="btn-primary" style="background: #e74c3c;" onclick="stopServer()">
+                    Yes, Stop Server
+                </button>
+                <button type="button" class="btn-secondary" onclick="closeModal()">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    `;
+    
+    modal.style.display = 'block';
+}
+
+async function stopServer() {
+    try {
+        const response = await fetch('/api/shutdown', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        
+        if (response.ok) {
+            showMessage('Server is shutting down...', 'success');
+            
+            // Show a goodbye message
+            setTimeout(() => {
+                document.body.innerHTML = `
+                    <div style="display: flex; justify-content: center; align-items: center; height: 100vh; background: #ececec;">
+                        <div style="text-align: center; font-family: 'JetBrains Mono', monospace;">
+                            <div style="font-size: 72px; margin-bottom: 20px;">👋</div>
+                            <h1 style="color: #2c3e50; margin-bottom: 20px;">Server Stopped</h1>
+                            <p style="color: #666; font-size: 18px;">
+                                The MCP Manager server has been shut down.<br>
+                                To restart it, run: <code style="background: #fff; padding: 5px 10px; border-radius: 4px;">node mcp-manager.js --web</code>
+                            </p>
+                        </div>
+                    </div>
+                `;
+            }, 1000);
+        } else {
+            throw new Error('Failed to stop server');
+        }
+    } catch (error) {
+        showMessage('Error stopping server: ' + error.message, 'error');
+        closeModal();
+    }
+}
+
+// Make stop server functions available globally
+window.confirmStopServer = confirmStopServer;
+window.stopServer = stopServer;
 
 // Initialize on load
 document.addEventListener('DOMContentLoaded', () => {

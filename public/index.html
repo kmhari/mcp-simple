@@ -11,7 +11,12 @@
 </head>
 <body>
     <div class="container">
-        <h1>🔧 MCP Server Manager</h1>
+        <div class="header-container">
+            <h1>🔧 MCP Server Manager</h1>
+            <button class="btn-close-server" onclick="confirmStopServer()" title="Stop the MCP Manager server">
+                ✕ Stop Server
+            </button>
+        </div>
         
         <div id="message" class="message"></div>
         

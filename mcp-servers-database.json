@@ -534,10 +534,44 @@
     "package": "slack-mcp-server",
     "description": "Advanced Slack MCP server with stealth mode, OAuth support, and flexible message retrieval without additional workspace permissions",
     "installCommand": "npx -y slack-mcp-server@latest",
-    "requiredEnvVars": ["SLACK_MCP_XOXC_TOKEN", "SLACK_MCP_XOXD_TOKEN"],
-    "optionalParams": ["SLACK_MCP_SERVER_PORT", "SLACK_MCP_SERVER_HOST", "SLACK_MCP_XOXP_TOKEN"],
+    "requiredEnvVars": [],
+    "optionalParams": ["SLACK_MCP_XOXC_TOKEN", "SLACK_MCP_XOXD_TOKEN", "SLACK_MCP_XOXP_TOKEN", "SLACK_MCP_SERVER_PORT", "SLACK_MCP_SERVER_HOST"],
     "defaultEnvVars": {"SLACK_MCP_SERVER_PORT": "3001", "SLACK_MCP_SERVER_HOST": "127.0.0.1"},
-    "usageInstructions": "Retrieve channel/thread messages, list channels, and access DMs with minimal workspace permissions. Supports browser-based tokens (XOXC/XOXD) or OAuth tokens (XOXP). Use stealth mode for enhanced privacy.",
+    "authMethods": {
+      "browser": {
+        "name": "Browser-based Tokens (XOXC/XOXD)",
+        "requiredVars": ["SLACK_MCP_XOXC_TOKEN", "SLACK_MCP_XOXD_TOKEN"],
+        "description": "Extract tokens from your browser session"
+      },
+      "oauth": {
+        "name": "User OAuth Token",
+        "requiredVars": ["SLACK_MCP_XOXP_TOKEN"],
+        "description": "More secure, uses Slack API OAuth token"
+      }
+    },
+    "usageInstructions": "Retrieve channel/thread messages, list channels, and access DMs with minimal workspace permissions. Choose between browser-based tokens (XOXC/XOXD) or OAuth token (XOXP) authentication methods.",
     "category": "Communication"
+  },
+  "exa": {
+    "name": "Exa",
+    "githubLink": "https://github.com/exa-labs/exa-mcp-server",
+    "package": "exa-mcp-server",
+    "description": "AI-powered web search API integration for real-time searches, research papers, company info, and more",
+    "installCommand": "npx -y exa-mcp-server",
+    "requiredEnvVars": ["EXA_API_KEY"],
+    "optionalParams": ["--tools"],
+    "usageInstructions": "Enable web search, research papers, company research, crawling, competitor analysis, LinkedIn search, Wikipedia, and GitHub search. Get API key from dashboard.exa.ai/api-keys. Use --tools flag to select specific search capabilities.",
+    "category": "Search & Research"
+  },
+  "magic": {
+    "name": "21st.dev Magic",
+    "githubLink": "https://github.com/21st-dev/magic-mcp",
+    "package": "@21st-dev/magic-mcp",
+    "description": "AI-powered UI component generator that creates beautiful, modern React components through natural language descriptions",
+    "installCommand": "npx -y @21st-dev/magic-mcp",
+    "requiredEnvVars": ["MAGIC_API_KEY"],
+    "optionalParams": [],
+    "usageInstructions": "Type '/ui' in your AI chat and describe the component you want. Magic generates production-ready React components with TypeScript support. Get your API key from the 21st.dev Magic Console. Currently in beta with all features free.",
+    "category": "UI Components"
   }
 }
