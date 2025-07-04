@@ -1,8 +1,9 @@
 {
   "name": "@oglabs/mcp",
-  "version": "1.9.0",
+  "version": "2.0.0",
   "description": "Interactive CLI tool for managing MCP (Model Context Protocol) server configurations",
-  "main": "mcp-manager.js",
+  "main": "mcp-manager.cjs",
+  "type": "module",
   "bin": {
     "mcp": "./bin/mcp-manager.js",
     "create-slack-bot": "./bin/create-slack-bot",
@@ -13,7 +14,9 @@
     "fetch-stars": "node fetch-github-stars.js",
     "update-stale-stars": "node fetch-github-stars.js --stale",
     "update-stars-7d": "node fetch-github-stars.js --stale --days 7",
-    "update-stars-14d": "node fetch-github-stars.js --stale --days 14"
+    "update-stars-14d": "node fetch-github-stars.js --stale --days 14",
+    "mcp-server": "node mcp-server.js",
+    "debug-mcp": "npx -y @modelcontextprotocol/inspector node mcp-server.js"
   },
   "keywords": [
     "mcp",
@@ -40,10 +43,12 @@
   },
   "preferGlobal": true,
   "dependencies": {
-    "express": "^4.18.2",
+    "@modelcontextprotocol/sdk": "^1.15.0",
+    "axios": "^1.6.0",
     "dotenv": "^16.3.1",
+    "express": "^4.18.2",
     "playwright": "^1.40.0",
-    "axios": "^1.6.0"
+    "zod": "^3.25.72"
   },
   "devDependencies": {
     "nodemon": "^3.1.10"

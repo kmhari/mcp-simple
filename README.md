@@ -86,6 +86,58 @@ npm install @oglabs/mcp
 
 ## Usage
 
+### 🚀 MCP Server Mode (NEW!)
+
+**Tech Stack Detection & MCP Server Recommendations**
+
+Transform your package into an intelligent MCP server that automatically detects project technology stacks and recommends the best MCP servers for your project:
+
+```bash
+@oglabs/mcp --server
+```
+
+#### 🔧 MCP Server Tools Available
+
+The MCP server provides 4 powerful tools for AI agents:
+
+1. **`detect-tech-stack`** - Analyzes project files to identify technologies
+2. **`recommend-mcp-servers`** - Suggests optimal MCP servers based on detected tech stack
+3. **`search-mcp-servers`** - Search through 35+ available MCP servers
+4. **`get-mcp-server-info`** - Get detailed information about specific servers
+
+#### 🧪 Testing with MCP Inspector
+
+```bash
+# Start server with MCP Inspector for interactive testing
+npm run debug-mcp
+
+# Opens browser at http://localhost:6274
+# Provides visual interface to test all MCP tools
+```
+
+#### 📦 Adding to Claude Desktop
+
+Add this configuration to your Claude Desktop `mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "tech-stack-recommender": {
+      "command": "npx",
+      "args": ["-y", "@oglabs/mcp", "--server"],
+      "env": {}
+    }
+  }
+}
+```
+
+#### 🎯 MCP Server Use Cases
+
+- **Automatic Tech Stack Analysis**: Detect languages, frameworks, databases from project files
+- **Smart MCP Recommendations**: Get personalized server suggestions based on your stack
+- **Server Discovery**: Search and explore available MCP servers by technology
+- **Project Setup**: Quickly identify what MCP servers would be most useful for any project
+
 ### 🌐 Web Interface Mode (Recommended)
 
 Launch the modern web interface for the best experience:
@@ -165,6 +217,16 @@ Version Check → Update Available → Mandatory Modal → Progress Bar → Auto
 ```
 
 ## Features
+
+### 🚀 MCP Server Mode (NEW!)
+- 🧠 **Tech Stack Detection**: Automatically analyze project files to identify technologies
+- 🎯 **Smart Recommendations**: AI-powered MCP server suggestions based on your stack
+- 🔍 **Server Discovery**: Search through 35+ available MCP servers by technology
+- 📊 **Confidence Scoring**: Get recommendation confidence levels for better decisions
+- 🔧 **4 MCP Tools**: detect-tech-stack, recommend-mcp-servers, search-mcp-servers, get-mcp-server-info
+- 🧪 **MCP Inspector Support**: Interactive testing with visual interface
+- 📦 **Claude Desktop Ready**: Easy integration with Claude Desktop MCP configuration
+- 🚀 **Real-time Analysis**: Instant project analysis and server recommendations
 
 ### 🌐 Web Mode (Recommended)
 - 🎨 **Modern Design**: Beautiful depth-based UI with soft shadows and JetBrains Mono font
@@ -256,6 +318,89 @@ MCP Manager manages `.mcp.json` files in your current working directory. The con
 3. **"Update Now"** button → Progress bar shows update status
 4. **Auto-reload** → Latest version loads automatically
 
+### 🚀 MCP Server Mode Examples
+
+#### Using with Claude Desktop
+
+1. **Add to Claude Desktop configuration** (`~/.config/claude-desktop/mcp.json`):
+```json
+{
+  "mcpServers": {
+    "tech-stack-recommender": {
+      "command": "npx", 
+      "args": ["-y", "@oglabs/mcp", "--server"],
+      "env": {}
+    }
+  }
+}
+```
+
+2. **Restart Claude Desktop** to load the new server
+
+3. **Example interactions in Claude:**
+
+```
+User: "Analyze my current project and recommend MCP servers"
+Claude: [uses detect-tech-stack tool] → [uses recommend-mcp-servers tool]
+Result: Personalized recommendations based on your React/Node.js/PostgreSQL stack
+
+User: "Find MCP servers for working with databases" 
+Claude: [uses search-mcp-servers with query "database"]
+Result: List of database-related MCP servers (PostgreSQL, MongoDB, SQLite, etc.)
+
+User: "What does the postgres MCP server do?"
+Claude: [uses get-mcp-server-info with serverKey "postgres"]
+Result: Detailed information about PostgreSQL MCP server
+```
+
+#### Testing with MCP Inspector
+
+1. **Start the inspector:**
+```bash
+npm run debug-mcp
+```
+
+2. **Open browser** at `http://localhost:6274`
+
+3. **Test each tool interactively:**
+   - **detect-tech-stack**: See what technologies are detected in your project
+   - **recommend-mcp-servers**: Get server recommendations with confidence scores  
+   - **search-mcp-servers**: Try queries like "ai", "database", "github"
+   - **get-mcp-server-info**: Explore details of specific servers
+
+#### Direct MCP Server Usage
+
+```bash
+# Start server (connects via stdio)
+@oglabs/mcp --server
+
+# Alternative: Use npm script
+npm run mcp-server
+```
+
+#### Example Tech Stack Detection Output
+
+```json
+{
+  "techStack": {
+    "languages": ["JavaScript/TypeScript"],
+    "frameworks": ["React", "Express.js"], 
+    "databases": ["PostgreSQL"],
+    "tools": ["Environment Variables"],
+    "packageManagers": ["npm"],
+    "deployment": ["Docker"]
+  },
+  "recommendations": [
+    {
+      "name": "PostgreSQL MCP Server",
+      "reason": "Recommended for PostgreSQL",
+      "confidence": 0.9,
+      "installCommand": "npx -y @modelcontextprotocol/server-postgres"
+    }
+  ]
+}
+```
+
 ### 🖥️ CLI Mode Examples
 
 #### Adding a Pre-configured Server
@@ -288,6 +433,38 @@ The CLI offers:
 - **Configuration Editing**: Modify settings through prompts
 - **Cross-Platform**: Works on Windows, macOS, and Linux
 
+## Available Scripts
+
+### 📦 Package Scripts
+
+```bash
+# MCP Server Mode
+npm run mcp-server          # Start MCP server directly
+npm run debug-mcp           # Start MCP server with inspector
+
+# Star Data Management  
+npm run fetch-stars         # Fetch GitHub stars for all servers
+npm run update-stale-stars  # Update servers with stale star data
+npm run update-stars-7d     # Update stars older than 7 days
+npm run update-stars-14d    # Update stars older than 14 days
+```
+
+### 🚀 Quick Start Commands
+
+```bash
+# Install globally and use
+npm install -g @oglabs/mcp
+
+# Different modes
+@oglabs/mcp                 # CLI mode
+@oglabs/mcp --web           # Web interface  
+@oglabs/mcp --server        # MCP server mode
+
+# Local development
+npx @oglabs/mcp --server    # Local MCP server
+npx @oglabs/mcp --web       # Local web interface
+```
+
 ## Development
 
 ```bash
@@ -295,11 +472,24 @@ The CLI offers:
 git clone https://github.com/kmhari/mcp-simple.git
 cd mcp-simple
 
-# Install dependencies (if any)
+# Install dependencies
 npm install
 
-# Run locally
-node @oglabs/mcp.js
+# Available development commands
+node mcp-manager.js         # CLI mode
+node mcp-manager.js --web   # Web mode  
+node mcp-manager.js --server # MCP server mode
+npm run debug-mcp           # MCP server with inspector
+```
+
+### 🧪 Testing MCP Server Development
+
+```bash
+# Start MCP Inspector for development
+npm run debug-mcp
+
+# In another terminal, test specific tools
+echo '{"tool": "detect-tech-stack", "projectPath": "."}' | node mcp-server.js
 ```
 
 ## License
