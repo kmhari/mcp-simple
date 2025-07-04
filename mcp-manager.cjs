@@ -1223,9 +1223,31 @@ class MCPManager {
                     if (code === 0) {
                         res.json({ 
                             success: true, 
-                            message: 'Update completed successfully. Please restart the application.',
+                            message: 'Update completed successfully. Server will restart automatically.',
                             output: output
                         });
+                        
+                        // Schedule restart after response is sent
+                        setTimeout(() => {
+                            console.log('\n🔄 Auto-update completed, restarting server...');
+                            
+                            // Close the server gracefully
+                            if (this.httpServer) {
+                                this.httpServer.close(() => {
+                                    console.log('✅ Server stopped for restart');
+                                    process.exit(0);
+                                });
+                                
+                                // Force exit after 5 seconds if graceful shutdown takes too long
+                                setTimeout(() => {
+                                    console.log('⚠️ Forcing server restart...');
+                                    process.exit(0);
+                                }, 5000);
+                            } else {
+                                process.exit(0);
+                            }
+                        }, 1500); // Give time for response to be sent
+                        
                     } else {
                         res.status(500).json({ 
                             success: false, 
