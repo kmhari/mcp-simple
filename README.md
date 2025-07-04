@@ -103,7 +103,7 @@ The MCP server provides 4 powerful tools for AI agents:
 1. **`recommend-mcp-servers`** - Suggests optimal MCP servers based on provided tech stack
 2. **`search-mcp-servers`** - Search through 52+ available MCP servers
 3. **`get-mcp-server-info`** - Get detailed information about specific servers
-4. **`install-mcp-server`** - Install MCP servers directly to .mcp.json with confirmation workflow
+4. **`install-mcp-server`** - Install MCP servers directly to .mcp.json with environment variable validation
 
 #### 📝 Smart Prompts Available
 
@@ -114,6 +114,7 @@ The MCP server also provides intelligent prompts for guided tech stack analysis:
 3. **`setup-project-mcp`** - Project setup assistant with team considerations
 4. **`quick-tech-assessment`** - Rapid tech stack assessment from minimal info
 5. **`confirm-installation`** - Interactive confirmation workflow for MCP server installation
+6. **`collect-environment-variables`** - Guided collection of required environment variables for servers
 
 #### 🧪 Testing with MCP Inspector
 
@@ -234,8 +235,9 @@ Version Check → Update Available → Mandatory Modal → Progress Bar → Auto
 - 🎯 **Smart Recommendations**: AI-powered MCP server suggestions based on LLM-extracted keywords
 - 🔍 **Server Discovery**: Search through 52+ available MCP servers by technology
 - 📋 **Interactive Installation**: Confirm and install servers one-by-one with validation
+- 🔐 **Environment Variable Guidance**: Step-by-step help for collecting API keys and tokens
 - 🔧 **4 MCP Tools**: recommend-mcp-servers, search-mcp-servers, get-mcp-server-info, install-mcp-server
-- 📝 **5 Smart Prompts**: Guided analysis, discovery, setup, assessment, and installation confirmation
+- 📝 **6 Smart Prompts**: Guided analysis, discovery, setup, assessment, installation, and env var collection
 - 🧪 **MCP Inspector Support**: Interactive testing with visual interface
 - 📦 **Claude Desktop Ready**: Easy integration with Claude Desktop MCP configuration
 - 🚀 **LLM-Driven Workflow**: Prompts first, then tools for optimal recommendations
@@ -374,12 +376,19 @@ User: "Yes, install the filesystem and git servers"
 Claude: [uses install-mcp-server tool with confirmed: true for each server]
 Result: Servers installed to .mcp.json with success confirmation
 
+User: "The GitHub server installation failed due to missing environment variables"
+Claude: [uses collect-environment-variables prompt with GitHub server details] → [provides step-by-step guidance for getting GitHub token, owner, repo]
+User: "I have the variables now"
+Claude: [uses install-mcp-server tool with environment variables] → [successful installation]
+
 **Recommended Workflow (Prompt-First Approach):**
 1. Start with analyze-tech-stack prompt for guided analysis
 2. LLM extracts keywords from user's project description  
 3. Use recommend-mcp-servers tool with extracted keywords
 4. Use confirm-installation prompt for user approval
 5. Install servers one-by-one with install-mcp-server tool
+6. For partial installs, use collect-environment-variables prompt
+7. Retry installation with collected environment variables
 
 User: "Help me analyze my React project thoroughly"
 Claude: [uses analyze-tech-stack prompt with comprehensive depth]
@@ -413,6 +422,7 @@ npm run debug-mcp
    - **setup-project-mcp**: Get guided project setup prompts with team considerations
    - **quick-tech-assessment**: Rapid assessment prompts for minimal project info
    - **confirm-installation**: Interactive confirmation workflow for server installation
+   - **collect-environment-variables**: Guided collection of required environment variables
 
 #### Direct MCP Server Usage
 

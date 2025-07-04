@@ -414,8 +414,14 @@ class TechStackMCPServer {
                                     type: "text",
                                     text: JSON.stringify({
                                         action: "environment_variables_required",
+                                        serverName: server.name,
+                                        serverKey: serverKey,
                                         missingVariables: missingVars,
-                                        message: `The following environment variables are required: ${missingVars.join(', ')}`
+                                        optionalVariables: server.optionalParams || [],
+                                        installCommand: server.installCommand,
+                                        usageInstructions: server.usageInstructions,
+                                        message: `The following environment variables are required: ${missingVars.join(', ')}`,
+                                        nextStep: `Use the 'collect-environment-variables' prompt to get detailed guidance on obtaining these variables`
                                     }, null, 2)
                                 }]
                             };
@@ -1000,6 +1006,182 @@ To confirm these assessments:
 
 ### 📝 Next Steps
 Recommended actions based on this quick assessment.`;
+
+                return {
+                    messages: [
+                        {
+                            role: "user",
+                            content: {
+                                type: "text",
+                                text: prompt
+                            }
+                        }
+                    ]
+                };
+            }
+        );
+
+        // Environment Variable Collection Prompt
+        this.server.prompt(
+            'collect-environment-variables',
+            'Guide user through collecting required environment variables for MCP server installation',
+            {
+                serverName: z.string().describe("Name of the MCP server requiring environment variables"),
+                serverKey: z.string().describe("Key/identifier of the MCP server"),
+                requiredVars: z.array(z.string()).describe("List of required environment variable names"),
+                optionalVars: z.array(z.string()).optional().default([]).describe("List of optional environment variable names"),
+                installCommand: z.string().describe("Installation command for the server"),
+                usageInstructions: z.string().optional().describe("Usage instructions for the server")
+            },
+            async (args) => {
+                const { serverName, serverKey, requiredVars, optionalVars = [], installCommand, usageInstructions } = args;
+                
+                let prompt = `# Environment Variables Required for ${serverName}
+
+## Server Information
+**Server**: ${serverName}
+**Install Command**: \`${installCommand}\`
+${usageInstructions ? `**Usage**: ${usageInstructions}` : ''}
+
+## Required Environment Variables
+The following environment variables must be provided to install this MCP server:
+
+`;
+
+                requiredVars.forEach((varName, index) => {
+                    prompt += `### ${index + 1}. ${varName}
+`;
+                    
+                    // Provide guidance for common environment variables
+                    switch (varName) {
+                        case 'GITHUB_TOKEN':
+                            prompt += `- **Description**: GitHub Personal Access Token for API access
+- **How to get**: Go to GitHub Settings → Developer settings → Personal access tokens → Generate new token
+- **Required permissions**: repo, read:user, read:org (minimum)
+- **Example**: \`ghp_1234567890abcdef1234567890abcdef12345678\`
+`;
+                            break;
+                        case 'GITHUB_OWNER':
+                            prompt += `- **Description**: GitHub username or organization name
+- **Example**: \`myusername\` or \`myorg\`
+- **Note**: This is the owner of repositories you want to manage
+`;
+                            break;
+                        case 'GITHUB_REPO':
+                            prompt += `- **Description**: GitHub repository name
+- **Example**: \`my-project\`
+- **Note**: Name of the repository you want to manage
+`;
+                            break;
+                        case 'OPENAI_API_KEY':
+                            prompt += `- **Description**: OpenAI API key for accessing GPT models
+- **How to get**: Go to OpenAI Platform → API keys → Create new secret key
+- **Example**: \`sk-1234567890abcdef1234567890abcdef\`
+`;
+                            break;
+                        case 'ANTHROPIC_API_KEY':
+                            prompt += `- **Description**: Anthropic API key for accessing Claude models
+- **How to get**: Go to Anthropic Console → API keys → Create key
+- **Example**: \`sk-ant-1234567890abcdef1234567890abcdef\`
+`;
+                            break;
+                        case 'DATABASE_URL':
+                        case 'PG_CONNECTION_STRING':
+                            prompt += `- **Description**: PostgreSQL connection string
+- **Format**: \`postgresql://username:password@host:port/database\`
+- **Example**: \`postgresql://user:pass@localhost:5432/mydb\`
+`;
+                            break;
+                        case 'REDIS_URL':
+                            prompt += `- **Description**: Redis connection URL
+- **Format**: \`redis://[password@]host:port[/database]\`
+- **Example**: \`redis://localhost:6379\`
+`;
+                            break;
+                        case 'SLACK_BOT_TOKEN':
+                            prompt += `- **Description**: Slack Bot User OAuth Token
+- **How to get**: Create Slack App → OAuth & Permissions → Bot User OAuth Token
+- **Example**: \`xoxb-1234567890-1234567890-abcdefghijklmnopqrstuvwx\`
+`;
+                            break;
+                        case 'SLACK_TEAM_ID':
+                            prompt += `- **Description**: Slack workspace team ID
+- **How to get**: Slack App settings → Basic Information → App Credentials
+- **Example**: \`T1234567890\`
+`;
+                            break;
+                        default:
+                            prompt += `- **Description**: Required for ${serverName} functionality
+- **Note**: Check the server documentation for specific requirements
+`;
+                    }
+                    prompt += '\n';
+                });
+
+                if (optionalVars.length > 0) {
+                    prompt += `## Optional Environment Variables
+The following variables are optional but may enhance functionality:
+
+`;
+                    optionalVars.forEach((varName, index) => {
+                        prompt += `### ${index + 1}. ${varName}
+- **Description**: Optional configuration for enhanced features
+- **Note**: Server will work without this variable
+
+`;
+                    });
+                }
+
+                prompt += `## Next Steps
+
+Once you have gathered the required environment variables:
+
+### Option 1: Use install-mcp-server tool directly
+\`\`\`
+install-mcp-server(
+  serverKey: "${serverKey}",
+  envVars: {
+    "${requiredVars[0] || 'ENV_VAR'}": "your_value_here"${requiredVars.length > 1 ? `,
+    "${requiredVars[1]}": "your_value_here"` : ''}${requiredVars.length > 2 ? ',\n    // ... add other variables' : ''}
+  },
+  confirmed: true
+)
+\`\`\`
+
+### Option 2: Set in .env file and retry
+1. Add variables to your \`.env\` file:
+\`\`\`
+${requiredVars.map(v => `${v}=your_value_here`).join('\n')}
+\`\`\`
+
+2. Use the install tool:
+\`\`\`
+install-mcp-server(serverKey: "${serverKey}", confirmed: true)
+\`\`\`
+
+### Option 3: Manual .mcp.json configuration
+Add to your \`.mcp.json\` file:
+\`\`\`json
+{
+  "mcpServers": {
+    "${serverKey}": {
+      "command": "${installCommand.split(' ')[0]}",
+      "args": [${installCommand.split(' ').slice(1).map(arg => `"${arg}"`).join(', ')}],
+      "env": {
+        ${requiredVars.map(v => `"${v}": "your_value_here"`).join(',\n        ')}
+      }
+    }
+  }
+}
+\`\`\`
+
+## Security Notes
+- 🔒 **Never commit API keys or tokens to version control**
+- 📁 **Add .env to your .gitignore file**
+- 🔄 **Rotate tokens periodically for security**
+- 👥 **Use read-only permissions when possible**
+
+Would you like me to help you install this server once you have the environment variables ready?`;
 
                 return {
                     messages: [
