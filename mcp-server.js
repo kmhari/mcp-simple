@@ -1058,7 +1058,7 @@ The following environment variables must be provided to install this MCP server:
                             prompt += `- **Description**: GitHub Personal Access Token for API access
 - **How to get**: Go to GitHub Settings → Developer settings → Personal access tokens → Generate new token
 - **Required permissions**: repo, read:user, read:org (minimum)
-- **Example**: \`ghp_1234567890abcdef1234567890abcdef12345678\`
+- **Example**: \`ghp_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\`
 `;
                             break;
                         case 'GITHUB_OWNER':
@@ -1076,13 +1076,13 @@ The following environment variables must be provided to install this MCP server:
                         case 'OPENAI_API_KEY':
                             prompt += `- **Description**: OpenAI API key for accessing GPT models
 - **How to get**: Go to OpenAI Platform → API keys → Create new secret key
-- **Example**: \`sk-1234567890abcdef1234567890abcdef\`
+- **Example**: \`sk-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\`
 `;
                             break;
                         case 'ANTHROPIC_API_KEY':
                             prompt += `- **Description**: Anthropic API key for accessing Claude models
 - **How to get**: Go to Anthropic Console → API keys → Create key
-- **Example**: \`sk-ant-1234567890abcdef1234567890abcdef\`
+- **Example**: \`sk-ant-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\`
 `;
                             break;
                         case 'DATABASE_URL':
@@ -1101,7 +1101,7 @@ The following environment variables must be provided to install this MCP server:
                         case 'SLACK_BOT_TOKEN':
                             prompt += `- **Description**: Slack Bot User OAuth Token
 - **How to get**: Create Slack App → OAuth & Permissions → Bot User OAuth Token
-- **Example**: \`xoxb-1234567890-1234567890-abcdefghijklmnopqrstuvwx\`
+- **Example**: \`xoxb-XXXXXXXXXXXX-XXXXXXXXXXXX-XXXXXXXXXXXXXXXXXXXXXXXX\`
 `;
                             break;
                         case 'SLACK_TEAM_ID':
