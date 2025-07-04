@@ -143,9 +143,10 @@ Add this configuration to your Claude Desktop `mcp.json`:
 
 #### 🎯 MCP Server Use Cases
 
-- **Automatic Tech Stack Analysis**: Detect languages, frameworks, databases from project files
-- **Smart MCP Recommendations**: Get personalized server suggestions based on your stack
+- **Prompt-Guided Tech Stack Analysis**: Use intelligent prompts for comprehensive project analysis
+- **Smart MCP Recommendations**: Get personalized server suggestions based on LLM-extracted keywords
 - **Server Discovery**: Search and explore available MCP servers by technology
+- **Interactive Installation**: Confirm and install servers one-by-one with environment validation
 - **Project Setup**: Quickly identify what MCP servers would be most useful for any project
 
 ### 🌐 Web Interface Mode (Recommended)
@@ -229,15 +230,15 @@ Version Check → Update Available → Mandatory Modal → Progress Bar → Auto
 ## Features
 
 ### 🚀 MCP Server Mode (NEW!)
-- 🧠 **Tech Stack Detection**: Automatically analyze project files to identify technologies
-- 🎯 **Smart Recommendations**: AI-powered MCP server suggestions based on your stack
-- 🔍 **Server Discovery**: Search through 35+ available MCP servers by technology
-- 📊 **Confidence Scoring**: Get recommendation confidence levels for better decisions
-- 🔧 **3 MCP Tools**: recommend-mcp-servers, search-mcp-servers, get-mcp-server-info
-- 📝 **4 Smart Prompts**: Guided analysis, discovery, setup, and assessment prompts
+- 🧠 **Prompt-Guided Analysis**: Use intelligent prompts for comprehensive tech stack analysis
+- 🎯 **Smart Recommendations**: AI-powered MCP server suggestions based on LLM-extracted keywords
+- 🔍 **Server Discovery**: Search through 52+ available MCP servers by technology
+- 📋 **Interactive Installation**: Confirm and install servers one-by-one with validation
+- 🔧 **4 MCP Tools**: recommend-mcp-servers, search-mcp-servers, get-mcp-server-info, install-mcp-server
+- 📝 **5 Smart Prompts**: Guided analysis, discovery, setup, assessment, and installation confirmation
 - 🧪 **MCP Inspector Support**: Interactive testing with visual interface
 - 📦 **Claude Desktop Ready**: Easy integration with Claude Desktop MCP configuration
-- 🚀 **Real-time Analysis**: Instant project analysis and server recommendations
+- 🚀 **LLM-Driven Workflow**: Prompts first, then tools for optimal recommendations
 
 ### 🌐 Web Mode (Recommended)
 - 🎨 **Modern Design**: Beautiful depth-based UI with soft shadows and JetBrains Mono font
@@ -352,11 +353,11 @@ MCP Manager manages `.mcp.json` files in your current working directory. The con
 
 ```
 User: "Analyze my current project and recommend MCP servers"
-Claude: [uses analyze-tech-stack prompt] → [uses recommend-mcp-servers tool with detected stack]
-Result: Personalized recommendations based on your React/Node.js/PostgreSQL stack
+Claude: [uses analyze-tech-stack prompt to guide user analysis] → [user provides tech stack] → [uses recommend-mcp-servers tool with LLM-extracted keywords]
+Result: Personalized recommendations based on prompt-guided analysis
 
 User: "I have a React, TypeScript, PostgreSQL project. What MCP servers should I use?"
-Claude: [uses recommend-mcp-servers with provided tech stack]
+Claude: [uses recommend-mcp-servers with keywords: languages=["TypeScript"], frameworks=["React"], databases=["PostgreSQL"]]
 Result: Curated recommendations for React/TypeScript/PostgreSQL development
 
 User: "Find MCP servers for working with databases" 
@@ -372,6 +373,13 @@ Claude: [uses confirm-installation prompt with recommended servers] → [guides 
 User: "Yes, install the filesystem and git servers"
 Claude: [uses install-mcp-server tool with confirmed: true for each server]
 Result: Servers installed to .mcp.json with success confirmation
+
+**Recommended Workflow (Prompt-First Approach):**
+1. Start with analyze-tech-stack prompt for guided analysis
+2. LLM extracts keywords from user's project description  
+3. Use recommend-mcp-servers tool with extracted keywords
+4. Use confirm-installation prompt for user approval
+5. Install servers one-by-one with install-mcp-server tool
 
 User: "Help me analyze my React project thoroughly"
 Claude: [uses analyze-tech-stack prompt with comprehensive depth]
