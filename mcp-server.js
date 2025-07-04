@@ -68,6 +68,8 @@ class TechStackMCPServer {
     }
 
     analyzeProjectFiles(projectPath = process.cwd()) {
+        // Note: This method is deprecated in favor of prompt-based analysis.
+        // Use the 'analyze-tech-stack' prompt instead for better LLM-driven analysis.
         const techStack = {
             languages: [],
             frameworks: [],
@@ -80,82 +82,8 @@ class TechStackMCPServer {
             confidence: {}
         };
 
-        try {
-            // Check package.json for Node.js projects
-            const packageJsonPath = path.join(projectPath, 'package.json');
-            if (fs.existsSync(packageJsonPath)) {
-                const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
-                techStack.languages.push('JavaScript/TypeScript');
-                techStack.packageManagers.push('npm');
-                
-                // Check dependencies for frameworks and tools
-                const allDeps = {
-                    ...packageJson.dependencies,
-                    ...packageJson.devDependencies
-                };
-                
-                if (allDeps.react) techStack.frameworks.push('React');
-                if (allDeps.vue) techStack.frameworks.push('Vue.js');
-                if (allDeps.angular) techStack.frameworks.push('Angular');
-                if (allDeps.express) techStack.frameworks.push('Express.js');
-                if (allDeps.fastify) techStack.frameworks.push('Fastify');
-                if (allDeps['next']) techStack.frameworks.push('Next.js');
-                if (allDeps.nuxt) techStack.frameworks.push('Nuxt.js');
-                if (allDeps.svelte) techStack.frameworks.push('Svelte');
-                
-                if (allDeps.jest || allDeps.mocha || allDeps.chai || allDeps.vitest) techStack.testing.push('JavaScript Testing');
-                if (allDeps.webpack) techStack.buildTools.push('Webpack');
-                if (allDeps.vite) techStack.buildTools.push('Vite');
-                if (allDeps.rollup) techStack.buildTools.push('Rollup');
-                
-                if (allDeps.mongodb || allDeps.mongoose) techStack.databases.push('MongoDB');
-                if (allDeps.pg || allDeps.postgres) techStack.databases.push('PostgreSQL');
-                if (allDeps.mysql) techStack.databases.push('MySQL');
-                if (allDeps.sqlite3) techStack.databases.push('SQLite');
-            }
-
-            // Check for Python projects
-            if (fs.existsSync(path.join(projectPath, 'requirements.txt')) || 
-                fs.existsSync(path.join(projectPath, 'pyproject.toml')) ||
-                fs.existsSync(path.join(projectPath, 'setup.py'))) {
-                techStack.languages.push('Python');
-                techStack.packageManagers.push('pip');
-            }
-
-            // Check for Rust projects
-            if (fs.existsSync(path.join(projectPath, 'Cargo.toml'))) {
-                techStack.languages.push('Rust');
-                techStack.packageManagers.push('cargo');
-            }
-
-            // Check for Go projects
-            if (fs.existsSync(path.join(projectPath, 'go.mod'))) {
-                techStack.languages.push('Go');
-                techStack.packageManagers.push('go modules');
-            }
-
-            // Check for Docker
-            if (fs.existsSync(path.join(projectPath, 'Dockerfile')) || 
-                fs.existsSync(path.join(projectPath, 'docker-compose.yml'))) {
-                techStack.deployment.push('Docker');
-            }
-
-            // Check for common config files
-            if (fs.existsSync(path.join(projectPath, '.env'))) {
-                techStack.tools.push('Environment Variables');
-            }
-
-            // Calculate confidence scores
-            Object.keys(techStack).forEach(category => {
-                if (Array.isArray(techStack[category])) {
-                    techStack.confidence[category] = techStack[category].length > 0 ? 
-                        Math.min(techStack[category].length * 0.3 + 0.7, 1.0) : 0;
-                }
-            });
-
-        } catch (error) {
-            console.error('Error analyzing project files:', error.message);
-        }
+        // This method is deprecated. 
+        // Use 'analyze-tech-stack' prompt for comprehensive LLM-driven analysis instead.
 
         return techStack;
     }
@@ -256,16 +184,16 @@ class TechStackMCPServer {
         // Tool 1: Recommend MCP servers
         this.server.tool(
             'recommend-mcp-servers',
-            'Recommend MCP servers based on provided technology stack information',
+            'Recommend MCP servers based on provided technology stack keywords. Use prompts first to analyze tech stack, then provide the keywords to this tool.',
             {
                 techStack: z.object({
-                    languages: z.array(z.string()).optional().default([]).describe("Programming languages used"),
-                    frameworks: z.array(z.string()).optional().default([]).describe("Frameworks and libraries used"),
-                    databases: z.array(z.string()).optional().default([]).describe("Database technologies used"),
-                    tools: z.array(z.string()).optional().default([]).describe("Development tools used"),
-                    deployment: z.array(z.string()).optional().default([]).describe("Deployment technologies used")
-                }).describe("Technology stack information from analysis"),
-                maxRecommendations: z.number().optional().default(10).describe("Maximum number of recommendations to return")
+                    languages: z.array(z.string()).optional().default([]).describe("Programming languages (e.g., JavaScript, Python, TypeScript)"),
+                    frameworks: z.array(z.string()).optional().default([]).describe("Frameworks and libraries (e.g., React, Express, Django)"),
+                    databases: z.array(z.string()).optional().default([]).describe("Database technologies (e.g., PostgreSQL, MongoDB, Redis)"),
+                    tools: z.array(z.string()).optional().default([]).describe("Development tools (e.g., Git, Docker, Kubernetes)"),
+                    deployment: z.array(z.string()).optional().default([]).describe("Deployment platforms (e.g., AWS, Vercel, Docker)")
+                }).describe("Technology stack keywords extracted from project analysis"),
+                maxRecommendations: z.number().optional().default(8).describe("Maximum number of recommendations to return")
             },
             async ({ techStack, maxRecommendations = 10 }) => {
                 try {
