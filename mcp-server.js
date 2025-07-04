@@ -402,6 +402,128 @@ class TechStackMCPServer {
                 }
             }
         );
+
+        // Tool 4: Install MCP server
+        this.server.tool(
+            'install-mcp-server',
+            'Install an MCP server to the local .mcp.json configuration',
+            {
+                serverKey: z.string().describe("The key/identifier of the MCP server to install"),
+                serverName: z.string().optional().describe("Custom name for the server instance"),
+                envVars: z.record(z.string()).optional().describe("Environment variables for the server"),
+                confirmed: z.boolean().optional().default(false).describe("Whether installation has been confirmed")
+            },
+            async ({ serverKey, serverName, envVars = {}, confirmed = false }) => {
+                try {
+                    const server = this.mcpDatabase[serverKey];
+                    
+                    if (!server) {
+                        return {
+                            content: [{
+                                type: "text",
+                                text: `MCP server with key "${serverKey}" not found. Use search-mcp-servers to find available servers.`
+                            }]
+                        };
+                    }
+
+                    // Check if confirmation is needed
+                    if (!confirmed) {
+                        return {
+                            content: [{
+                                type: "text",
+                                text: JSON.stringify({
+                                    action: "confirmation_required",
+                                    server: {
+                                        key: serverKey,
+                                        name: server.name,
+                                        description: server.description,
+                                        installCommand: server.installCommand,
+                                        requiredEnvVars: server.requiredEnvVars || [],
+                                        optionalParams: server.optionalParams || []
+                                    },
+                                    message: "Please confirm installation of this MCP server by calling this tool again with confirmed: true",
+                                    environmentVariables: server.requiredEnvVars || []
+                                }, null, 2)
+                            }]
+                        };
+                    }
+
+                    // Load existing .mcp.json configuration
+                    const mcpConfigPath = path.join(process.cwd(), '.mcp.json');
+                    let mcpConfig = { mcpServers: {} };
+                    
+                    if (fs.existsSync(mcpConfigPath)) {
+                        try {
+                            const content = fs.readFileSync(mcpConfigPath, 'utf8');
+                            mcpConfig = JSON.parse(content);
+                            if (!mcpConfig.mcpServers) {
+                                mcpConfig.mcpServers = {};
+                            }
+                        } catch (parseError) {
+                            return {
+                                content: [{
+                                    type: "text",
+                                    text: `Error reading existing .mcp.json: ${parseError.message}`
+                                }]
+                            };
+                        }
+                    }
+
+                    // Determine server configuration
+                    const finalServerName = serverName || serverKey;
+                    const serverConfig = {
+                        command: server.installCommand.split(' ')[0],
+                        args: server.installCommand.split(' ').slice(1),
+                        env: { ...envVars }
+                    };
+
+                    // Add required environment variables if provided
+                    if (server.requiredEnvVars && server.requiredEnvVars.length > 0) {
+                        const missingVars = server.requiredEnvVars.filter(varName => !envVars[varName]);
+                        if (missingVars.length > 0) {
+                            return {
+                                content: [{
+                                    type: "text",
+                                    text: JSON.stringify({
+                                        action: "environment_variables_required",
+                                        missingVariables: missingVars,
+                                        message: `The following environment variables are required: ${missingVars.join(', ')}`
+                                    }, null, 2)
+                                }]
+                            };
+                        }
+                    }
+
+                    // Install the server
+                    mcpConfig.mcpServers[finalServerName] = serverConfig;
+
+                    // Write updated configuration
+                    fs.writeFileSync(mcpConfigPath, JSON.stringify(mcpConfig, null, 2));
+
+                    return {
+                        content: [{
+                            type: "text",
+                            text: JSON.stringify({
+                                action: "installation_successful",
+                                serverName: finalServerName,
+                                serverKey: serverKey,
+                                configuration: serverConfig,
+                                configurationFile: mcpConfigPath,
+                                message: `Successfully installed ${server.name} as "${finalServerName}" in .mcp.json`
+                            }, null, 2)
+                        }]
+                    };
+
+                } catch (error) {
+                    return {
+                        content: [{
+                            type: "text",
+                            text: `Error installing MCP server: ${error.message}`
+                        }]
+                    };
+                }
+            }
+        );
     }
 
     setupPrompts() {
@@ -759,6 +881,94 @@ Define how to measure the success of the MCP implementation:
 
 ### 🔧 Troubleshooting Guide
 Common issues and solutions for the recommended setup.`;
+
+                return {
+                    messages: [
+                        {
+                            role: "user",
+                            content: {
+                                type: "text",
+                                text: prompt
+                            }
+                        }
+                    ]
+                };
+            }
+        );
+
+        // Installation Confirmation Prompt
+        this.server.prompt(
+            'confirm-installation',
+            'Get user confirmation before installing MCP servers with required environment variables and setup details',
+            {
+                servers: z.array(z.object({
+                    key: z.string(),
+                    name: z.string(),
+                    description: z.string(),
+                    installCommand: z.string(),
+                    requiredEnvVars: z.array(z.string()).optional(),
+                    optionalParams: z.array(z.string()).optional()
+                })).describe("Array of MCP servers to confirm for installation"),
+                projectContext: z.string().optional().describe("Brief description of the project context")
+            },
+            async (args) => {
+                const { servers, projectContext } = args;
+                
+                let prompt = `# MCP Server Installation Confirmation
+
+## Project Context
+${projectContext || "Installing MCP servers for current project"}
+
+## Servers to Install
+The following MCP servers have been recommended for your project:
+
+`;
+
+                servers.forEach((server, index) => {
+                    prompt += `### ${index + 1}. ${server.name}
+**Description**: ${server.description}
+**Install Command**: \`${server.installCommand}\`
+`;
+                    
+                    if (server.requiredEnvVars && server.requiredEnvVars.length > 0) {
+                        prompt += `**Required Environment Variables**: ${server.requiredEnvVars.join(', ')}\n`;
+                    }
+                    
+                    if (server.optionalParams && server.optionalParams.length > 0) {
+                        prompt += `**Optional Parameters**: ${server.optionalParams.join(', ')}\n`;
+                    }
+                    
+                    prompt += '\n';
+                });
+
+                prompt += `## Next Steps
+
+Please review the servers above and confirm which ones you'd like to install:
+
+### For servers with no required environment variables:
+Use the \`install-mcp-server\` tool directly:
+\`\`\`
+install-mcp-server(serverKey: "server-key", confirmed: true)
+\`\`\`
+
+### For servers requiring environment variables:
+1. First gather the required environment variables
+2. Use the \`install-mcp-server\` tool with environment variables:
+\`\`\`
+install-mcp-server(
+  serverKey: "server-key", 
+  envVars: {"VAR_NAME": "value"}, 
+  confirmed: true
+)
+\`\`\`
+
+### Installation Order Recommendation:
+1. **Start with zero-config servers** (no environment variables required)
+2. **Install essential development tools** (git, filesystem, memory)
+3. **Add project-specific servers** (database, API, framework-specific)
+4. **Install optional enhancement servers** last
+
+Would you like me to proceed with installing any of these servers? Please specify which servers and provide any required environment variables.`;
 
                 return {
                     messages: [

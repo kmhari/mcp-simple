@@ -98,11 +98,12 @@ Transform your package into an intelligent MCP server that automatically detects
 
 #### 🔧 MCP Server Tools Available
 
-The MCP server provides 3 powerful tools for AI agents:
+The MCP server provides 4 powerful tools for AI agents:
 
 1. **`recommend-mcp-servers`** - Suggests optimal MCP servers based on provided tech stack
-2. **`search-mcp-servers`** - Search through 35+ available MCP servers
+2. **`search-mcp-servers`** - Search through 52+ available MCP servers
 3. **`get-mcp-server-info`** - Get detailed information about specific servers
+4. **`install-mcp-server`** - Install MCP servers directly to .mcp.json with confirmation workflow
 
 #### 📝 Smart Prompts Available
 
@@ -112,6 +113,7 @@ The MCP server also provides intelligent prompts for guided tech stack analysis:
 2. **`discover-mcp-servers`** - Technology-specific MCP server discovery
 3. **`setup-project-mcp`** - Project setup assistant with team considerations
 4. **`quick-tech-assessment`** - Rapid tech stack assessment from minimal info
+5. **`confirm-installation`** - Interactive confirmation workflow for MCP server installation
 
 #### 🧪 Testing with MCP Inspector
 
@@ -365,6 +367,12 @@ User: "What does the postgres MCP server do?"
 Claude: [uses get-mcp-server-info with serverKey "postgres"]
 Result: Detailed information about PostgreSQL MCP server
 
+User: "Install the recommended servers for me"
+Claude: [uses confirm-installation prompt with recommended servers] → [guides through confirmation]
+User: "Yes, install the filesystem and git servers"
+Claude: [uses install-mcp-server tool with confirmed: true for each server]
+Result: Servers installed to .mcp.json with success confirmation
+
 User: "Help me analyze my React project thoroughly"
 Claude: [uses analyze-tech-stack prompt with comprehensive depth]
 Result: Structured tech stack analysis with MCP recommendations
@@ -389,12 +397,14 @@ npm run debug-mcp
    - **recommend-mcp-servers**: Provide tech stack data and get server recommendations
    - **search-mcp-servers**: Try queries like "ai", "database", "github"
    - **get-mcp-server-info**: Explore details of specific servers
+   - **install-mcp-server**: Test the installation workflow with confirmation steps
 
    **Prompts:**
    - **analyze-tech-stack**: Get structured prompts for comprehensive project analysis
    - **discover-mcp-servers**: Find prompts for technology-specific server discovery
    - **setup-project-mcp**: Get guided project setup prompts with team considerations
    - **quick-tech-assessment**: Rapid assessment prompts for minimal project info
+   - **confirm-installation**: Interactive confirmation workflow for server installation
 
 #### Direct MCP Server Usage
 
