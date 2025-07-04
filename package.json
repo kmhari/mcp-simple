@@ -1,13 +1,11 @@
 {
   "name": "@oglabs/mcp",
-  "version": "2.0.0",
-  "description": "Interactive CLI tool for managing MCP (Model Context Protocol) server configurations",
+  "version": "2.2.0",
+  "description": "Interactive CLI tool and MCP server for managing MCP configurations with tech stack detection and recommendations",
   "main": "mcp-manager.cjs",
   "type": "module",
   "bin": {
-    "mcp": "./bin/mcp-manager.js",
-    "create-slack-bot": "./bin/create-slack-bot",
-    "get-clickup-api-key": "./bin/get-clickup-api-key"
+    "mcp": "./mcp-manager.js"
   },
   "scripts": {
     "test": "echo \"No tests specified\" && exit 0",
