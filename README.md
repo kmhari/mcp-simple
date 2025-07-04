@@ -105,6 +105,15 @@ The MCP server provides 4 powerful tools for AI agents:
 3. **`search-mcp-servers`** - Search through 35+ available MCP servers
 4. **`get-mcp-server-info`** - Get detailed information about specific servers
 
+#### 📝 Smart Prompts Available
+
+The MCP server also provides intelligent prompts for guided tech stack analysis:
+
+1. **`analyze-tech-stack`** - Comprehensive project analysis with customizable depth
+2. **`discover-mcp-servers`** - Technology-specific MCP server discovery
+3. **`setup-project-mcp`** - Project setup assistant with team considerations
+4. **`quick-tech-assessment`** - Rapid tech stack assessment from minimal info
+
 #### 🧪 Testing with MCP Inspector
 
 ```bash
@@ -224,6 +233,7 @@ Version Check → Update Available → Mandatory Modal → Progress Bar → Auto
 - 🔍 **Server Discovery**: Search through 35+ available MCP servers by technology
 - 📊 **Confidence Scoring**: Get recommendation confidence levels for better decisions
 - 🔧 **4 MCP Tools**: detect-tech-stack, recommend-mcp-servers, search-mcp-servers, get-mcp-server-info
+- 📝 **4 Smart Prompts**: Guided analysis, discovery, setup, and assessment prompts
 - 🧪 **MCP Inspector Support**: Interactive testing with visual interface
 - 📦 **Claude Desktop Ready**: Easy integration with Claude Desktop MCP configuration
 - 🚀 **Real-time Analysis**: Instant project analysis and server recommendations
@@ -351,6 +361,14 @@ Result: List of database-related MCP servers (PostgreSQL, MongoDB, SQLite, etc.)
 User: "What does the postgres MCP server do?"
 Claude: [uses get-mcp-server-info with serverKey "postgres"]
 Result: Detailed information about PostgreSQL MCP server
+
+User: "Help me analyze my React project thoroughly"
+Claude: [uses analyze-tech-stack prompt with comprehensive depth]
+Result: Structured tech stack analysis with MCP recommendations
+
+User: "I need MCP servers for Python development"
+Claude: [uses discover-mcp-servers prompt with technology "Python"]
+Result: Curated list of Python-specific MCP servers with setup instructions
 ```
 
 #### Testing with MCP Inspector
@@ -362,11 +380,19 @@ npm run debug-mcp
 
 2. **Open browser** at `http://localhost:6274`
 
-3. **Test each tool interactively:**
+3. **Test tools and prompts interactively:**
+
+   **Tools:**
    - **detect-tech-stack**: See what technologies are detected in your project
    - **recommend-mcp-servers**: Get server recommendations with confidence scores  
    - **search-mcp-servers**: Try queries like "ai", "database", "github"
    - **get-mcp-server-info**: Explore details of specific servers
+
+   **Prompts:**
+   - **analyze-tech-stack**: Get structured prompts for comprehensive project analysis
+   - **discover-mcp-servers**: Find prompts for technology-specific server discovery
+   - **setup-project-mcp**: Get guided project setup prompts with team considerations
+   - **quick-tech-assessment**: Rapid assessment prompts for minimal project info
 
 #### Direct MCP Server Usage
 
@@ -399,6 +425,52 @@ npm run mcp-server
     }
   ]
 }
+```
+
+#### Example Prompt Usage
+
+**1. Comprehensive Tech Stack Analysis:**
+```
+Prompt: analyze-tech-stack
+Parameters: {
+  "projectPath": ".",
+  "analysisDepth": "comprehensive", 
+  "includeRecommendations": true
+}
+Result: Detailed structured analysis with MCP server recommendations
+```
+
+**2. Technology-Specific Discovery:**
+```
+Prompt: discover-mcp-servers
+Parameters: {
+  "technology": "React",
+  "projectType": "web",
+  "includeSetup": true
+}
+Result: Curated React-specific MCP servers with setup instructions
+```
+
+**3. Project Setup Guidance:**
+```
+Prompt: setup-project-mcp
+Parameters: {
+  "projectDescription": "E-commerce platform with React frontend and Node.js backend",
+  "teamSize": "small",
+  "experience": "intermediate",
+  "priorities": ["productivity", "testing", "deployment"]
+}
+Result: Phased MCP server implementation plan with team considerations
+```
+
+**4. Quick Assessment:**
+```
+Prompt: quick-tech-assessment
+Parameters: {
+  "indicators": "package.json, Dockerfile, .github/workflows, cypress.json",
+  "purpose": "mcp-recommendations"
+}
+Result: Rapid tech stack inference with immediate MCP opportunities
 ```
 
 ### 🖥️ CLI Mode Examples
