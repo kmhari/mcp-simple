@@ -98,12 +98,11 @@ Transform your package into an intelligent MCP server that automatically detects
 
 #### 🔧 MCP Server Tools Available
 
-The MCP server provides 4 powerful tools for AI agents:
+The MCP server provides 3 powerful tools for AI agents:
 
-1. **`detect-tech-stack`** - Analyzes project files to identify technologies
-2. **`recommend-mcp-servers`** - Suggests optimal MCP servers based on detected tech stack
-3. **`search-mcp-servers`** - Search through 35+ available MCP servers
-4. **`get-mcp-server-info`** - Get detailed information about specific servers
+1. **`recommend-mcp-servers`** - Suggests optimal MCP servers based on provided tech stack
+2. **`search-mcp-servers`** - Search through 35+ available MCP servers
+3. **`get-mcp-server-info`** - Get detailed information about specific servers
 
 #### 📝 Smart Prompts Available
 
@@ -232,7 +231,7 @@ Version Check → Update Available → Mandatory Modal → Progress Bar → Auto
 - 🎯 **Smart Recommendations**: AI-powered MCP server suggestions based on your stack
 - 🔍 **Server Discovery**: Search through 35+ available MCP servers by technology
 - 📊 **Confidence Scoring**: Get recommendation confidence levels for better decisions
-- 🔧 **4 MCP Tools**: detect-tech-stack, recommend-mcp-servers, search-mcp-servers, get-mcp-server-info
+- 🔧 **3 MCP Tools**: recommend-mcp-servers, search-mcp-servers, get-mcp-server-info
 - 📝 **4 Smart Prompts**: Guided analysis, discovery, setup, and assessment prompts
 - 🧪 **MCP Inspector Support**: Interactive testing with visual interface
 - 📦 **Claude Desktop Ready**: Easy integration with Claude Desktop MCP configuration
@@ -351,8 +350,12 @@ MCP Manager manages `.mcp.json` files in your current working directory. The con
 
 ```
 User: "Analyze my current project and recommend MCP servers"
-Claude: [uses detect-tech-stack tool] → [uses recommend-mcp-servers tool]
+Claude: [uses analyze-tech-stack prompt] → [uses recommend-mcp-servers tool with detected stack]
 Result: Personalized recommendations based on your React/Node.js/PostgreSQL stack
+
+User: "I have a React, TypeScript, PostgreSQL project. What MCP servers should I use?"
+Claude: [uses recommend-mcp-servers with provided tech stack]
+Result: Curated recommendations for React/TypeScript/PostgreSQL development
 
 User: "Find MCP servers for working with databases" 
 Claude: [uses search-mcp-servers with query "database"]
@@ -383,8 +386,7 @@ npm run debug-mcp
 3. **Test tools and prompts interactively:**
 
    **Tools:**
-   - **detect-tech-stack**: See what technologies are detected in your project
-   - **recommend-mcp-servers**: Get server recommendations with confidence scores  
+   - **recommend-mcp-servers**: Provide tech stack data and get server recommendations
    - **search-mcp-servers**: Try queries like "ai", "database", "github"
    - **get-mcp-server-info**: Explore details of specific servers
 
@@ -404,24 +406,35 @@ npm run debug-mcp
 npm run mcp-server
 ```
 
-#### Example Tech Stack Detection Output
+#### Example MCP Server Recommendation Output
 
 ```json
 {
-  "techStack": {
-    "languages": ["JavaScript/TypeScript"],
+  "providedTechStack": {
+    "languages": ["JavaScript", "TypeScript"],
     "frameworks": ["React", "Express.js"], 
     "databases": ["PostgreSQL"],
-    "tools": ["Environment Variables"],
-    "packageManagers": ["npm"],
+    "tools": ["Git", "Docker"],
     "deployment": ["Docker"]
   },
   "recommendations": [
     {
       "name": "PostgreSQL MCP Server",
+      "key": "postgres",
+      "description": "Connect to PostgreSQL databases",
       "reason": "Recommended for PostgreSQL",
       "confidence": 0.9,
+      "package": "@modelcontextprotocol/server-postgres",
       "installCommand": "npx -y @modelcontextprotocol/server-postgres"
+    },
+    {
+      "name": "GitHub MCP Server", 
+      "key": "github",
+      "description": "Interact with GitHub repositories",
+      "reason": "Recommended for Git",
+      "confidence": 0.8,
+      "package": "@modelcontextprotocol/server-github",
+      "installCommand": "npx -y @modelcontextprotocol/server-github"
     }
   ]
 }

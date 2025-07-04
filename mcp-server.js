@@ -15,7 +15,7 @@ class TechStackMCPServer {
     constructor() {
         this.server = new McpServer({
             name: "Tech Stack & MCP Recommender",
-            version: "1.1.0"
+            version: "1.2.0"
         });
         
         this.mcpDatabase = this.loadMCPDatabase();
@@ -253,60 +253,52 @@ class TechStackMCPServer {
     }
 
     setupTools() {
-        // Tool 1: Detect tech stack
-        this.server.tool(
-            'detect-tech-stack',
-            'Analyze a project directory to detect the technology stack used',
-            {
-                projectPath: z.string().optional().describe("Path to the project directory (defaults to current directory)")
-            },
-            async ({ projectPath = process.cwd() }) => {
-                try {
-                    const techStack = this.analyzeProjectFiles(projectPath);
-                    const gitInfo = this.detectGitRepository(projectPath);
-                    
-                    return {
-                        content: [{
-                            type: "text",
-                            text: JSON.stringify({
-                                techStack,
-                                gitRepository: gitInfo,
-                                summary: `Detected ${techStack.languages.length} languages, ${techStack.frameworks.length} frameworks, ${techStack.databases.length} databases`
-                            }, null, 2)
-                        }]
-                    };
-                } catch (error) {
-                    return {
-                        content: [{
-                            type: "text",
-                            text: `Error detecting tech stack: ${error.message}`
-                        }]
-                    };
-                }
-            }
-        );
-
-        // Tool 2: Recommend MCP servers
+        // Tool 1: Recommend MCP servers
         this.server.tool(
             'recommend-mcp-servers',
-            'Recommend MCP servers based on detected technology stack',
+            'Recommend MCP servers based on provided technology stack information',
             {
-                projectPath: z.string().optional().describe("Path to the project directory (defaults to current directory)"),
+                techStack: z.object({
+                    languages: z.array(z.string()).optional().default([]).describe("Programming languages used"),
+                    frameworks: z.array(z.string()).optional().default([]).describe("Frameworks and libraries used"),
+                    databases: z.array(z.string()).optional().default([]).describe("Database technologies used"),
+                    tools: z.array(z.string()).optional().default([]).describe("Development tools used"),
+                    deployment: z.array(z.string()).optional().default([]).describe("Deployment technologies used")
+                }).describe("Technology stack information from analysis"),
                 maxRecommendations: z.number().optional().default(10).describe("Maximum number of recommendations to return")
             },
-            async ({ projectPath = process.cwd(), maxRecommendations = 10 }) => {
+            async ({ techStack, maxRecommendations = 10 }) => {
                 try {
-                    const techStack = this.analyzeProjectFiles(projectPath);
-                    const recommendations = this.recommendMCPServers(techStack).slice(0, maxRecommendations);
+                    // Convert input format to internal format
+                    const formattedTechStack = {
+                        languages: techStack.languages || [],
+                        frameworks: techStack.frameworks || [],
+                        databases: techStack.databases || [],
+                        tools: techStack.tools || [],
+                        deployment: techStack.deployment || [],
+                        confidence: {}
+                    };
+
+                    // Calculate confidence scores
+                    Object.keys(formattedTechStack).forEach(category => {
+                        if (Array.isArray(formattedTechStack[category])) {
+                            formattedTechStack.confidence[category] = formattedTechStack[category].length > 0 ? 
+                                Math.min(formattedTechStack[category].length * 0.3 + 0.7, 1.0) : 0;
+                        }
+                    });
+
+                    const recommendations = this.recommendMCPServers(formattedTechStack).slice(0, maxRecommendations);
                     
                     return {
                         content: [{
                             type: "text",
                             text: JSON.stringify({
-                                techStack: {
+                                providedTechStack: {
                                     languages: techStack.languages,
                                     frameworks: techStack.frameworks,
-                                    databases: techStack.databases
+                                    databases: techStack.databases,
+                                    tools: techStack.tools,
+                                    deployment: techStack.deployment
                                 },
                                 recommendations: recommendations.map(rec => ({
                                     name: rec.server.name,
@@ -331,7 +323,7 @@ class TechStackMCPServer {
             }
         );
 
-        // Tool 3: Search MCP servers
+        // Tool 2: Search MCP servers
         this.server.tool(
             'search-mcp-servers',
             'Search through available MCP servers by name, description, or category',
@@ -371,7 +363,7 @@ class TechStackMCPServer {
             }
         );
 
-        // Tool 4: Get MCP server info
+        // Tool 3: Get MCP server info
         this.server.tool(
             'get-mcp-server-info',
             'Get detailed information about a specific MCP server',
