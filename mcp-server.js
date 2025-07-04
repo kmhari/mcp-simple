@@ -889,7 +889,6 @@ Recommended actions based on this quick assessment.`;
     async start() {
         const transport = new StdioServerTransport();
         await this.server.connect(transport);
-        console.error('Tech Stack & MCP Recommender Server started');
     }
 }
 
