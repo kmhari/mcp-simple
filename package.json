@@ -14,7 +14,11 @@
     "update-stars-7d": "node fetch-github-stars.js --stale --days 7",
     "update-stars-14d": "node fetch-github-stars.js --stale --days 14",
     "mcp-server": "node mcp-server.js",
-    "debug-mcp": "npx -y @modelcontextprotocol/inspector node mcp-server.js"
+    "debug-mcp": "npx -y @modelcontextprotocol/inspector node mcp-server.js",
+    "release": "npm version patch && git push --follow-tags",
+    "release:patch": "npm version patch && git push --follow-tags",
+    "release:minor": "npm version minor && git push --follow-tags",
+    "release:major": "npm version major && git push --follow-tags"
   },
   "keywords": [
     "mcp",
@@ -40,6 +44,9 @@
     "node": ">=14.0.0"
   },
   "preferGlobal": true,
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org"
+  },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.15.0",
     "@oglabs/mcp": "^2.4.3",
