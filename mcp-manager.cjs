@@ -69,6 +69,42 @@ class MCPManager {
         }
     }
 
+    getProjectInfo() {
+        const cwd = process.cwd();
+        const folderName = path.basename(cwd);
+        const gitInfo = this.detectGitRepository();
+        
+        let projectName = folderName;
+        let projectType = 'Local Project';
+        
+        if (gitInfo) {
+            projectName = gitInfo.repo;
+            projectType = 'Git Repository';
+        }
+        
+        // Check for package.json to get project name
+        const packageJsonPath = path.join(cwd, 'package.json');
+        if (fs.existsSync(packageJsonPath)) {
+            try {
+                const packageData = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+                if (packageData.name) {
+                    projectName = packageData.name;
+                    projectType = 'Node.js Project';
+                }
+            } catch (error) {
+                // Ignore package.json parsing errors
+            }
+        }
+        
+        return {
+            name: projectName,
+            type: projectType,
+            path: cwd,
+            folderName: folderName,
+            git: gitInfo
+        };
+    }
+
     ensureConfigDir() {
         const configDir = path.dirname(this.locationsFile);
         try {
@@ -992,6 +1028,10 @@ class MCPManager {
         
         app.get('/api/servers', (req, res) => {
             res.json(this.preConfiguredServers);
+        });
+        
+        app.get('/api/project-info', (req, res) => {
+            res.json(this.getProjectInfo());
         });
         
         // Serve stars data

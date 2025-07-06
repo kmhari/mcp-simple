@@ -9,12 +9,33 @@ import { confirmStopServer, stopServer, showSlackTokenGuide, applySlackToken } f
 import { switchTab, closeModal, showMessage } from './utils.js';
 import { currentConfig, setCurrentConfig, preConfiguredServers, savedVariables } from './state.js';
 
+// Load project information
+async function loadProjectInfo() {
+    try {
+        const response = await fetch('/api/project-info');
+        const projectInfo = await response.json();
+        
+        document.getElementById('projectName').textContent = projectInfo.name;
+        document.getElementById('projectType').textContent = projectInfo.type;
+        
+        // Update page title if it's not just a folder name
+        if (projectInfo.type !== 'Local Project') {
+            document.title = `MCP Server Manager - ${projectInfo.name}`;
+        }
+    } catch (error) {
+        console.error('Error loading project info:', error);
+        document.getElementById('projectName').textContent = 'Unknown Project';
+        document.getElementById('projectType').textContent = '';
+    }
+}
+
 // Initialize application
 async function init() {
     await loadConfig();
     await loadServers();
     await loadStarsData();
     await loadVariables();
+    await loadProjectInfo();
     updateCurrentServers();
     
     setTimeout(checkForUpdates, 2000);

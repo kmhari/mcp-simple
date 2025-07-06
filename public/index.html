@@ -12,7 +12,13 @@
 <body>
     <div class="container">
         <div class="header-container">
-            <h1>🔧 MCP Server Manager</h1>
+            <div class="header-left">
+                <h1>🔧 MCP Server Manager</h1>
+                <div class="project-info" id="projectInfo">
+                    <span class="project-name" id="projectName">Loading...</span>
+                    <span class="project-type" id="projectType"></span>
+                </div>
+            </div>
             <button class="btn-close-server" onclick="confirmStopServer()" title="Stop the MCP Manager server">
                 ✕ Stop Server
             </button>

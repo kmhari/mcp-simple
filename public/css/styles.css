@@ -30,9 +30,33 @@ h1 {
     margin-bottom: 20px;
 }
 
-.header-container h1 {
-    margin-bottom: 0;
+.header-left {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
     flex-grow: 1;
+}
+
+.header-container h1 {
+    margin-bottom: 8px;
+}
+
+.project-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.project-name {
+    font-size: 18px;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.project-type {
+    font-size: 13px;
+    color: #7f8c8d;
+    font-weight: 500;
 }
 
 .btn-close-server {
