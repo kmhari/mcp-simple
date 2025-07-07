@@ -48,3 +48,6 @@ pids
 .Trashes
 ehthumbs.db
 Thumbs.db
+/data/mcps_data
+/data/readmes
+/data
