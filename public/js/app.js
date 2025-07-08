@@ -2,6 +2,7 @@
 import { loadConfig, saveConfig } from './config.js';
 import { loadServers, loadStarsData, quickInstallServer, uninstallServer, removeServer } from './servers.js';
 import { handleGroupByChange, handleStarsFilterChange, searchServers, updateCurrentServers, displayServers, toggleCategory, restoreExpandedStates } from './ui.js';
+import { initVirtualScrolling, updateVirtualList, refreshVirtualList } from './virtual-scroll.js';
 import { loadVariables, updateVariablesList, handleVariableChange, saveIndividualVariable, fetchFromEnvForVariables, saveVariables } from './variables.js';
 import { clearSelection, initializeKeyboardNavigation } from './keyboard.js';
 import { checkForUpdates, performAutoUpdate } from './updates.js';

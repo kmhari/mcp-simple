@@ -10,10 +10,14 @@
   "scripts": {
     "test": "echo \"No tests specified\" && exit 0",
     "start": "node mcp",
-    "release": "npm version patch && git push --follow-tags",
-    "release:patch": "npm version patch && git push --follow-tags",
-    "release:minor": "npm version minor && git push --follow-tags",
-    "release:major": "npm version major && git push --follow-tags"
+    "build": "vite build",
+    "build:dev": "vite build --mode development",
+    "build:deploy": "node scripts/deploy.js",
+    "preview": "vite preview --outDir dist",
+    "release": "npm run build:deploy && npm version patch && git push --follow-tags",
+    "release:patch": "npm run build:deploy && npm version patch && git push --follow-tags",
+    "release:minor": "npm run build:deploy && npm version minor && git push --follow-tags",
+    "release:major": "npm run build:deploy && npm version major && git push --follow-tags"
   },
   "keywords": [
     "mcp",
@@ -55,6 +59,8 @@
     "zod": "^3.25.72"
   },
   "devDependencies": {
-    "nodemon": "^3.1.10"
+    "nodemon": "^3.1.10",
+    "terser": "^5.43.1",
+    "vite": "^6.3.5"
   }
 }

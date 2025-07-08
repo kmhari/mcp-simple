@@ -9,6 +9,12 @@ import {
     setCurrentStarsFilter
 } from './state.js';
 import { isServerInstalled } from './utils.js';
+import { 
+    initVirtualScrolling, 
+    updateVirtualList, 
+    refreshVirtualList, 
+    isVirtualScrollingActive 
+} from './virtual-scroll.js';
 
 export function handleGroupByChange(value) {
     setCurrentGroupBy(value);
@@ -24,6 +30,31 @@ export function handleStarsFilterChange(value) {
 
 export function displayServers(servers = preConfiguredServers) {
     const grid = document.getElementById('serverGrid');
+    
+    // Try virtual scrolling for better performance
+    try {
+        // Check if we should use virtual scrolling (when there are many servers)
+        const serverCount = Object.keys(servers).length;
+        const useVirtualScrolling = serverCount > 50; // Use virtual scrolling for 50+ servers
+        
+        if (useVirtualScrolling && typeof window.HyperList !== 'undefined') {
+            // Get current expanded categories from localStorage
+            const expandedCategories = JSON.parse(localStorage.getItem('expandedCategories') || '[]');
+            
+            // Initialize virtual scrolling if not already done
+            if (!isVirtualScrollingActive()) {
+                initVirtualScrolling(grid);
+            }
+            
+            // Update virtual list with current data
+            updateVirtualList(servers, currentGroupBy, expandedCategories);
+            return; // Exit early - virtual scrolling handles everything
+        }
+    } catch (error) {
+        console.warn('Virtual scrolling failed, falling back to regular rendering:', error);
+    }
+    
+    // Fallback to original rendering method
     grid.innerHTML = '';
     
     if (currentGroupBy === 'category') {
@@ -141,7 +172,7 @@ export function displayServersByStars(servers, grid) {
     });
 }
 
-function createServerCard(key, server) {
+export function createServerCard(key, server) {
     const card = document.createElement('div');
     card.className = 'server-card';
     
@@ -282,6 +313,29 @@ export function updateCurrentServers() {
 }
 
 export function toggleCategory(categoryId) {
+    // Update localStorage state first
+    const expanded = JSON.parse(localStorage.getItem('expandedCategories') || '[]');
+    const isCurrentlyExpanded = expanded.includes(categoryId);
+    
+    if (isCurrentlyExpanded) {
+        removeExpandedCategory(categoryId);
+    } else {
+        saveExpandedCategory(categoryId);
+    }
+    
+    // If virtual scrolling is active, refresh the virtual list
+    if (isVirtualScrollingActive()) {
+        // Get current servers (might be filtered)
+        const searchValue = document.querySelector('.search-box').value;
+        const filtered = getFilteredServers(searchValue);
+        const newExpandedCategories = JSON.parse(localStorage.getItem('expandedCategories') || '[]');
+        
+        // Update virtual list with new expanded state
+        updateVirtualList(filtered, currentGroupBy, newExpandedCategories);
+        return;
+    }
+    
+    // Fallback to original DOM manipulation for non-virtual scrolling
     const categorySection = document.querySelector(`.category-section[data-category="${categoryId}"]`) || 
                            document.querySelector(`.accordion-content[data-category="${categoryId}"]`)?.parentElement;
     
@@ -298,12 +352,10 @@ export function toggleCategory(categoryId) {
         content.style.display = 'grid';
         icon.textContent = '▼';
         categorySection.classList.remove('collapsed');
-        saveExpandedCategory(categoryId);
     } else {
         content.style.display = 'none';
         icon.textContent = '▶';
         categorySection.classList.add('collapsed');
-        removeExpandedCategory(categoryId);
     }
 }
 
@@ -352,9 +404,12 @@ export function restoreExpandedStates() {
     }
 }
 
-export function searchServers(query) {
-    window.clearSelection();
-    
+/**
+ * Helper function to filter servers based on search query and stars filter
+ * @param {string} query - Search query string
+ * @returns {Object} Filtered servers object
+ */
+function getFilteredServers(query) {
     const filtered = {};
     const searchTerm = query ? query.toLowerCase() : '';
     
@@ -375,12 +430,28 @@ export function searchServers(query) {
         }
     });
     
+    return filtered;
+}
+
+export function searchServers(query) {
+    window.clearSelection();
+    
+    const filtered = getFilteredServers(query);
     displayServers(filtered);
     
     if (Object.keys(filtered).length === 0) {
         const grid = document.getElementById('serverGrid');
         const searchText = query ? ` matching "${query}"` : '';
         const starsText = currentStarsFilter > 0 ? ` with ${currentStarsFilter}+ stars` : '';
-        grid.innerHTML = `<div style="text-align: center; padding: 40px; color: #666;">No servers found${searchText}${starsText}.</div>`;
+        
+        // Handle empty state for both virtual and regular rendering
+        if (isVirtualScrollingActive()) {
+            const hyperListContainer = grid.querySelector('#hyperlist-container');
+            if (hyperListContainer) {
+                hyperListContainer.innerHTML = `<div style="text-align: center; padding: 40px; color: #666;">No servers found${searchText}${starsText}.</div>`;
+            }
+        } else {
+            grid.innerHTML = `<div style="text-align: center; padding: 40px; color: #666;">No servers found${searchText}${starsText}.</div>`;
+        }
     }
 }

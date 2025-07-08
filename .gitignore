@@ -86,3 +86,6 @@ fetch.js
 
 # Local README cache (now fetched dynamically from GitHub)
 public/readmes/
+
+# Build output
+dist/
