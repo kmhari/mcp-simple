@@ -27,6 +27,32 @@ node_modules/
 coverage/
 .nyc_output/
 
-# Build files
+# Source files (we publish the built version)
+public/
+vite.config.js
+scripts/
+
+# Development scripts
+add-mcp-servers.js
+merge-logos.js
+show-stars.js
+update-database-stars.js
+update-server-data.js
+
+# Documentation files
+screenshots/
+prd.txt
+test-urls.txt
+
+# Backup files
+*.backup
+gitlist.json
+
+# Cache and temp files
+.npm
+.cache/
+.temp/
+
+# Build files during development
 dist/
 build/

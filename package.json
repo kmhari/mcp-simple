@@ -7,17 +7,29 @@
   "bin": {
     "mcp": "./mcp-manager.js"
   },
+  "files": [
+    "mcp-manager.js",
+    "mcp-manager.cjs", 
+    "mcp-server.js",
+    "mcp-servers-database.json",
+    "mcp-tools.json",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "test": "echo \"No tests specified\" && exit 0",
     "start": "node mcp",
+    "web": "node mcp-manager.cjs --web",
+    "server": "node mcp-server.js",
     "build": "vite build",
-    "build:dev": "vite build --mode development",
+    "build:dev": "vite build --mode development", 
     "build:deploy": "node scripts/deploy.js",
     "preview": "vite preview --outDir dist",
-    "release": "npm run build:deploy && npm version patch && git push --follow-tags",
-    "release:patch": "npm run build:deploy && npm version patch && git push --follow-tags",
-    "release:minor": "npm run build:deploy && npm version minor && git push --follow-tags",
-    "release:major": "npm run build:deploy && npm version major && git push --follow-tags"
+    "prepublishOnly": "npm run build:deploy",
+    "release": "npm run prepublishOnly && npm version patch && git push --follow-tags && npm publish",
+    "release:patch": "npm run prepublishOnly && npm version patch && git push --follow-tags && npm publish",
+    "release:minor": "npm run prepublishOnly && npm version minor && git push --follow-tags && npm publish",
+    "release:major": "npm run prepublishOnly && npm version major && git push --follow-tags && npm publish"
   },
   "keywords": [
     "mcp",
@@ -27,7 +39,11 @@
     "manager",
     "server",
     "ai",
-    "llm"
+    "llm",
+    "tech-stack",
+    "recommendations",
+    "web-interface",
+    "automation"
   ],
   "author": "hari",
   "license": "MIT",
