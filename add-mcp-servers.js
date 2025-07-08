@@ -34,7 +34,7 @@ const __dirname = path.dirname(__filename);
 // Configuration
 const CONFIG = {
   databasePath: path.join(__dirname, 'mcp-servers-database.json'),
-  readmesDir: path.join(__dirname, 'data', 'readmes'),
+  readmesDir: path.join(__dirname, 'public', 'readmes'),
   requestDelay: 1000, // ms between requests to respect rate limits
   timeout: 10000, // ms
   userAgent: 'MCP-Server-Discovery-Tool/1.0',
@@ -536,11 +536,51 @@ async function main() {
       urls = loadUrlsFromFile(inputInfo.path);
     }
     
-    console.log(`🔍 Found ${urls.length} GitHub URL(s) to process`);
+    console.log(`🔍 Found ${urls.length} GitHub URL(s) in input`);
     
     // Load existing database
     const database = loadDatabase();
     console.log(`📊 Loaded database with ${Object.keys(database).length} existing servers`);
+    
+    // Filter out existing URLs before processing (only if not using --force)
+    let filteredUrls = urls;
+    let preFilteredCount = 0;
+    
+    if (!options.force) {
+      console.log(`🔍 Pre-filtering existing URLs...`);
+      const existingUrls = [];
+      const newUrls = [];
+      
+      for (const url of urls) {
+        const duplicate = checkDuplicateUrl(database, url);
+        if (duplicate.exists) {
+          existingUrls.push({ url, key: duplicate.key });
+          preFilteredCount++;
+        } else {
+          newUrls.push(url);
+        }
+      }
+      
+      filteredUrls = newUrls;
+      
+      if (preFilteredCount > 0) {
+        console.log(`⚠️  Pre-filtered ${preFilteredCount} existing URL(s):`);
+        existingUrls.forEach(({ url, key }) => {
+          console.log(`   - ${url} (exists as '${key}')`);
+        });
+      }
+      
+      console.log(`✅ ${filteredUrls.length} new URL(s) to process`);
+      
+      if (filteredUrls.length === 0) {
+        console.log(`\n🎉 All URLs already exist in the database!`);
+        return;
+      }
+    } else {
+      console.log(`🔧 Using --force flag: processing all URLs regardless of existing entries`);
+    }
+    
+    console.log(`\n🚀 Starting processing of ${filteredUrls.length} URL(s)...`);
     
     // Process each URL
     let processed = 0;
@@ -548,7 +588,7 @@ async function main() {
     let skipped = 0;
     const errors = [];
     
-    for (const url of urls) {
+    for (const url of filteredUrls) {
       try {
         console.log(`\n🔍 Processing: ${url}`);
         
@@ -558,24 +598,18 @@ async function main() {
           throw new Error('Invalid GitHub URL format');
         }
         
-        // Check for duplicates (initial check with original URL)
-        const duplicate = checkDuplicateUrl(database, url);
-        if (duplicate.exists && !options.force) {
-          console.log(`⚠️  Skipped: Already exists as '${duplicate.key}' (matched: ${duplicate.matchedUrl})`);
-          skipped++;
-          continue;
-        }
+        // Note: Initial duplicate checking was done during pre-filtering
         
         // Fetch repository information
         console.log(`📊 Fetching repo info for ${parsed.owner}/${parsed.repo}...`);
         const repoInfo = await fetchRepoInfo(parsed.owner, parsed.repo);
         console.log(`⭐ Stars: ${repoInfo.stars} | Language: ${repoInfo.language || 'Unknown'}`);
         
-        // Check for duplicates again with final URL after any redirects
-        if (repoInfo.finalUrl && repoInfo.finalUrl !== url) {
+        // Check for duplicates with final URL after any redirects (this can only be done after API call)
+        if (repoInfo.finalUrl && repoInfo.finalUrl !== url && !options.force) {
           console.log(`🔄 API endpoint resolved to: ${repoInfo.finalUrl}`);
           const duplicateAfterRedirect = checkDuplicateUrl(database, url, repoInfo.finalUrl);
-          if (duplicateAfterRedirect.exists && !options.force) {
+          if (duplicateAfterRedirect.exists) {
             console.log(`⚠️  Skipped: Already exists as '${duplicateAfterRedirect.key}' (redirect matched: ${duplicateAfterRedirect.matchedUrl})`);
             skipped++;
             continue;
@@ -642,7 +676,7 @@ async function main() {
         processed++;
         
         // Add delay between requests
-        if (processed < urls.length) {
+        if (processed < filteredUrls.length) {
           await delay(CONFIG.requestDelay);
         }
         
@@ -656,7 +690,11 @@ async function main() {
     
     // Summary
     console.log('\n📊 Processing Summary:');
-    console.log(`   Total URLs: ${urls.length}`);
+    console.log(`   Input URLs: ${urls.length}`);
+    if (preFilteredCount > 0) {
+      console.log(`   Pre-filtered: ${preFilteredCount}`);
+      console.log(`   New URLs processed: ${filteredUrls.length}`);
+    }
     console.log(`   Processed: ${processed}`);
     console.log(`   Added: ${added}`);
     console.log(`   Skipped: ${skipped}`);
