@@ -221,13 +221,19 @@ function saveDatabase(data, dryRun = false) {
   }
 }
 
-// Check if URL already exists in database
-function checkDuplicateUrl(database, githubUrl) {
+// Check if URL already exists in database (checks both original and final URLs)
+function checkDuplicateUrl(database, githubUrl, finalUrl = null) {
   const existingServers = Object.entries(database);
   
   for (const [key, server] of existingServers) {
+    // Check against original URL
     if (server.githubLink === githubUrl) {
-      return { exists: true, key, server };
+      return { exists: true, key, server, matchedUrl: githubUrl };
+    }
+    
+    // Check against final URL after redirects (if different)
+    if (finalUrl && finalUrl !== githubUrl && server.githubLink === finalUrl) {
+      return { exists: true, key, server, matchedUrl: finalUrl };
     }
   }
   
@@ -284,7 +290,8 @@ function makeRequest(options, maxRedirects = CONFIG.maxRedirects) {
         resolve({
           statusCode: res.statusCode,
           headers: res.headers,
-          data: data
+          data: data,
+          finalUrl: `https://${options.hostname}${options.path}`
         });
       });
     });
@@ -335,7 +342,8 @@ async function fetchRepoInfo(owner, repo) {
         language: repoData.language || '',
         updated_at: repoData.updated_at,
         created_at: repoData.created_at,
-        default_branch: repoData.default_branch || 'main'
+        default_branch: repoData.default_branch || 'main',
+        finalUrl: response.finalUrl // Track final URL after redirects
       };
     } else if (response.statusCode === 404) {
       throw new Error('Repository not found');
@@ -371,7 +379,8 @@ async function fetchReadme(owner, repo, branch = 'main') {
       if (response.statusCode === 200) {
         return {
           content: response.data,
-          filename: filename
+          filename: filename,
+          finalUrl: response.finalUrl
         };
       }
     } catch (error) {
@@ -549,10 +558,10 @@ async function main() {
           throw new Error('Invalid GitHub URL format');
         }
         
-        // Check for duplicates
+        // Check for duplicates (initial check with original URL)
         const duplicate = checkDuplicateUrl(database, url);
         if (duplicate.exists && !options.force) {
-          console.log(`⚠️  Skipped: Already exists as '${duplicate.key}'`);
+          console.log(`⚠️  Skipped: Already exists as '${duplicate.key}' (matched: ${duplicate.matchedUrl})`);
           skipped++;
           continue;
         }
@@ -561,6 +570,17 @@ async function main() {
         console.log(`📊 Fetching repo info for ${parsed.owner}/${parsed.repo}...`);
         const repoInfo = await fetchRepoInfo(parsed.owner, parsed.repo);
         console.log(`⭐ Stars: ${repoInfo.stars} | Language: ${repoInfo.language || 'Unknown'}`);
+        
+        // Check for duplicates again with final URL after any redirects
+        if (repoInfo.finalUrl && repoInfo.finalUrl !== url) {
+          console.log(`🔄 API endpoint resolved to: ${repoInfo.finalUrl}`);
+          const duplicateAfterRedirect = checkDuplicateUrl(database, url, repoInfo.finalUrl);
+          if (duplicateAfterRedirect.exists && !options.force) {
+            console.log(`⚠️  Skipped: Already exists as '${duplicateAfterRedirect.key}' (redirect matched: ${duplicateAfterRedirect.matchedUrl})`);
+            skipped++;
+            continue;
+          }
+        }
         
         // Fetch README content
         console.log(`📄 Fetching README...`);
@@ -596,10 +616,23 @@ async function main() {
         console.log(`🏷️  Category: ${serverEntry.category}`);
         console.log(`📄 Description: ${serverEntry.description.substring(0, 100)}...`);
         
-        // Add to database
+        // Add to database and save immediately
         if (!options.dryRun) {
           database[serverKey] = serverEntry;
           console.log(`💾 Added to database with key: ${serverKey}`);
+          
+          // Save database immediately after each addition
+          try {
+            console.log(`💾 Saving database...`);
+            saveDatabase(database, false);
+            console.log(`✅ Database saved successfully`);
+          } catch (saveError) {
+            console.error(`❌ Failed to save database: ${saveError.message}`);
+            // Remove the entry if save failed to keep memory and disk in sync
+            delete database[serverKey];
+            throw saveError;
+          }
+          
           added++;
         } else {
           console.log(`🔍 [DRY RUN] Would add to database with key: ${serverKey}`);
@@ -619,11 +652,7 @@ async function main() {
       }
     }
     
-    // Save database if there were additions
-    if (added > 0) {
-      console.log('\n💾 Saving updated database...');
-      saveDatabase(database, options.dryRun);
-    }
+    // Database is saved after each addition, so no final save needed
     
     // Summary
     console.log('\n📊 Processing Summary:');
@@ -642,6 +671,7 @@ async function main() {
     
     if (added > 0) {
       console.log(`\n🎉 Successfully added ${added} new MCP server(s) to the database!`);
+      console.log(`📄 Each addition was saved immediately to prevent data loss.`);
     } else {
       console.log('\n🎉 Processing complete!');
     }
