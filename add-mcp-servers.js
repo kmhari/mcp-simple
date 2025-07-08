@@ -377,234 +377,58 @@ function saveReadme(serverId, readmeContent, dryRun = false) {
   }
 }
 
-// Detect if repository is an MCP server based on README content
+// Simplified MCP server detection (ultra-efficient)
 function detectMCPServer(readmeContent, repoInfo) {
-  const content = readmeContent.toLowerCase();
+  const repoName = repoInfo.name.toLowerCase();
+  const repoDesc = (repoInfo.description || '').toLowerCase();
   
-  // Strong indicators that this is an MCP server
-  const strongIndicators = [
-    'mcp server',
-    'model context protocol',
-    'mcp-server',
-    '@modelcontextprotocol',
-    'mcp.json',
-    '.mcp.json'
-  ];
-  
-  // Additional indicators
-  const additionalIndicators = [
-    'context protocol',
-    'mcp',
-    'server implementation',
-    'claude',
-    'anthropic',
-    'tools and resources',
-    'tool server',
-    'protocol server'
-  ];
-  
-  // Installation command patterns
-  const installPatterns = [
-    'npx',
-    'uvx',
-    'pip install',
-    'cargo install',
-    'docker run'
-  ];
-  
-  let score = 0;
-  let reasons = [];
-  
-  // Check for strong indicators
-  for (const indicator of strongIndicators) {
-    if (content.includes(indicator)) {
-      score += 10;
-      reasons.push(`Strong MCP indicator: "${indicator}"`);
-    }
+  // Quick repository metadata check (fastest)
+  if (repoName.includes('mcp') || repoDesc.includes('mcp')) {
+    return { isMCPServer: true };
   }
   
-  // Check for additional indicators
-  for (const indicator of additionalIndicators) {
-    if (content.includes(indicator)) {
-      score += 3;
-      reasons.push(`MCP indicator: "${indicator}"`);
-    }
-  }
+  // Single regex check for all MCP patterns
+  const mcpPattern = /mcp|model.?context.?protocol|@modelcontextprotocol|\.mcp\.json|mcp\.json/i;
+  const isMCPServer = mcpPattern.test(readmeContent);
   
-  // Check for installation patterns
-  for (const pattern of installPatterns) {
-    if (content.includes(pattern)) {
-      score += 2;
-      reasons.push(`Installation pattern: "${pattern}"`);
-    }
-  }
-  
-  // Check repository name and description
-  if (repoInfo.name.toLowerCase().includes('mcp') || repoInfo.name.toLowerCase().includes('server')) {
-    score += 5;
-    reasons.push(`Repository name suggests MCP server: "${repoInfo.name}"`);
-  }
-  
-  if (repoInfo.description.toLowerCase().includes('mcp') || repoInfo.description.toLowerCase().includes('context protocol')) {
-    score += 5;
-    reasons.push(`Description suggests MCP server: "${repoInfo.description}"`);
-  }
-  
-  // Check for package.json or setup.py patterns indicating server implementation
-  if (content.includes('package.json') || content.includes('setup.py') || content.includes('cargo.toml')) {
-    score += 1;
-    reasons.push('Has package management files');
-  }
-  
-  const isMCPServer = score >= 10;
-  
-  return {
-    isMCPServer,
-    confidence: Math.min(score / 20, 1.0), // Normalize to 0-1
-    score,
-    reasons
-  };
+  return { isMCPServer };
 }
 
-// Categorize MCP server based on content analysis
+// Simplified categorization (language + key patterns)
 function categorizeMCPServer(readmeContent, repoInfo) {
   const content = readmeContent.toLowerCase();
+  const language = (repoInfo.language || '').toLowerCase();
   
-  // Category mapping based on keywords
-  const categories = {
-    'Development': [
-      'development', 'dev tools', 'code', 'programming', 'debugging', 'testing',
-      'build', 'compile', 'lint', 'format', 'refactor', 'analysis'
-    ],
-    'Database': [
-      'database', 'sql', 'mysql', 'postgresql', 'sqlite', 'mongodb', 'redis',
-      'db', 'query', 'schema', 'migration', 'orm'
-    ],
-    'Web Scraping': [
-      'scraping', 'scrape', 'web crawling', 'crawl', 'fetch', 'extract',
-      'harvest', 'spider', 'beautifulsoup', 'selenium'
-    ],
-    'File Management': [
-      'file', 'filesystem', 'directory', 'folder', 'storage', 'upload',
-      'download', 'sync', 'backup', 'archive'
-    ],
-    'Browser Automation': [
-      'browser', 'automation', 'puppeteer', 'playwright', 'selenium',
-      'chrome', 'firefox', 'webdriver', 'headless'
-    ],
-    'Version Control': [
-      'git', 'github', 'gitlab', 'version control', 'repository', 'commit',
-      'branch', 'merge', 'pull request', 'svn'
-    ],
-    'Data Storage': [
-      'memory', 'cache', 'storage', 'persist', 'save', 'store',
-      'data management', 'state'
-    ],
-    'API Integration': [
-      'api', 'rest', 'graphql', 'webhook', 'http', 'integration',
-      'external service', 'third party'
-    ],
-    'Productivity': [
-      'productivity', 'task', 'todo', 'calendar', 'schedule', 'notes',
-      'reminder', 'workflow', 'management'
-    ],
-    'Security': [
-      'security', 'auth', 'authentication', 'authorization', 'encryption',
-      'crypto', 'ssl', 'tls', 'certificate', 'key'
-    ],
-    'Communication': [
-      'communication', 'chat', 'message', 'email', 'notification',
-      'slack', 'discord', 'telegram', 'sms'
-    ],
-    'Analytics': [
-      'analytics', 'metrics', 'monitoring', 'logging', 'tracking',
-      'statistics', 'dashboard', 'reporting'
-    ],
-    'Media': [
-      'image', 'video', 'audio', 'media', 'photo', 'picture',
-      'sound', 'music', 'processing', 'convert'
-    ]
-  };
+  // Priority-based categorization (check most specific first)
+  if (/database|sql|postgres|mysql|sqlite|mongodb|redis/i.test(content)) return 'Database';
+  if (/browser|playwright|puppeteer|selenium|chrome|firefox/i.test(content)) return 'Browser Automation';
+  if (/git|github|gitlab|version.?control|repository/i.test(content)) return 'Version Control';
+  if (/file|filesystem|directory|storage|upload|download/i.test(content)) return 'File Management';
+  if (/scraping|scrape|crawl|fetch|extract|spider/i.test(content)) return 'Web Scraping';
+  if (/api|rest|graphql|webhook|http|integration/i.test(content)) return 'API Integration';
+  if (/security|auth|encryption|crypto|ssl|certificate/i.test(content)) return 'Security';
+  if (/memory|cache|persist|storage|state/i.test(content)) return 'Data Storage';
   
-  let bestCategory = 'Other';
-  let maxScore = 0;
+  // Language-based fallback
+  if (['javascript', 'typescript', 'python', 'rust', 'go'].includes(language)) return 'Development';
   
-  for (const [category, keywords] of Object.entries(categories)) {
-    let score = 0;
-    for (const keyword of keywords) {
-      if (content.includes(keyword)) {
-        score++;
-      }
-    }
-    
-    // Also check repository language
-    if (repoInfo.language) {
-      const language = repoInfo.language.toLowerCase();
-      if (category === 'Development' && ['javascript', 'typescript', 'python', 'java', 'rust', 'go'].includes(language)) {
-        score += 2;
-      }
-    }
-    
-    if (score > maxScore) {
-      maxScore = score;
-      bestCategory = category;
-    }
-  }
-  
-  return bestCategory;
+  return 'Other';
 }
 
 // Generate MCP server entry for database
 function generateMCPServerEntry(parsed, repoInfo, readme, serverKey) {
   const category = categorizeMCPServer(readme.content, repoInfo);
   
-  // Extract potential package name from README
-  let packageName = '';
-  let installCommand = '';
+  // Simplified package extraction (single regex)
+  const installMatch = readme.content.match(/((?:npx -y |uvx |npm install |pip install )([^\s\n]+))/i);
+  const packageName = installMatch ? installMatch[2] : `@${parsed.owner}/${parsed.repo}`;
+  const installCommand = installMatch ? installMatch[1] : `npx -y ${packageName}`;
   
-  // Look for npm package patterns
-  const npmMatch = readme.content.match(/npm install\s+([^\s\n]+)/i) || 
-                   readme.content.match(/npx\s+(?:-y\s+)?([^\s\n]+)/i);
-  if (npmMatch) {
-    packageName = npmMatch[1];
-    installCommand = `npx -y ${packageName}`;
-  }
-  
-  // Look for uvx patterns
-  const uvxMatch = readme.content.match(/uvx\s+([^\s\n]+)/i);
-  if (uvxMatch) {
-    packageName = uvxMatch[1];
-    installCommand = `uvx ${packageName}`;
-  }
-  
-  // Look for pip patterns
-  const pipMatch = readme.content.match(/pip install\s+([^\s\n]+)/i);
-  if (pipMatch) {
-    packageName = pipMatch[1];
-    installCommand = `pip install ${packageName}`;
-  }
-  
-  // Fallback package name
-  if (!packageName) {
-    packageName = `@${parsed.owner}/${parsed.repo}`;
-    installCommand = `npx -y ${packageName}`;
-  }
-  
-  // Extract environment variables from README
-  const envVars = [];
-  const envMatches = readme.content.match(/[A-Z_]+(?:_[A-Z]+)*(?=\s*[:=]|\s+environment|required)/g);
-  if (envMatches) {
-    envVars.push(...new Set(envMatches.filter(v => 
-      v.length > 2 && 
-      v !== 'README' && 
-      v !== 'LICENSE' &&
-      !v.includes('HTTP') &&
-      !v.includes('URL') ||
-      v.endsWith('_URL') ||
-      v.endsWith('_KEY') ||
-      v.endsWith('_TOKEN')
-    )));
-  }
+  // Simplified environment variable extraction
+  const envMatches = readme.content.match(/[A-Z_]{3,}(?:_[A-Z]+)*(?=\s*[:=])/g) || [];
+  const envVars = [...new Set(envMatches.filter(v => 
+    v.endsWith('_URL') || v.endsWith('_KEY') || v.endsWith('_TOKEN') || v.endsWith('_PASSWORD')
+  ))].slice(0, 5);
   
   // Generate clean description
   let description = repoInfo.description || '';
@@ -727,16 +551,13 @@ async function main() {
         const detection = detectMCPServer(readme.content, repoInfo);
         
         if (!detection.isMCPServer && !options.noAI) {
-          console.log(`❌ Not detected as MCP server (confidence: ${(detection.confidence * 100).toFixed(1)}%)`);
-          console.log(`   Reasons: ${detection.reasons.join(', ')}`);
-          console.log(`   Score: ${detection.score}/20 (threshold: 10)`);
+          console.log(`❌ Not detected as MCP server`);
           processed++;
           continue;
         }
         
         if (detection.isMCPServer) {
-          console.log(`✅ Detected as MCP server! (confidence: ${(detection.confidence * 100).toFixed(1)}%)`);
-          console.log(`   Reasons: ${detection.reasons.slice(0, 3).join(', ')}`);
+          console.log(`✅ Detected as MCP server!`);
         } else {
           console.log(`⚠️  Manual mode: Processing regardless of detection`);
         }
