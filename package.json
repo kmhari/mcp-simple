@@ -1,6 +1,6 @@
 {
   "name": "@oglabs/mcp",
-  "version": "2.6.2",
+  "version": "2.6.3",
   "description": "Interactive CLI tool and MCP server for managing MCP configurations with tech stack detection and recommendations",
   "main": "mcp-manager.cjs",
   "type": "module",
@@ -9,7 +9,7 @@
   },
   "files": [
     "mcp-manager.js",
-    "mcp-manager.cjs", 
+    "mcp-manager.cjs",
     "mcp-server.js",
     "mcp-servers-database.json",
     "mcp-tools.json",
@@ -22,7 +22,7 @@
     "web": "node mcp-manager.cjs --web",
     "server": "node mcp-server.js",
     "build": "vite build",
-    "build:dev": "vite build --mode development", 
+    "build:dev": "vite build --mode development",
     "build:deploy": "node scripts/deploy.js",
     "preview": "vite preview --outDir dist",
     "prepublishOnly": "npm run build:deploy",
