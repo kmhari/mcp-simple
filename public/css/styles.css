@@ -431,8 +431,7 @@ h1 {
 }
 
 .readme-content {
-    max-height: 600px;
-    overflow-y: auto;
+    max-height: none;
     padding: 20px;
     background: #fafafa;
     border-radius: 8px;
@@ -440,6 +439,8 @@ h1 {
     margin: 20px 0;
     font-family: 'JetBrains Mono', monospace;
     line-height: 1.6;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
 .readme-content h1, .readme-content h2, .readme-content h3 {
@@ -839,12 +840,14 @@ h1 {
 
 .modal-content {
     background: #ececec;
-    width: 90%;
-    max-width: 500px;
-    margin: 50px auto;
+    width: 95%;
+    max-width: 1200px;
+    max-height: 90vh;
+    margin: 20px auto;
     padding: 30px;
     position: relative;
     border-radius: 12px;
+    overflow-y: auto;
     box-shadow: inset 1px 1px 1px 0 rgb(255, 255, 255), 
                 inset -1px -1px 1px 0 rgba(0, 0, 0, .15), 
                 .444584px .444584px .628737px -1px rgba(0, 0, 0, .26), 
@@ -866,6 +869,29 @@ h1 {
 
 .modal-close:hover {
     color: #333;
+}
+
+#modalTitle {
+    color: #2c3e50;
+    font-size: 20px;
+    margin-bottom: 20px;
+    padding-right: 30px;
+    font-weight: 600;
+}
+
+/* Responsive modal styles */
+@media (max-width: 768px) {
+    .modal-content {
+        width: 98%;
+        margin: 10px auto;
+        padding: 20px;
+        max-height: 95vh;
+    }
+    
+    #modalTitle {
+        font-size: 18px;
+        padding-right: 40px;
+    }
 }
 
 .form-group {
