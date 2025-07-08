@@ -74,3 +74,7 @@ data/redirect.json
 
 # 404 missing repos cache
 data/404.txt
+
+# 404 missing README cache
+data/404_readme.txt
+data/404_readme.txt

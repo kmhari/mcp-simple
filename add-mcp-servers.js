@@ -37,6 +37,7 @@ const CONFIG = {
   readmesDir: path.join(__dirname, 'public', 'readmes'),
   redirectCachePath: path.join(__dirname, 'data', 'redirect.json'),
   missing404CachePath: path.join(__dirname, 'data', '404.txt'),
+  noReadme404CachePath: path.join(__dirname, 'data', '404_readme.txt'),
   requestDelay: 1000, // ms between requests to respect rate limits
   timeout: 10000, // ms
   userAgent: 'MCP-Server-Discovery-Tool/1.0',
@@ -377,6 +378,76 @@ function addTo404Cache(cache404, url) {
   return false;
 }
 
+// Load README 404 cache (repos without README files)
+function loadReadme404Cache() {
+  try {
+    if (!fs.existsSync(CONFIG.noReadme404CachePath)) {
+      // Create directory and initial file if it doesn't exist
+      const cacheDir = path.dirname(CONFIG.noReadme404CachePath);
+      if (!fs.existsSync(cacheDir)) {
+        fs.mkdirSync(cacheDir, { recursive: true });
+      }
+      
+      const initialContent = `# GitHub URLs that have no README files
+# Format: One URL per line
+# This file is automatically managed by add-mcp-servers.js
+# Last updated: ${new Date().toISOString()}
+`;
+      
+      fs.writeFileSync(CONFIG.noReadme404CachePath, initialContent);
+      return [];
+    }
+    
+    const content = fs.readFileSync(CONFIG.noReadme404CachePath, 'utf8');
+    const urls = content
+      .split('\n')
+      .map(line => line.trim())
+      .filter(line => line && !line.startsWith('#'))
+      .map(url => normalizeGitHubUrl(url));
+    
+    return urls;
+  } catch (error) {
+    console.warn(`⚠️  Failed to load README 404 cache: ${error.message}`);
+    return [];
+  }
+}
+
+// Save README 404 cache (repos without README files)
+function saveReadme404Cache(noReadmeUrls) {
+  try {
+    const content = `# GitHub URLs that have no README files
+# Format: One URL per line
+# This file is automatically managed by add-mcp-servers.js
+# Last updated: ${new Date().toISOString()}
+
+${noReadmeUrls.join('\n')}
+`;
+    
+    fs.writeFileSync(CONFIG.noReadme404CachePath, content);
+  } catch (error) {
+    console.warn(`⚠️  Failed to save README 404 cache: ${error.message}`);
+  }
+}
+
+// Check if URL is in README 404 cache
+function checkReadme404Cache(cacheReadme404, url) {
+  const normalizedUrl = normalizeGitHubUrl(url);
+  return cacheReadme404.includes(normalizedUrl);
+}
+
+// Add URL to README 404 cache
+function addToReadme404Cache(cacheReadme404, url) {
+  const normalizedUrl = normalizeGitHubUrl(url);
+  
+  if (!cacheReadme404.includes(normalizedUrl)) {
+    cacheReadme404.push(normalizedUrl);
+    console.log(`📝 Added to README 404 cache: ${url}`);
+    return true;
+  }
+  
+  return false;
+}
+
 // Normalize GitHub URL by removing trailing slash and converting to lowercase for comparison
 function normalizeGitHubUrl(url) {
   if (!url) return '';
@@ -546,7 +617,7 @@ async function fetchRepoInfo(owner, repo, originalUrl = null) {
 }
 
 // Fetch README content from repository
-async function fetchReadme(owner, repo, branch = 'main') {
+async function fetchReadme(owner, repo, branch = 'main', originalUrl = null) {
   const readmeFiles = ['README.md', 'readme.md', 'Readme.md', 'README.rst', 'README.txt', 'README'];
   
   for (const filename of readmeFiles) {
@@ -576,7 +647,11 @@ async function fetchReadme(owner, repo, branch = 'main') {
     }
   }
   
-  throw new Error('No README file found');
+  // Return special README not found error that can be handled by caller
+  const error = new Error('No README file found');
+  error.isReadmeNotFound = true;
+  error.originalUrl = originalUrl;
+  throw error;
 }
 
 // Save README to file
@@ -725,7 +800,7 @@ async function main() {
     
     console.log(`🔍 Found ${urls.length} GitHub URL(s) in input`);
     
-    // Load existing database, redirect cache, and 404 cache
+    // Load existing database, redirect cache, 404 cache, and README 404 cache
     const database = loadDatabase();
     console.log(`📊 Loaded database with ${Object.keys(database).length} existing servers`);
     
@@ -735,6 +810,9 @@ async function main() {
     
     const cache404 = load404Cache();
     console.log(`❌ Loaded 404 cache with ${cache404.length} missing repo(s)`);
+    
+    const cacheReadme404 = loadReadme404Cache();
+    console.log(`📄❌ Loaded README 404 cache with ${cacheReadme404.length} repos without README`);
     
     // Filter out existing URLs before processing (only if not using --force)
     let filteredUrls = urls;
@@ -850,9 +928,15 @@ async function main() {
             }
           }
           
+          // Check README 404 cache before fetching
+          if (checkReadme404Cache(cacheReadme404, url) && !options.force) {
+            console.log(`📄❌ Skipped: URL is in README 404 cache (no README file)`);
+            return { status: 'skipped', url, reason: 'cached no README' };
+          }
+          
           // Fetch README content
           console.log(`📄 Fetching README...`);
-          const readme = await fetchReadme(parsed.owner, parsed.repo, repoInfo.default_branch);
+          const readme = await fetchReadme(parsed.owner, parsed.repo, repoInfo.default_branch, url);
           console.log(`📄 Found README: ${readme.filename} (${readme.content.length} chars)`);
           
           // Generate server key
@@ -902,6 +986,16 @@ async function main() {
               save404Cache(cache404);
             }
             return { status: 'skipped', url, reason: '404 not found' };
+          }
+          
+          // Handle README 404 errors specially - cache them
+          if (error.isReadmeNotFound) {
+            console.log(`📄❌ No README file found: ${url}`);
+            const added = addToReadme404Cache(cacheReadme404, url);
+            if (added) {
+              saveReadme404Cache(cacheReadme404);
+            }
+            return { status: 'skipped', url, reason: 'no README file' };
           }
           
           console.error(`❌ Error processing ${url}: ${error.message}`);
