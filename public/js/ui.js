@@ -34,9 +34,9 @@ export function displayServers(servers = preConfiguredServers) {
         displayServersFlat(servers, grid);
     }
     
-    // Restore collapsed states after rendering
+    // Restore expanded states after rendering
     setTimeout(() => {
-        restoreCollapsedStates();
+        restoreExpandedStates();
         cleanupAnimations();
     }, 100);
 }
@@ -71,15 +71,15 @@ export function displayServersByCategory(servers, grid) {
     
     sortedCategories.forEach(category => {
         const categorySection = document.createElement('div');
-        categorySection.className = 'category-section';
+        categorySection.className = 'category-section collapsed';
         categorySection.setAttribute('data-category', category);
         categorySection.innerHTML = `
             <h2 class="category-title accordion-header" onclick="toggleCategory('${category}')">
-                <span class="accordion-icon">▼</span>
+                <span class="accordion-icon">▶</span>
                 ${category} 
                 <span class="category-count">(${categories[category].length})</span>
             </h2>
-            <div class="category-grid accordion-content" data-category="${category}">
+            <div class="category-grid accordion-content" data-category="${category}" style="display: none;">
         `;
         
         categories[category].forEach(({ key, server }) => {
@@ -119,15 +119,15 @@ export function displayServersByStars(servers, grid) {
         
         if (rangeServers.length > 0) {
             const categorySection = document.createElement('div');
-            categorySection.className = 'category-section';
+            categorySection.className = 'category-section collapsed';
             const categoryId = `stars-${range.min}-${range.max}`;
             categorySection.innerHTML = `
                 <h2 class="category-title accordion-header" style="color: ${range.color};" onclick="toggleCategory('${categoryId}')">
-                    <span class="accordion-icon">▼</span>
+                    <span class="accordion-icon">▶</span>
                     ⭐ ${range.label} 
                     <span class="category-count">(${rangeServers.length})</span>
                 </h2>
-                <div class="category-grid accordion-content" data-category="${categoryId}">
+                <div class="category-grid accordion-content" data-category="${categoryId}" style="display: none;">
             `;
             
             rangeServers.forEach(({ key, server }) => {
@@ -298,41 +298,41 @@ export function toggleCategory(categoryId) {
         content.style.display = 'grid';
         icon.textContent = '▼';
         categorySection.classList.remove('collapsed');
-        removeCollapsedCategory(categoryId);
+        saveExpandedCategory(categoryId);
     } else {
         content.style.display = 'none';
         icon.textContent = '▶';
         categorySection.classList.add('collapsed');
-        saveCollapsedCategory(categoryId);
+        removeExpandedCategory(categoryId);
     }
 }
 
-function saveCollapsedCategory(categoryId) {
+function saveExpandedCategory(categoryId) {
     try {
-        const collapsed = JSON.parse(localStorage.getItem('collapsedCategories') || '[]');
-        if (!collapsed.includes(categoryId)) {
-            collapsed.push(categoryId);
-            localStorage.setItem('collapsedCategories', JSON.stringify(collapsed));
+        const expanded = JSON.parse(localStorage.getItem('expandedCategories') || '[]');
+        if (!expanded.includes(categoryId)) {
+            expanded.push(categoryId);
+            localStorage.setItem('expandedCategories', JSON.stringify(expanded));
         }
     } catch (error) {
-        console.warn('Failed to save collapsed state:', error);
+        console.warn('Failed to save expanded state:', error);
     }
 }
 
-function removeCollapsedCategory(categoryId) {
+function removeExpandedCategory(categoryId) {
     try {
-        const collapsed = JSON.parse(localStorage.getItem('collapsedCategories') || '[]');
-        const updated = collapsed.filter(id => id !== categoryId);
-        localStorage.setItem('collapsedCategories', JSON.stringify(updated));
+        const expanded = JSON.parse(localStorage.getItem('expandedCategories') || '[]');
+        const updated = expanded.filter(id => id !== categoryId);
+        localStorage.setItem('expandedCategories', JSON.stringify(updated));
     } catch (error) {
-        console.warn('Failed to remove collapsed state:', error);
+        console.warn('Failed to remove expanded state:', error);
     }
 }
 
-export function restoreCollapsedStates() {
+export function restoreExpandedStates() {
     try {
-        const collapsed = JSON.parse(localStorage.getItem('collapsedCategories') || '[]');
-        collapsed.forEach(categoryId => {
+        const expanded = JSON.parse(localStorage.getItem('expandedCategories') || '[]');
+        expanded.forEach(categoryId => {
             const categorySection = document.querySelector(`.category-section[data-category="${categoryId}"]`) || 
                                    document.querySelector(`.accordion-content[data-category="${categoryId}"]`)?.parentElement;
             
@@ -341,14 +341,14 @@ export function restoreCollapsedStates() {
                 const icon = categorySection.querySelector('.accordion-icon');
                 
                 if (content && icon) {
-                    content.style.display = 'none';
-                    icon.textContent = '▶';
-                    categorySection.classList.add('collapsed');
+                    content.style.display = 'grid';
+                    icon.textContent = '▼';
+                    categorySection.classList.remove('collapsed');
                 }
             }
         });
     } catch (error) {
-        console.warn('Failed to restore collapsed states:', error);
+        console.warn('Failed to restore expanded states:', error);
     }
 }
 

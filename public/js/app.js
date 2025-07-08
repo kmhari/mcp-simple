@@ -1,7 +1,7 @@
 // Main application entry point - refactored with modules
 import { loadConfig, saveConfig } from './config.js';
 import { loadServers, loadStarsData, quickInstallServer, uninstallServer, removeServer } from './servers.js';
-import { handleGroupByChange, handleStarsFilterChange, searchServers, updateCurrentServers, displayServers, toggleCategory, restoreCollapsedStates } from './ui.js';
+import { handleGroupByChange, handleStarsFilterChange, searchServers, updateCurrentServers, displayServers, toggleCategory, restoreExpandedStates } from './ui.js';
 import { loadVariables, updateVariablesList, handleVariableChange, saveIndividualVariable, fetchFromEnvForVariables, saveVariables } from './variables.js';
 import { clearSelection, initializeKeyboardNavigation } from './keyboard.js';
 import { checkForUpdates, performAutoUpdate } from './updates.js';
