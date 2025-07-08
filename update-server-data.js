@@ -12,6 +12,8 @@
  * Options:
  *   --all              Update all servers regardless of staleness
  *   --days <number>    Staleness threshold in days (default: 7)
+ *   --readme-only      Update only README files (skip server data updates)
+ *   --readme-days <n>  README staleness threshold in days (default: 7)
  *   --dry-run          Show what would be updated without making changes
  *   --server <id>      Update specific server only
  *   --help             Show this help message
@@ -34,6 +36,7 @@ const CONFIG = {
   readmesDir: path.join(__dirname, 'data', 'readmes'),
   defaultStaleDays: 7,
   requestDelay: 1000, // ms between requests to respect rate limits
+  readmeConcurrency: 10, // number of READMEs to fetch concurrently
   timeout: 10000, // ms
   userAgent: 'MCP-Server-Data-Updater/1.0',
 };
@@ -44,6 +47,8 @@ function parseArgs() {
   const options = {
     updateAll: false,
     staleDays: CONFIG.defaultStaleDays,
+    readmeOnly: false,
+    readmeDays: CONFIG.defaultStaleDays,
     dryRun: false,
     specificServer: null,
     showHelp: false,
@@ -56,6 +61,12 @@ function parseArgs() {
         break;
       case '--days':
         options.staleDays = parseInt(args[++i]) || CONFIG.defaultStaleDays;
+        break;
+      case '--readme-only':
+        options.readmeOnly = true;
+        break;
+      case '--readme-days':
+        options.readmeDays = parseInt(args[++i]) || CONFIG.defaultStaleDays;
         break;
       case '--dry-run':
         options.dryRun = true;
@@ -86,6 +97,8 @@ Usage:
 Options:
   --all              Update all servers regardless of staleness
   --days <number>    Staleness threshold in days (default: 7)
+  --readme-only      Update only README files (skip server data updates)
+  --readme-days <n>  README staleness threshold in days (default: 7)
   --dry-run          Show what would be updated without making changes
   --server <id>      Update specific server only
   --help, -h         Show this help message
@@ -95,6 +108,8 @@ Examples:
   node update-server-data.js --all              # Update all servers
   node update-server-data.js --days 3           # Update servers older than 3 days
   node update-server-data.js --server fetch     # Update only the 'fetch' server
+  node update-server-data.js --readme-only      # Update only missing/stale README files
+  node update-server-data.js --readme-days 14   # Update READMEs older than 14 days
   node update-server-data.js --dry-run          # Preview what would be updated
 
 Environment Variables:
@@ -102,12 +117,12 @@ Environment Variables:
 
 Features:
   ✓ Downloads README files from GitHub repositories
-  ✓ Updates GitHub stars count
-  ✓ Fetches latest repository metadata
-  ✓ Respects GitHub API rate limits
-  ✓ Skips updates for fresh data
-  ✓ Creates backup before updates
-  ✓ Detailed progress reporting
+  ✓ Updates GitHub stars count and repository metadata
+  ✓ Concurrent README processing (10 at once) with --readme-only
+  ✓ Respects GitHub API rate limits with smart batching
+  ✓ Skips updates for fresh data (configurable staleness)
+  ✓ Creates automatic backups before database updates
+  ✓ Detailed progress reporting and error handling
 `);
 }
 
@@ -153,6 +168,22 @@ function isStale(lastUpdate, maxAgeDays) {
   const maxAgeMs = maxAgeDays * 24 * 60 * 60 * 1000;
   
   return (now - lastUpdateTime) > maxAgeMs;
+}
+
+// Check if README file is missing or stale
+function isReadmeStale(serverId, maxAgeDays) {
+  const readmePath = path.join(CONFIG.readmesDir, `${serverId}.md`);
+  
+  try {
+    const stats = fs.statSync(readmePath);
+    const fileAge = new Date() - stats.mtime;
+    const maxAgeMs = maxAgeDays * 24 * 60 * 60 * 1000;
+    
+    return fileAge > maxAgeMs;
+  } catch (error) {
+    // File doesn't exist
+    return true;
+  }
 }
 
 // Parse GitHub URL to extract owner and repo
@@ -318,6 +349,92 @@ function delay(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+// Update README only for a single server
+async function updateReadmeOnly(serverId, serverData, options) {
+  const { dryRun } = options;
+  
+  const githubInfo = parseGitHubUrl(serverData.githubLink);
+  if (!githubInfo) {
+    return { success: false, error: 'Invalid GitHub URL' };
+  }
+
+  const { owner, repo } = githubInfo;
+
+  try {
+    // Get repo info to determine default branch
+    const repoInfo = await fetchRepoInfo(owner, repo);
+    
+    // Fetch README content
+    const readme = await fetchReadme(owner, repo, repoInfo.default_branch);
+    
+    // Save README file
+    saveReadme(serverId, readme.content, dryRun);
+    
+    return { 
+      success: true,
+      changes: { readme: true }
+    };
+
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+}
+
+// Process READMEs concurrently in batches
+async function processReadmesBatch(servers, options) {
+  const results = {
+    successful: 0,
+    failed: 0,
+    errors: [],
+  };
+
+  // Process servers in batches of CONFIG.readmeConcurrency
+  for (let i = 0; i < servers.length; i += CONFIG.readmeConcurrency) {
+    const batch = servers.slice(i, i + CONFIG.readmeConcurrency);
+    
+    console.log(`\n📦 Processing batch ${Math.floor(i / CONFIG.readmeConcurrency) + 1}/${Math.ceil(servers.length / CONFIG.readmeConcurrency)} (${batch.length} servers)...`);
+    
+    // Process batch concurrently
+    const batchPromises = batch.map(async (serverId, index) => {
+      const serverData = options.database[serverId];
+      const batchIndex = i + index + 1;
+      
+      console.log(`[${batchIndex}/${servers.length}] 📖 ${serverId}...`);
+      
+      try {
+        const result = await updateReadmeOnly(serverId, serverData, options);
+        
+        if (result.success) {
+          console.log(`✅ ${serverId}: README updated`);
+          results.successful++;
+        } else {
+          console.log(`❌ ${serverId}: ${result.error}`);
+          results.failed++;
+          results.errors.push(`${serverId}: ${result.error}`);
+        }
+        
+        return result;
+      } catch (error) {
+        console.log(`❌ ${serverId}: ${error.message}`);
+        results.failed++;
+        results.errors.push(`${serverId}: ${error.message}`);
+        return { success: false, error: error.message };
+      }
+    });
+
+    // Wait for batch to complete
+    await Promise.all(batchPromises);
+    
+    // Add delay between batches to respect rate limits
+    if (i + CONFIG.readmeConcurrency < servers.length) {
+      console.log(`⏸️  Waiting ${CONFIG.requestDelay}ms before next batch...`);
+      await delay(CONFIG.requestDelay);
+    }
+  }
+
+  return results;
+}
+
 // Update a single server
 async function updateServer(serverId, serverData, options) {
   const { dryRun } = options;
@@ -392,8 +509,13 @@ async function main() {
   console.log(`📋 Configuration:`);
   console.log(`   Database: ${path.basename(CONFIG.databasePath)}`);
   console.log(`   READMEs: ${CONFIG.readmesDir}`);
-  console.log(`   Staleness: ${options.staleDays} days`);
-  console.log(`   Mode: ${options.dryRun ? 'DRY RUN' : 'UPDATE'}`);
+  if (options.readmeOnly) {
+    console.log(`   README Staleness: ${options.readmeDays} days`);
+    console.log(`   Concurrency: ${CONFIG.readmeConcurrency} READMEs at once`);
+  } else {
+    console.log(`   Staleness: ${options.staleDays} days`);
+  }
+  console.log(`   Mode: ${options.readmeOnly ? 'README ONLY' : 'FULL UPDATE'} ${options.dryRun ? '(DRY RUN)' : ''}`);
   console.log(`   GitHub Token: ${process.env.GITHUB_TOKEN ? '✅ Available' : '❌ Not set'}`);
   
   if (!process.env.GITHUB_TOKEN) {
@@ -419,61 +541,88 @@ async function main() {
       process.exit(1);
     }
   } else {
-    serversToUpdate = serverIds.filter(serverId => {
-      const serverData = database[serverId];
-      if (options.updateAll) {
-        return true;
-      }
-      return isStale(serverData.updated_at, options.staleDays);
-    });
+    if (options.readmeOnly) {
+      // Filter by README staleness
+      serversToUpdate = serverIds.filter(serverId => {
+        return isReadmeStale(serverId, options.readmeDays);
+      });
 
-    console.log(`\n🔍 Checking staleness (${options.staleDays} days)...`);
-    if (options.updateAll) {
-      console.log(`📋 Updating all ${serversToUpdate.length} servers`);
-    } else {
-      console.log(`📋 Found ${serversToUpdate.length} stale servers to update`);
+      console.log(`\n🔍 Checking README staleness (${options.readmeDays} days)...`);
+      console.log(`📋 Found ${serversToUpdate.length} servers with missing/stale READMEs`);
       
       if (serversToUpdate.length === 0) {
-        console.log(`🎉 All servers are fresh! No updates needed.`);
+        console.log(`🎉 All README files are fresh! No updates needed.`);
         return;
+      }
+    } else {
+      // Filter by server data staleness
+      serversToUpdate = serverIds.filter(serverId => {
+        const serverData = database[serverId];
+        if (options.updateAll) {
+          return true;
+        }
+        return isStale(serverData.updated_at, options.staleDays);
+      });
+
+      console.log(`\n🔍 Checking staleness (${options.staleDays} days)...`);
+      if (options.updateAll) {
+        console.log(`📋 Updating all ${serversToUpdate.length} servers`);
+      } else {
+        console.log(`📋 Found ${serversToUpdate.length} stale servers to update`);
+        
+        if (serversToUpdate.length === 0) {
+          console.log(`🎉 All servers are fresh! No updates needed.`);
+          return;
+        }
       }
     }
   }
 
   // Update servers
   console.log(`\n🔄 Starting updates...`);
-  const results = {
-    successful: 0,
-    failed: 0,
-    errors: [],
-  };
+  let results;
 
-  for (let i = 0; i < serversToUpdate.length; i++) {
-    const serverId = serversToUpdate[i];
-    const serverData = database[serverId];
-    
-    console.log(`\n[${i + 1}/${serversToUpdate.length}] ${serverId}`);
-    
-    const result = await updateServer(serverId, serverData, options);
-    
-    if (result.success) {
-      results.successful++;
-      if (result.updatedData) {
-        database[serverId] = result.updatedData;
+  if (options.readmeOnly) {
+    // Use concurrent README processing
+    results = await processReadmesBatch(serversToUpdate, { 
+      ...options, 
+      database 
+    });
+  } else {
+    // Sequential server updates (full data)
+    results = {
+      successful: 0,
+      failed: 0,
+      errors: [],
+    };
+
+    for (let i = 0; i < serversToUpdate.length; i++) {
+      const serverId = serversToUpdate[i];
+      const serverData = database[serverId];
+      
+      console.log(`\n[${i + 1}/${serversToUpdate.length}] ${serverId}`);
+      
+      const result = await updateServer(serverId, serverData, options);
+      
+      if (result.success) {
+        results.successful++;
+        if (result.updatedData) {
+          database[serverId] = result.updatedData;
+        }
+      } else {
+        results.failed++;
+        results.errors.push(`${serverId}: ${result.error}`);
       }
-    } else {
-      results.failed++;
-      results.errors.push(`${serverId}: ${result.error}`);
-    }
 
-    // Add delay between servers to respect rate limits
-    if (i < serversToUpdate.length - 1) {
-      await delay(CONFIG.requestDelay);
+      // Add delay between servers to respect rate limits
+      if (i < serversToUpdate.length - 1) {
+        await delay(CONFIG.requestDelay);
+      }
     }
   }
 
-  // Save updated database
-  if (results.successful > 0) {
+  // Save updated database (only for full updates, not README-only)
+  if (results.successful > 0 && !options.readmeOnly) {
     console.log(`\n💾 Saving updates...`);
     saveDatabase(database, options.dryRun);
   }
