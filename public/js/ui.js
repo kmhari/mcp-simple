@@ -124,11 +124,21 @@ function createServerCard(key, server) {
         ? `<div class="stars-info">${starSvg} ${formatStars(serverStars.github.stars)}</div>`
         : '';
 
+    const logoDisplay = server.logo && server.logo.trim() !== '' 
+        ? `<div class="server-logo">
+               <img src="${server.logo}" alt="${server.name} logo" loading="lazy" 
+                    onerror="this.parentElement.outerHTML='<div class=\\"server-logo-placeholder\\"></div>'" />
+           </div>` 
+        : '<div class="server-logo-placeholder"></div>';
+
     card.innerHTML = `
         <div>
             <div class="card-header">
-                <h3>${server.githubLink ? `<a href="${server.githubLink}" target="_blank" rel="noopener noreferrer">${server.name}</a>` : server.name}</h3>
-                ${starsDisplay}
+                ${logoDisplay}
+                <div class="card-header-content">
+                    <h3>${server.githubLink ? `<a href="${server.githubLink}" target="_blank" rel="noopener noreferrer">${server.name}</a>` : server.name}</h3>
+                    ${starsDisplay}
+                </div>
             </div>
             <p class="description">${server.description}</p>
         </div>
