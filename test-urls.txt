@@ -1,0 +1,4 @@
+# Test URLs for MCP server discovery
+https://github.com/kmhari/mcp-simple
+https://github.com/test/fake-repo
+https://github.com/modelcontextprotocol/servers
