@@ -6,6 +6,7 @@ let starsData = {};
 let selectedCardIndex = -1;
 let visibleCards = [];
 let currentGroupBy = 'none';
+let currentStarsFilter = 0;
 
 export {
     currentConfig,
@@ -14,7 +15,8 @@ export {
     starsData,
     selectedCardIndex,
     visibleCards,
-    currentGroupBy
+    currentGroupBy,
+    currentStarsFilter
 };
 
 export function setCurrentConfig(config) {
@@ -43,4 +45,8 @@ export function setVisibleCards(cards) {
 
 export function setCurrentGroupBy(groupBy) {
     currentGroupBy = groupBy;
+}
+
+export function setCurrentStarsFilter(starsFilter) {
+    currentStarsFilter = starsFilter;
 }

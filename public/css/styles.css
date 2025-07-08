@@ -288,7 +288,6 @@ h1 {
 
 .server-card[data-selected] {
     background: #f4f4f4;
-    transform: scale(0.98);
     box-shadow: inset .5px .5px 1px #fff, 
                 inset -.5px -.5px 1px #00000026, 
                 .222px .222px .314px -.5px #0003, 
@@ -300,62 +299,10 @@ h1 {
 }
 
 .server-card[data-selected]:hover {
-    transform: scale(0.98) translateY(-1px);
+    transform: translateY(-1px);
 }
 
-/* Animation keyframes for install/uninstall transitions */
-@keyframes installPulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.05); }
-    100% { transform: scale(0.98); }
-}
-
-@keyframes uninstallPulse {
-    0% { transform: scale(0.98); }
-    50% { transform: scale(1.02); }
-    100% { transform: scale(1); }
-}
-
-@keyframes statusGlow {
-    0% { 
-        box-shadow: inset 1px 1px 2px rgba(0, 0, 0, 0.1);
-        transform: scale(1);
-    }
-    50% { 
-        box-shadow: 0 0 12px rgba(16, 185, 129, 0.6),
-                    inset -1px -1px 2px rgba(0, 0, 0, 0.2);
-        transform: scale(1.2);
-    }
-    100% { 
-        box-shadow: 0 0 8px rgba(16, 185, 129, 0.4),
-                    inset -1px -1px 2px rgba(0, 0, 0, 0.2);
-        transform: scale(1);
-    }
-}
-
-@keyframes statusFade {
-    0% { 
-        box-shadow: 0 0 8px rgba(16, 185, 129, 0.4),
-                    inset -1px -1px 2px rgba(0, 0, 0, 0.2);
-        transform: scale(1);
-    }
-    50% { 
-        box-shadow: inset 1px 1px 2px rgba(0, 0, 0, 0.2);
-        transform: scale(0.8);
-    }
-    100% { 
-        box-shadow: inset 1px 1px 2px rgba(0, 0, 0, 0.1);
-        transform: scale(1);
-    }
-}
-
-.server-card.installing {
-    animation: installPulse 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.server-card.uninstalling {
-    animation: uninstallPulse 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-}
+/* Removed animation keyframes - using immediate UI updates instead */
 
 /* Keyboard navigation selection */
 .server-card.keyboard-selected {
@@ -421,7 +368,7 @@ h1 {
 }
 
 .server-logo img:hover {
-    transform: scale(1.05);
+    opacity: 0.9;
 }
 
 .server-logo-placeholder {
@@ -512,6 +459,49 @@ h1 {
 
 .stars-info:hover .star-icon {
     color: #374151;
+}
+
+.stars-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+    min-height: 32px;
+    justify-content: center;
+}
+
+.stars-update {
+    font-size: 10px;
+    color: #9ca3af;
+    font-weight: 400;
+    text-align: right;
+    opacity: 0.8;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.stars-update:hover {
+    opacity: 1;
+    color: #6b7280;
+}
+
+/* Enhanced category titles for star grouping */
+.category-section h2.category-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 15px;
+    padding: 10px 0;
+    border-bottom: 2px solid currentColor;
+    opacity: 0.9;
+}
+
+.category-section h2.category-title .category-count {
+    font-weight: 400;
+    opacity: 0.7;
+    font-size: 16px;
 }
 
 
@@ -607,14 +597,21 @@ h1 {
     background: #cc0000 !important;
 }
 
-.group-by-container {
+.filters-container {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+}
+
+.group-by-container, .stars-filter-container {
     display: flex;
     align-items: center;
     gap: 10px;
-    margin-bottom: 15px;
 }
 
-.group-by-container select {
+.group-by-container select, .stars-filter-container select {
     padding: 6px 12px;
     border: none;
     border-radius: 6px;
@@ -626,7 +623,7 @@ h1 {
     transition: box-shadow 0.2s;
 }
 
-.group-by-container select:focus {
+.group-by-container select:focus, .stars-filter-container select:focus {
     outline: none;
     box-shadow: inset 1px 1px 2px rgba(0, 0, 0, .2);
 }
