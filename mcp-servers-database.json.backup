@@ -26992,9 +26992,9 @@
     "usageInstructions": "Install with: npm install &&. See README for configuration details.",
     "category": "File Management",
     "stars": 9,
-    "lastStarUpdate": "2025-07-08T10:08:59.471Z",
+    "lastStarUpdate": "2025-07-08T09:54:47.176Z",
     "logo": "",
-    "updated_at": "2025-07-08T10:08:59.471Z"
+    "updated_at": "2025-07-08T09:54:47.176Z"
   },
   "arrismo-kaggle-mcp": {
     "name": "Kaggle mcp",
