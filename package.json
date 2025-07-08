@@ -40,12 +40,10 @@
   },
   "preferGlobal": true,
   "publishConfig": {
-    "registry": "https://registry.npmjs.org",
-    "@oglabs:registry": "https://npm.pkg.github.com"
+    "registry": "https://registry.npmjs.org"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.15.0",
-    "@oglabs/mcp": "^2.4.3",
     "axios": "^1.6.0",
     "csv-parser": "^3.2.0",
     "dotenv": "^16.3.1",
