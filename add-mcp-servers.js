@@ -221,18 +221,28 @@ function saveDatabase(data, dryRun = false) {
   }
 }
 
+// Normalize GitHub URL by removing trailing slash and converting to lowercase for comparison
+function normalizeGitHubUrl(url) {
+  if (!url) return '';
+  return url.replace(/\/$/, '').toLowerCase();
+}
+
 // Check if URL already exists in database (checks both original and final URLs)
 function checkDuplicateUrl(database, githubUrl, finalUrl = null) {
   const existingServers = Object.entries(database);
+  const normalizedGithubUrl = normalizeGitHubUrl(githubUrl);
+  const normalizedFinalUrl = finalUrl ? normalizeGitHubUrl(finalUrl) : null;
   
   for (const [key, server] of existingServers) {
-    // Check against original URL
-    if (server.githubLink === githubUrl) {
+    const normalizedExistingUrl = normalizeGitHubUrl(server.githubLink);
+    
+    // Check against original URL (normalized comparison)
+    if (normalizedExistingUrl === normalizedGithubUrl) {
       return { exists: true, key, server, matchedUrl: githubUrl };
     }
     
-    // Check against final URL after redirects (if different)
-    if (finalUrl && finalUrl !== githubUrl && server.githubLink === finalUrl) {
+    // Check against final URL after redirects (if different and normalized)
+    if (normalizedFinalUrl && normalizedFinalUrl !== normalizedGithubUrl && normalizedExistingUrl === normalizedFinalUrl) {
       return { exists: true, key, server, matchedUrl: finalUrl };
     }
   }
@@ -489,7 +499,7 @@ function generateMCPServerEntry(parsed, repoInfo, readme, serverKey) {
   
   const entry = {
     name: repoInfo.name.charAt(0).toUpperCase() + repoInfo.name.slice(1).replace(/[-_]/g, ' '),
-    githubLink: parsed.fullUrl,
+    githubLink: parsed.fullUrl.replace(/\/$/, ''), // Remove trailing slash
     package: packageName,
     description: description,
     installCommand: installCommand,
@@ -602,6 +612,13 @@ async function main() {
           const parsed = parseGitHubUrl(url);
           if (!parsed) {
             throw new Error('Invalid GitHub URL format');
+          }
+          
+          // Check for duplicates BEFORE making any API calls
+          const initialDuplicate = checkDuplicateUrl(database, url);
+          if (initialDuplicate.exists && !options.force) {
+            console.log(`⚠️  Skipped: Already exists as '${initialDuplicate.key}'`);
+            return { status: 'skipped', url, reason: 'duplicate URL' };
           }
           
           // Fetch repository information
