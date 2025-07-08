@@ -38,6 +38,7 @@ const CONFIG = {
   redirectCachePath: path.join(__dirname, 'data', 'redirect.json'),
   missing404CachePath: path.join(__dirname, 'data', '404.txt'),
   noReadme404CachePath: path.join(__dirname, 'data', '404_readme.txt'),
+  notMcp404CachePath: path.join(__dirname, 'data', '404_not_mcp.txt'),
   requestDelay: 1000, // ms between requests to respect rate limits
   timeout: 10000, // ms
   userAgent: 'MCP-Server-Discovery-Tool/1.0',
@@ -448,6 +449,76 @@ function addToReadme404Cache(cacheReadme404, url) {
   return false;
 }
 
+// Load not-MCP 404 cache (repos that are not MCP servers)
+function loadNotMcp404Cache() {
+  try {
+    if (!fs.existsSync(CONFIG.notMcp404CachePath)) {
+      // Create directory and initial file if it doesn't exist
+      const cacheDir = path.dirname(CONFIG.notMcp404CachePath);
+      if (!fs.existsSync(cacheDir)) {
+        fs.mkdirSync(cacheDir, { recursive: true });
+      }
+      
+      const initialContent = `# GitHub URLs that are not MCP servers
+# Format: One URL per line
+# This file is automatically managed by add-mcp-servers.js
+# Last updated: ${new Date().toISOString()}
+`;
+      
+      fs.writeFileSync(CONFIG.notMcp404CachePath, initialContent);
+      return [];
+    }
+    
+    const content = fs.readFileSync(CONFIG.notMcp404CachePath, 'utf8');
+    const urls = content
+      .split('\n')
+      .map(line => line.trim())
+      .filter(line => line && !line.startsWith('#'))
+      .map(url => normalizeGitHubUrl(url));
+    
+    return urls;
+  } catch (error) {
+    console.warn(`⚠️  Failed to load not-MCP 404 cache: ${error.message}`);
+    return [];
+  }
+}
+
+// Save not-MCP 404 cache (repos that are not MCP servers)
+function saveNotMcp404Cache(notMcpUrls) {
+  try {
+    const content = `# GitHub URLs that are not MCP servers
+# Format: One URL per line
+# This file is automatically managed by add-mcp-servers.js
+# Last updated: ${new Date().toISOString()}
+
+${notMcpUrls.join('\n')}
+`;
+    
+    fs.writeFileSync(CONFIG.notMcp404CachePath, content);
+  } catch (error) {
+    console.warn(`⚠️  Failed to save not-MCP 404 cache: ${error.message}`);
+  }
+}
+
+// Check if URL is in not-MCP 404 cache
+function checkNotMcp404Cache(cacheNotMcp404, url) {
+  const normalizedUrl = normalizeGitHubUrl(url);
+  return cacheNotMcp404.includes(normalizedUrl);
+}
+
+// Add URL to not-MCP 404 cache
+function addToNotMcp404Cache(cacheNotMcp404, url) {
+  const normalizedUrl = normalizeGitHubUrl(url);
+  
+  if (!cacheNotMcp404.includes(normalizedUrl)) {
+    cacheNotMcp404.push(normalizedUrl);
+    console.log(`📝 Added to not-MCP 404 cache: ${url}`);
+    return true;
+  }
+  
+  return false;
+}
+
 // Normalize GitHub URL by removing trailing slash and converting to lowercase for comparison
 function normalizeGitHubUrl(url) {
   if (!url) return '';
@@ -800,7 +871,7 @@ async function main() {
     
     console.log(`🔍 Found ${urls.length} GitHub URL(s) in input`);
     
-    // Load existing database, redirect cache, 404 cache, and README 404 cache
+    // Load existing database and all caches
     const database = loadDatabase();
     console.log(`📊 Loaded database with ${Object.keys(database).length} existing servers`);
     
@@ -814,15 +885,20 @@ async function main() {
     const cacheReadme404 = loadReadme404Cache();
     console.log(`📄❌ Loaded README 404 cache with ${cacheReadme404.length} repos without README`);
     
+    const cacheNotMcp404 = loadNotMcp404Cache();
+    console.log(`🚫 Loaded not-MCP 404 cache with ${cacheNotMcp404.length} non-MCP repos`);
+    
     // Filter out existing URLs before processing (only if not using --force)
     let filteredUrls = urls;
     let preFilteredCount = 0;
     
     if (!options.force) {
-      console.log(`🔍 Pre-filtering existing URLs, 404s, and README 404s...`);
+      console.log(`🔍 Pre-filtering existing URLs, 404s, README 404s, not-MCP 404s, and redirect targets...`);
       const existingUrls = [];
       const missing404Urls = [];
       const noReadmeUrls = [];
+      const notMcpUrls = [];
+      const redirectTargetUrls = [];
       const newUrls = [];
       
       for (const url of urls) {
@@ -832,6 +908,20 @@ async function main() {
           existingUrls.push({ url, key: duplicate.key });
           preFilteredCount++;
           continue;
+        }
+        
+        // Check redirect target - if this URL redirects to something, check if the target is already cached
+        const cachedRedirect = checkRedirectCache(redirectCache, url);
+        if (cachedRedirect) {
+          // Check all caches against the redirect target
+          if (checkDuplicateUrl(database, cachedRedirect).exists ||
+              check404Cache(cache404, cachedRedirect) ||
+              checkReadme404Cache(cacheReadme404, cachedRedirect) ||
+              checkNotMcp404Cache(cacheNotMcp404, cachedRedirect)) {
+            redirectTargetUrls.push({ url, target: cachedRedirect });
+            preFilteredCount++;
+            continue;
+          }
         }
         
         // Check if URL is in 404 cache (missing repository)
@@ -844,6 +934,13 @@ async function main() {
         // Check if URL is in README 404 cache (no README file)
         if (checkReadme404Cache(cacheReadme404, url)) {
           noReadmeUrls.push(url);
+          preFilteredCount++;
+          continue;
+        }
+        
+        // Check if URL is in not-MCP 404 cache (not an MCP server)
+        if (checkNotMcp404Cache(cacheNotMcp404, url)) {
+          notMcpUrls.push(url);
           preFilteredCount++;
           continue;
         }
@@ -976,7 +1073,7 @@ async function main() {
           
           if (!detection.isMCPServer && !options.noAI) {
             console.log(`❌ Not detected as MCP server`);
-            return { status: 'processed', url, reason: 'not MCP server' };
+            return { status: 'not_mcp', url, reason: 'not MCP server' };
           }
           
           if (detection.isMCPServer) {
@@ -1059,6 +1156,13 @@ async function main() {
             console.log(`🔍 [DRY RUN] Would add to database with key: ${result.serverKey}`);
           }
         } else if (result.status === 'skipped') {
+          skipped++;
+        } else if (result.status === 'not_mcp') {
+          // Add to not-MCP cache
+          const added = addToNotMcp404Cache(cacheNotMcp404, result.url);
+          if (added) {
+            saveNotMcp404Cache(cacheNotMcp404);
+          }
           skipped++;
         } else if (result.status === 'error') {
           errors.push({ url: result.url, error: result.error });

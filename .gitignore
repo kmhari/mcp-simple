@@ -77,4 +77,9 @@ data/404.txt
 
 # 404 missing README cache
 data/404_readme.txt
+
+# 404 not MCP server cache
+data/404_not_mcp.txt
 data/404_readme.txt
+data/sources.txt
+fetch.js
