@@ -2,10 +2,10 @@
   "name": "@oglabs/mcp",
   "version": "2.6.0",
   "description": "Interactive CLI tool and MCP server for managing MCP configurations with tech stack detection and recommendations",
-  "main": "mcp",
+  "main": "mcp-manager.cjs",
   "type": "module",
   "bin": {
-    "mcp": "mcp"
+    "mcp": "./mcp-manager.js"
   },
   "scripts": {
     "test": "echo \"No tests specified\" && exit 0",
