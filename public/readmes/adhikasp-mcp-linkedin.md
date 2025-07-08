@@ -1,0 +1,158 @@
+# MCP LinkedIn
+
+A Model Context Protocol (MCP) server that provides tools to interact with LinkedIn's Feeds and Job API.
+
+This is using unofficial LinkedIn API via [Linkedin-api](https://github.com/tomquirk/linkedin-api). Use at your own risk.
+
+<a href="https://smithery.ai/server/mcp-linkedin"><img alt="Smithery Badge" src="https://smithery.ai/badge/mcp-linkedin"></a>
+<a href="https://glama.ai/mcp/servers/dvbdubl2bg"><img width="380" height="200" src="https://glama.ai/mcp/servers/dvbdubl2bg/badge" alt="mcp-linkedin MCP server" /></a>
+
+### Installing via Smithery
+
+To install LinkedIn Interaction Server for Claude Desktop automatically via [Smithery](https://smithery.ai/server/mcp-linkedin):
+
+```bash
+npx -y @smithery/cli install mcp-linkedin --client claude
+```
+
+## Configuration
+
+```json
+{
+    "mcpServers": {
+        "linkedin": {
+            "command": "uvx",
+            "args": ["--from", "git+https://github.com/adhikasp/mcp-linkedin", "mcp-linkedin"],
+            "env": {
+                "LINKEDIN_EMAIL": "your_linkedin_email",
+                "LINKEDIN_PASSWORD": "your_linkedin_password"
+            }
+        }
+    }
+}
+```
+
+## Sample usage
+
+Using [mcp-client-cli](https://github.com/adhikasp/mcp-client-cli)
+
+### Get feed posts
+
+```
+$ llm whats happening in linkedin feed? Do not mention names
+
+I'll retrieve the recent LinkedIn feed posts without mentioning any specific names.
+
+Tool Calls:
+  get_feed_posts
+  Args:
+    limit: 10
+
+Based on the LinkedIn feed, here are the key highlights without mentioning specific names:
+
+1. Data Science & Cybersecurity Insights:
+   - A post about a massive dataset from a major tech company
+   - Includes 13 million pieces of evidence
+   - Covers SIEM telemetry from 6,100 organizations
+   - Represents 441 MITRE ATT&CK techniques
+
+2. DevOps Community Event:
+   - A local DevOps meetup was held at a tech company office
+   - Discussed topics like AWS Lambda, Kubernetes scaling, Terraform
+   - Highlighted the importance of networking and continuous learning
+   - Shared experiences of transitioning between tech roles
+
+3. Linux Engineering Perspectives:
+   - Insights into what makes a great Linux engineer
+   - Key skills include:
+     * Command-line troubleshooting
+     * Process management
+     * Networking fundamentals
+     * System architecture understanding
+     * Task automation
+     * Shell scripting
+
+4. Professional Networking:
+   - Some posts about job seeking
+   - Discussions about career transitions
+   - Sharing professional experiences and learnings
+
+5. Tech Community Reflections:
+   - Posts about inspirational figures
+   - Discussions on professional growth
+   - Reflections on learning and personal development
+
+The feed showcases a mix of technical insights, professional networking, career development, and community engagement across various tech domains.
+```
+
+### Search for jobs
+
+```
+$ llm search for 3 data engineer jobs in jakarta. For each job check if it a good match for me by analyzing it against my resume in file resume.md. Do not mention company name in your result but only generic area where the company business is about
+
+I'll help you find data engineer jobs in Jakarta and analyze them against your resume. I'll break this down into steps:
+
+1. First, I'll search for data engineer jobs in Jakarta
+2. Then, I'll read your resume
+3. Finally, I'll analyze the job matches
+
+Let's start by searching for jobs:
+
+Tool Calls:
+  search_jobs
+  Args:
+    keywords: data engineer
+    location: Jakarta
+    limit: 3
+
+
+Now, I'll read your resume:
+
+Tool Calls:
+  read_file
+  Args:
+    path: resume.md
+Secure MCP Filesystem Server running on stdio
+Allowed directories: [ '/home/adhikasp', '/mnt/e' ]
+
+
+Now, I'll analyze the jobs against your resume:
+
+1. Job in Financial Technology Sector (Lead Backend Engineer):
+   - Match Score: 85%
+   - Strengths:
+     * Requires experience in developing scalable microservices (aligns with your Grab experience)
+     * Strong focus on cloud infrastructure (AWS, GCP) - matches your cloud skills
+     * Requires experience with event-driven architecture and message brokers
+     * Requires Go or Python programming (your proficient languages)
+   - Potential Gaps:
+     * Specific focus on credit risk and fraud detection might require additional domain knowledge
+     * Emphasis on team leadership (6+ years experience leading teams)
+
+2. Job in Financial Technology Sector (DevOps Engineer):
+   - Match Score: 75%
+   - Strengths:
+     * Requires cloud platform experience (AWS, GCP)
+     * Needs containerization skills (Docker, Kubernetes)
+     * Requires scripting in Python and Bash
+     * Needs infrastructure as code experience
+   - Potential Gaps:
+     * More DevOps focused compared to your backend engineering background
+     * Specific monitoring tools might require additional learning
+
+3. Job in Enterprise Collaboration Software (Solution Engineer):
+   - Match Score: 60%
+   - Strengths:
+     * Requires strong communication skills
+     * Technical consulting background
+     * Experience with enterprise software
+   - Potential Gaps:
+     * Less technical compared to your current role
+     * More sales-oriented solution engineering
+     * Less hands-on technical development
+
+Recommendation:
+The first job (Lead Backend Engineer) appears to be the best match for your skills and experience. It closely aligns with your current work, particularly in terms of backend development, cloud infrastructure, and working with distributed systems. The role's requirements in Go/Python, microservices, and event-driven architecture are very compatible with your professional background.
+
+Would you like me to elaborate on any of these job analyses or provide more detailed insights?
+```

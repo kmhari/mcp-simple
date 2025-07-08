@@ -144,6 +144,42 @@ h1 {
     gap: 10px;
 }
 
+.accordion-header {
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.2s ease;
+    border-radius: 6px;
+}
+
+.accordion-header:hover {
+    background: rgba(52, 152, 219, 0.05);
+    padding: 12px 8px;
+    margin: 0 -8px;
+}
+
+.accordion-icon {
+    font-size: 16px;
+    font-family: monospace;
+    transition: transform 0.2s ease;
+    width: 20px;
+    text-align: center;
+    color: #3498db;
+    font-weight: bold;
+}
+
+.category-section.collapsed .accordion-icon {
+    transform: rotate(-90deg);
+}
+
+.accordion-content {
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.category-section.collapsed .accordion-content {
+    display: none !important;
+}
+
 .category-title::before {
     content: '';
     width: 6px;
