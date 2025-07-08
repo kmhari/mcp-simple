@@ -580,109 +580,135 @@ async function main() {
       console.log(`🔧 Using --force flag: processing all URLs regardless of existing entries`);
     }
     
-    console.log(`\n🚀 Starting processing of ${filteredUrls.length} URL(s)...`);
+    console.log(`\n🚀 Starting processing of ${filteredUrls.length} URL(s) in batches of 5...`);
     
-    // Process each URL
+    // Process URLs in batches of 5
     let processed = 0;
     let added = 0;
     let skipped = 0;
     const errors = [];
+    const batchSize = 5;
     
-    for (const url of filteredUrls) {
-      try {
-        console.log(`\n🔍 Processing: ${url}`);
-        
-        // Parse GitHub URL
-        const parsed = parseGitHubUrl(url);
-        if (!parsed) {
-          throw new Error('Invalid GitHub URL format');
-        }
-        
-        // Note: Initial duplicate checking was done during pre-filtering
-        
-        // Fetch repository information
-        console.log(`📊 Fetching repo info for ${parsed.owner}/${parsed.repo}...`);
-        const repoInfo = await fetchRepoInfo(parsed.owner, parsed.repo);
-        console.log(`⭐ Stars: ${repoInfo.stars} | Language: ${repoInfo.language || 'Unknown'}`);
-        
-        // Check for duplicates with final URL after any redirects (this can only be done after API call)
-        if (repoInfo.finalUrl && repoInfo.finalUrl !== url && !options.force) {
-          console.log(`🔄 API endpoint resolved to: ${repoInfo.finalUrl}`);
-          const duplicateAfterRedirect = checkDuplicateUrl(database, url, repoInfo.finalUrl);
-          if (duplicateAfterRedirect.exists) {
-            console.log(`⚠️  Skipped: Already exists as '${duplicateAfterRedirect.key}' (redirect matched: ${duplicateAfterRedirect.matchedUrl})`);
-            skipped++;
-            continue;
-          }
-        }
-        
-        // Fetch README content
-        console.log(`📄 Fetching README...`);
-        const readme = await fetchReadme(parsed.owner, parsed.repo, repoInfo.default_branch);
-        console.log(`📄 Found README: ${readme.filename} (${readme.content.length} chars)`);
-        
-        // Generate server key
-        const serverKey = generateServerKey(parsed.owner, parsed.repo);
-        
-        // Save README file
-        saveReadme(serverKey, readme.content, options.dryRun);
-        
-        // Detect if this is an MCP server
-        console.log(`🤖 Analyzing if this is an MCP server...`);
-        const detection = detectMCPServer(readme.content, repoInfo);
-        
-        if (!detection.isMCPServer && !options.noAI) {
-          console.log(`❌ Not detected as MCP server`);
-          processed++;
-          continue;
-        }
-        
-        if (detection.isMCPServer) {
-          console.log(`✅ Detected as MCP server!`);
-        } else {
-          console.log(`⚠️  Manual mode: Processing regardless of detection`);
-        }
-        
-        // Generate MCP server entry
-        console.log(`📝 Generating database entry...`);
-        const serverEntry = generateMCPServerEntry(parsed, repoInfo, readme, serverKey);
-        console.log(`📦 Package: ${serverEntry.package}`);
-        console.log(`🏷️  Category: ${serverEntry.category}`);
-        console.log(`📄 Description: ${serverEntry.description.substring(0, 100)}...`);
-        
-        // Add to database and save immediately
-        if (!options.dryRun) {
-          database[serverKey] = serverEntry;
-          console.log(`💾 Added to database with key: ${serverKey}`);
+    for (let i = 0; i < filteredUrls.length; i += batchSize) {
+      const batch = filteredUrls.slice(i, i + batchSize);
+      console.log(`\n📦 Processing batch ${Math.floor(i / batchSize) + 1} (${batch.length} URLs)...`);
+      
+      // Process batch in parallel
+      const batchPromises = batch.map(async (url) => {
+        try {
+          console.log(`🔍 Processing: ${url}`);
           
-          // Save database immediately after each addition
-          try {
-            console.log(`💾 Saving database...`);
-            saveDatabase(database, false);
-            console.log(`✅ Database saved successfully`);
-          } catch (saveError) {
-            console.error(`❌ Failed to save database: ${saveError.message}`);
-            // Remove the entry if save failed to keep memory and disk in sync
-            delete database[serverKey];
-            throw saveError;
+          // Parse GitHub URL
+          const parsed = parseGitHubUrl(url);
+          if (!parsed) {
+            throw new Error('Invalid GitHub URL format');
           }
           
-          added++;
-        } else {
-          console.log(`🔍 [DRY RUN] Would add to database with key: ${serverKey}`);
+          // Fetch repository information
+          console.log(`📊 Fetching repo info for ${parsed.owner}/${parsed.repo}...`);
+          const repoInfo = await fetchRepoInfo(parsed.owner, parsed.repo);
+          console.log(`⭐ Stars: ${repoInfo.stars} | Language: ${repoInfo.language || 'Unknown'}`);
+          
+          // Check for duplicates with final URL after any redirects
+          if (repoInfo.finalUrl && repoInfo.finalUrl !== url && !options.force) {
+            console.log(`🔄 API endpoint resolved to: ${repoInfo.finalUrl}`);
+            const duplicateAfterRedirect = checkDuplicateUrl(database, url, repoInfo.finalUrl);
+            if (duplicateAfterRedirect.exists) {
+              console.log(`⚠️  Skipped: Already exists as '${duplicateAfterRedirect.key}' (redirect matched: ${duplicateAfterRedirect.matchedUrl})`);
+              return { status: 'skipped', url, reason: 'duplicate after redirect' };
+            }
+          }
+          
+          // Fetch README content
+          console.log(`📄 Fetching README...`);
+          const readme = await fetchReadme(parsed.owner, parsed.repo, repoInfo.default_branch);
+          console.log(`📄 Found README: ${readme.filename} (${readme.content.length} chars)`);
+          
+          // Generate server key
+          const serverKey = generateServerKey(parsed.owner, parsed.repo);
+          
+          // Save README file
+          saveReadme(serverKey, readme.content, options.dryRun);
+          
+          // Detect if this is an MCP server
+          console.log(`🤖 Analyzing if this is an MCP server...`);
+          const detection = detectMCPServer(readme.content, repoInfo);
+          
+          if (!detection.isMCPServer && !options.noAI) {
+            console.log(`❌ Not detected as MCP server`);
+            return { status: 'processed', url, reason: 'not MCP server' };
+          }
+          
+          if (detection.isMCPServer) {
+            console.log(`✅ Detected as MCP server!`);
+          } else {
+            console.log(`⚠️  Manual mode: Processing regardless of detection`);
+          }
+          
+          // Generate MCP server entry
+          console.log(`📝 Generating database entry...`);
+          const serverEntry = generateMCPServerEntry(parsed, repoInfo, readme, serverKey);
+          console.log(`📦 Package: ${serverEntry.package}`);
+          console.log(`🏷️  Category: ${serverEntry.category}`);
+          console.log(`📄 Description: ${serverEntry.description.substring(0, 100)}...`);
+          
+          console.log(`✅ Processed: ${parsed.owner}/${parsed.repo} (key: ${serverKey})`);
+          
+          return {
+            status: 'success',
+            url,
+            serverKey,
+            serverEntry,
+            parsed
+          };
+          
+        } catch (error) {
+          console.error(`❌ Error processing ${url}: ${error.message}`);
+          return { status: 'error', url, error: error.message };
         }
-        
-        console.log(`✅ Processed: ${parsed.owner}/${parsed.repo} (key: ${serverKey})`);
+      });
+      
+      // Wait for batch to complete
+      const batchResults = await Promise.all(batchPromises);
+      
+      // Process batch results sequentially for database operations
+      for (const result of batchResults) {
         processed++;
         
-        // Add delay between requests
-        if (processed < filteredUrls.length) {
-          await delay(CONFIG.requestDelay);
+        if (result.status === 'success') {
+          // Add to database and save immediately
+          if (!options.dryRun) {
+            database[result.serverKey] = result.serverEntry;
+            console.log(`💾 Added to database with key: ${result.serverKey}`);
+            
+            // Save database immediately after each addition
+            try {
+              console.log(`💾 Saving database...`);
+              saveDatabase(database, false);
+              console.log(`✅ Database saved successfully`);
+            } catch (saveError) {
+              console.error(`❌ Failed to save database: ${saveError.message}`);
+              // Remove the entry if save failed to keep memory and disk in sync
+              delete database[result.serverKey];
+              errors.push({ url: result.url, error: saveError.message });
+              continue;
+            }
+            
+            added++;
+          } else {
+            console.log(`🔍 [DRY RUN] Would add to database with key: ${result.serverKey}`);
+          }
+        } else if (result.status === 'skipped') {
+          skipped++;
+        } else if (result.status === 'error') {
+          errors.push({ url: result.url, error: result.error });
         }
-        
-      } catch (error) {
-        console.error(`❌ Error processing ${url}: ${error.message}`);
-        errors.push({ url, error: error.message });
+      }
+      
+      // Add delay between batches (not between individual URLs in batch)
+      if (i + batchSize < filteredUrls.length) {
+        console.log(`⏱️  Waiting ${CONFIG.requestDelay}ms before next batch...`);
+        await delay(CONFIG.requestDelay);
       }
     }
     
