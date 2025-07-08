@@ -198,7 +198,7 @@ function createServerCard(key, server) {
                     </div>
                 </div>
             </div>
-            <p class="description" data-full-text="${server.description.replace(/"/g, '&quot;')}">${server.description}</p>
+            <p class="description">${server.description} <span class="view-more-link" onclick="showReadme('${key}')" title="View README">View more</span></p>
         </div>
         <div class="card-footer">
             <div class="button-container">
@@ -228,48 +228,6 @@ function createServerCard(key, server) {
         });
     }
     
-    // Check if description is truncated and add "View more" link
-    setTimeout(() => {
-        const descriptionElement = card.querySelector('.description');
-        if (descriptionElement) {
-            const fullText = descriptionElement.getAttribute('data-full-text');
-            
-            // Create a temporary element to measure text height
-            const tempElement = descriptionElement.cloneNode(true);
-            tempElement.style.webkitLineClamp = 'unset';
-            tempElement.style.overflow = 'visible';
-            tempElement.style.display = 'block';
-            tempElement.style.position = 'absolute';
-            tempElement.style.visibility = 'hidden';
-            tempElement.style.width = descriptionElement.offsetWidth + 'px';
-            document.body.appendChild(tempElement);
-            
-            const lineHeight = parseFloat(getComputedStyle(descriptionElement).lineHeight);
-            const maxHeight = lineHeight * 3; // 3 lines
-            const actualHeight = tempElement.scrollHeight;
-            
-            document.body.removeChild(tempElement);
-            
-            if (actualHeight > maxHeight) {
-                // Text needs truncation - estimate character count for 3 lines
-                const avgCharsPerLine = Math.floor(fullText.length / (actualHeight / lineHeight));
-                const maxChars = avgCharsPerLine * 2.8; // Leave room for "... View more"
-                
-                if (fullText.length > maxChars) {
-                    const truncatedText = fullText.substring(0, Math.floor(maxChars)).trim();
-                    const lastSpaceIndex = truncatedText.lastIndexOf(' ');
-                    const finalText = lastSpaceIndex > 0 ? truncatedText.substring(0, lastSpaceIndex) : truncatedText;
-                    
-                    descriptionElement.innerHTML = `${finalText}... <span class="view-more-link" onclick="showReadme('${key}')" title="View README">View more</span>`;
-                    
-                    // Override CSS to allow the "View more" link to be visible
-                    descriptionElement.style.webkitLineClamp = 'unset';
-                    descriptionElement.style.display = 'block';
-                    descriptionElement.style.overflow = 'visible';
-                }
-            }
-        }
-    }, 0);
     
     return card;
 }
