@@ -83,3 +83,6 @@ data/404_not_mcp.txt
 data/404_readme.txt
 data/sources.txt
 fetch.js
+
+# Local README cache (now fetched dynamically from GitHub)
+public/readmes/

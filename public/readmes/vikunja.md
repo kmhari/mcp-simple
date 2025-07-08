@@ -1,1 +1,0 @@
-Simple Model Context Protocol server for setting Vikunja reminders. Make sure to configure environment variables in .env

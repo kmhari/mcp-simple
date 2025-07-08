@@ -1314,6 +1314,75 @@ class MCPManager {
             }
         });
         
+        // GitHub README fetching endpoint
+        app.get('/api/readme/:serverId', async (req, res) => {
+            const { serverId } = req.params;
+            
+            try {
+                // Get server info from database
+                const serverInfo = this.preConfiguredServers[serverId];
+                if (!serverInfo || !serverInfo.githubLink) {
+                    return res.status(404).json({
+                        success: false,
+                        message: 'Server not found or no GitHub link available'
+                    });
+                }
+                
+                // Extract GitHub info from URL
+                const githubMatch = serverInfo.githubLink.match(/github\.com\/([^\/]+)\/([^\/]+)/);
+                if (!githubMatch) {
+                    return res.status(400).json({
+                        success: false,
+                        message: 'Invalid GitHub URL format'
+                    });
+                }
+                
+                const [, owner, repo] = githubMatch;
+                const cleanRepo = repo.replace(/\.git$/, ''); // Remove .git suffix if present
+                
+                // Try to fetch README from GitHub API
+                const apiUrl = `https://api.github.com/repos/${owner}/${cleanRepo}/readme`;
+                
+                const fetch = (await import('node-fetch')).default;
+                const response = await fetch(apiUrl, {
+                    headers: {
+                        'Accept': 'application/vnd.github.v3+json',
+                        'User-Agent': 'MCP-Manager'
+                    }
+                });
+                
+                if (!response.ok) {
+                    if (response.status === 404) {
+                        return res.status(404).json({
+                            success: false,
+                            message: 'README not found in repository'
+                        });
+                    }
+                    throw new Error(`GitHub API error: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                // Decode base64 content
+                const readmeContent = Buffer.from(data.content, 'base64').toString('utf-8');
+                
+                res.json({
+                    success: true,
+                    content: readmeContent,
+                    downloadUrl: data.download_url,
+                    githubUrl: `${serverInfo.githubLink}/blob/${data.sha}/README.md`
+                });
+                
+            } catch (error) {
+                console.error('Error fetching README:', error);
+                res.status(500).json({
+                    success: false,
+                    message: 'Failed to fetch README from GitHub',
+                    error: error.message
+                });
+            }
+        });
+        
         // Shutdown endpoint
         app.post('/api/shutdown', (req, res) => {
             console.log('\n📛 Shutdown request received via web interface');

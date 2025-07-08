@@ -131,23 +131,31 @@ export async function showReadme(serverId) {
     const modalBody = document.getElementById('modalBody');
     
     modalTitle.textContent = `📄 ${serverId} README`;
-    modalBody.innerHTML = '<div style="text-align: center; padding: 20px;">Loading README...</div>';
+    modalBody.innerHTML = '<div style="text-align: center; padding: 20px;">Loading README from GitHub...</div>';
     
     modal.style.display = 'block';
     
     try {
-        const response = await fetch(`/readmes/${serverId}.md`);
+        const response = await fetch(`/api/readme/${serverId}`);
         
         if (!response.ok) {
-            throw new Error(`README not found (${response.status})`);
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.message || `README not found (${response.status})`);
         }
         
-        const markdownContent = await response.text();
-        const htmlContent = marked.parse(markdownContent);
+        const data = await response.json();
+        if (!data.success) {
+            throw new Error(data.message || 'Failed to fetch README');
+        }
+        
+        const htmlContent = marked.parse(data.content);
         
         modalBody.innerHTML = `
             <div class="readme-content">
                 ${htmlContent}
+            </div>
+            <div class="readme-footer" style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #eee; font-size: 12px; color: #666;">
+                <a href="${data.githubUrl}" target="_blank" rel="noopener noreferrer">📖 View on GitHub</a>
             </div>
             <div class="button-group" style="margin-top: 20px; justify-content: center;">
                 <button type="button" class="btn-secondary" onclick="closeModal()">Close</button>

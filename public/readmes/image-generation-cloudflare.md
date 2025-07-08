@@ -1,1 +1,0 @@
-# image-generation-mcp-cloudflare
