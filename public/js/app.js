@@ -5,7 +5,7 @@ import { handleGroupByChange, handleStarsFilterChange, searchServers, updateCurr
 import { loadVariables, updateVariablesList, handleVariableChange, saveIndividualVariable, fetchFromEnvForVariables, saveVariables } from './variables.js';
 import { clearSelection, initializeKeyboardNavigation } from './keyboard.js';
 import { checkForUpdates, performAutoUpdate } from './updates.js';
-import { confirmStopServer, stopServer, showSlackTokenGuide, applySlackToken } from './modals.js';
+import { confirmStopServer, stopServer, showSlackTokenGuide, applySlackToken, showReadme } from './modals.js';
 import { switchTab, closeModal, showMessage } from './utils.js';
 import { currentConfig, setCurrentConfig, preConfiguredServers, savedVariables } from './state.js';
 
@@ -342,6 +342,7 @@ window.confirmStopServer = confirmStopServer;
 window.stopServer = stopServer;
 window.showSlackTokenGuide = showSlackTokenGuide;
 window.applySlackToken = applySlackToken;
+window.showReadme = showReadme;
 window.fetchFromEnv = fetchFromEnv;
 window.toggleFetchDropdown = toggleFetchDropdown;
 window.fetchFromSource = fetchFromSource;

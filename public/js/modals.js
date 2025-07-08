@@ -124,3 +124,45 @@ export function applySlackToken() {
         showMessage('Please enter a token', 'error');
     }
 }
+
+export async function showReadme(serverId) {
+    const modal = document.getElementById('serverModal');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalBody = document.getElementById('modalBody');
+    
+    modalTitle.textContent = `📄 ${serverId} README`;
+    modalBody.innerHTML = '<div style="text-align: center; padding: 20px;">Loading README...</div>';
+    
+    modal.style.display = 'block';
+    
+    try {
+        const response = await fetch(`/readmes/${serverId}.md`);
+        
+        if (!response.ok) {
+            throw new Error(`README not found (${response.status})`);
+        }
+        
+        const markdownContent = await response.text();
+        const htmlContent = marked.parse(markdownContent);
+        
+        modalBody.innerHTML = `
+            <div class="readme-content">
+                ${htmlContent}
+            </div>
+            <div class="button-group" style="margin-top: 20px; justify-content: center;">
+                <button type="button" class="btn-secondary" onclick="closeModal()">Close</button>
+            </div>
+        `;
+        
+    } catch (error) {
+        modalBody.innerHTML = `
+            <div style="text-align: center; padding: 20px;">
+                <div style="color: #e74c3c; margin-bottom: 15px;">❌ Error loading README</div>
+                <p style="color: #666; margin-bottom: 20px;">${error.message}</p>
+                <div class="button-group" style="justify-content: center;">
+                    <button type="button" class="btn-secondary" onclick="closeModal()">Close</button>
+                </div>
+            </div>
+        `;
+    }
+}
