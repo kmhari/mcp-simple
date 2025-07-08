@@ -819,27 +819,64 @@ async function main() {
     let preFilteredCount = 0;
     
     if (!options.force) {
-      console.log(`🔍 Pre-filtering existing URLs...`);
+      console.log(`🔍 Pre-filtering existing URLs, 404s, and README 404s...`);
       const existingUrls = [];
+      const missing404Urls = [];
+      const noReadmeUrls = [];
       const newUrls = [];
       
       for (const url of urls) {
+        // Check if URL already exists in database
         const duplicate = checkDuplicateUrl(database, url);
         if (duplicate.exists) {
           existingUrls.push({ url, key: duplicate.key });
           preFilteredCount++;
-        } else {
-          newUrls.push(url);
+          continue;
         }
+        
+        // Check if URL is in 404 cache (missing repository)
+        if (check404Cache(cache404, url)) {
+          missing404Urls.push(url);
+          preFilteredCount++;
+          continue;
+        }
+        
+        // Check if URL is in README 404 cache (no README file)
+        if (checkReadme404Cache(cacheReadme404, url)) {
+          noReadmeUrls.push(url);
+          preFilteredCount++;
+          continue;
+        }
+        
+        // URL passed all filters, add to processing list
+        newUrls.push(url);
       }
       
       filteredUrls = newUrls;
       
       if (preFilteredCount > 0) {
-        console.log(`⚠️  Pre-filtered ${preFilteredCount} existing URL(s):`);
-        existingUrls.forEach(({ url, key }) => {
-          console.log(`   - ${url} (exists as '${key}')`);
-        });
+        console.log(`⚠️  Pre-filtered ${preFilteredCount} URL(s):`);
+        
+        if (existingUrls.length > 0) {
+          console.log(`   📊 ${existingUrls.length} existing in database:`);
+          existingUrls.forEach(({ url, key }) => {
+            console.log(`      - ${url} (exists as '${key}')`);
+          });
+        }
+        
+        if (missing404Urls.length > 0) {
+          console.log(`   ❌ ${missing404Urls.length} missing repositories (404):`);
+          missing404Urls.forEach(url => {
+            console.log(`      - ${url}`);
+          });
+        }
+        
+        if (noReadmeUrls.length > 0) {
+          console.log(`   📄❌ ${noReadmeUrls.length} repositories without README:`);
+          noReadmeUrls.forEach(url => {
+            console.log(`      - ${url}`);
+          });
+        }
       }
       
       console.log(`✅ ${filteredUrls.length} new URL(s) to process`);
@@ -874,12 +911,6 @@ async function main() {
           const parsed = parseGitHubUrl(url);
           if (!parsed) {
             throw new Error('Invalid GitHub URL format');
-          }
-          
-          // Check 404 cache first - skip if known to be missing
-          if (check404Cache(cache404, url) && !options.force) {
-            console.log(`❌ Skipped: URL is in 404 cache (repository not found)`);
-            return { status: 'skipped', url, reason: 'cached 404' };
           }
           
           // Check redirect cache
@@ -926,12 +957,6 @@ async function main() {
               console.log(`⚠️  Skipped: Already exists as '${duplicateAfterRedirect.key}' (redirect matched: ${duplicateAfterRedirect.matchedUrl})`);
               return { status: 'skipped', url, reason: 'duplicate after redirect' };
             }
-          }
-          
-          // Check README 404 cache before fetching
-          if (checkReadme404Cache(cacheReadme404, url) && !options.force) {
-            console.log(`📄❌ Skipped: URL is in README 404 cache (no README file)`);
-            return { status: 'skipped', url, reason: 'cached no README' };
           }
           
           // Fetch README content
