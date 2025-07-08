@@ -68,3 +68,6 @@ dev-debug.log
 
 # URL list files
 list*.txt
+
+# Redirect cache
+data/redirect.json

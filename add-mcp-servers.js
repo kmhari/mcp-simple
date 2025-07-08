@@ -35,6 +35,7 @@ const __dirname = path.dirname(__filename);
 const CONFIG = {
   databasePath: path.join(__dirname, 'mcp-servers-database.json'),
   readmesDir: path.join(__dirname, 'public', 'readmes'),
+  redirectCachePath: path.join(__dirname, 'data', 'redirect.json'),
   requestDelay: 1000, // ms between requests to respect rate limits
   timeout: 10000, // ms
   userAgent: 'MCP-Server-Discovery-Tool/1.0',
@@ -221,6 +222,90 @@ function saveDatabase(data, dryRun = false) {
   }
 }
 
+// Load redirect cache
+function loadRedirectCache() {
+  try {
+    if (!fs.existsSync(CONFIG.redirectCachePath)) {
+      // Create directory and initial file if it doesn't exist
+      const redirectDir = path.dirname(CONFIG.redirectCachePath);
+      if (!fs.existsSync(redirectDir)) {
+        fs.mkdirSync(redirectDir, { recursive: true });
+      }
+      
+      const initialCache = {
+        _metadata: {
+          description: "GitHub URL redirect cache for add-mcp-servers.js",
+          format: "{ 'originalUrl': 'finalUrl' }",
+          created: new Date().toISOString(),
+          lastUpdated: new Date().toISOString()
+        },
+        redirects: {}
+      };
+      
+      fs.writeFileSync(CONFIG.redirectCachePath, JSON.stringify(initialCache, null, 2));
+      return initialCache;
+    }
+    
+    const data = fs.readFileSync(CONFIG.redirectCachePath, 'utf8');
+    return JSON.parse(data);
+  } catch (error) {
+    console.warn(`⚠️  Failed to load redirect cache: ${error.message}`);
+    return {
+      _metadata: {
+        description: "GitHub URL redirect cache for add-mcp-servers.js",
+        format: "{ 'originalUrl': 'finalUrl' }",
+        created: new Date().toISOString(),
+        lastUpdated: new Date().toISOString()
+      },
+      redirects: {}
+    };
+  }
+}
+
+// Save redirect cache
+function saveRedirectCache(cache) {
+  try {
+    cache._metadata.lastUpdated = new Date().toISOString();
+    fs.writeFileSync(CONFIG.redirectCachePath, JSON.stringify(cache, null, 2));
+  } catch (error) {
+    console.warn(`⚠️  Failed to save redirect cache: ${error.message}`);
+  }
+}
+
+// Check if URL has a known redirect
+function checkRedirectCache(cache, originalUrl) {
+  const normalizedUrl = normalizeGitHubUrl(originalUrl);
+  
+  // Check direct match
+  if (cache.redirects[normalizedUrl]) {
+    return cache.redirects[normalizedUrl];
+  }
+  
+  // Check if originalUrl is stored as a value (reverse lookup)
+  for (const [cachedOriginal, cachedFinal] of Object.entries(cache.redirects)) {
+    if (normalizeGitHubUrl(cachedFinal) === normalizedUrl) {
+      return cachedFinal; // Already the final URL
+    }
+  }
+  
+  return null;
+}
+
+// Add redirect to cache
+function addRedirectToCache(cache, originalUrl, finalUrl) {
+  const normalizedOriginal = normalizeGitHubUrl(originalUrl);
+  const normalizedFinal = normalizeGitHubUrl(finalUrl);
+  
+  // Only cache if there's actually a redirect
+  if (normalizedOriginal !== normalizedFinal) {
+    cache.redirects[normalizedOriginal] = finalUrl;
+    console.log(`📝 Cached redirect: ${originalUrl} → ${finalUrl}`);
+    return true;
+  }
+  
+  return false;
+}
+
 // Normalize GitHub URL by removing trailing slash and converting to lowercase for comparison
 function normalizeGitHubUrl(url) {
   if (!url) return '';
@@ -321,7 +406,7 @@ function makeRequest(options, maxRedirects = CONFIG.maxRedirects) {
 }
 
 // Fetch repository information from GitHub API
-async function fetchRepoInfo(owner, repo) {
+async function fetchRepoInfo(owner, repo, originalUrl = null) {
   const token = process.env.GITHUB_TOKEN;
   const options = {
     hostname: 'api.github.com',
@@ -343,6 +428,21 @@ async function fetchRepoInfo(owner, repo) {
     
     if (response.statusCode === 200) {
       const repoData = JSON.parse(response.data);
+      
+      // Detect redirect by comparing original URL with API response
+      let redirectDetected = false;
+      let finalUrl = originalUrl;
+      
+      if (originalUrl && repoData.html_url) {
+        const normalizedOriginal = normalizeGitHubUrl(originalUrl);
+        const normalizedApiResponse = normalizeGitHubUrl(repoData.html_url);
+        
+        if (normalizedOriginal !== normalizedApiResponse) {
+          finalUrl = repoData.html_url;
+          redirectDetected = true;
+        }
+      }
+      
       return {
         name: repoData.name,
         full_name: repoData.full_name,
@@ -353,7 +453,9 @@ async function fetchRepoInfo(owner, repo) {
         updated_at: repoData.updated_at,
         created_at: repoData.created_at,
         default_branch: repoData.default_branch || 'main',
-        finalUrl: response.finalUrl // Track final URL after redirects
+        finalUrl: finalUrl,
+        redirectDetected: redirectDetected,
+        originalUrl: originalUrl
       };
     } else if (response.statusCode === 404) {
       throw new Error('Repository not found');
@@ -548,9 +650,13 @@ async function main() {
     
     console.log(`🔍 Found ${urls.length} GitHub URL(s) in input`);
     
-    // Load existing database
+    // Load existing database and redirect cache
     const database = loadDatabase();
     console.log(`📊 Loaded database with ${Object.keys(database).length} existing servers`);
+    
+    const redirectCache = loadRedirectCache();
+    const redirectCount = Object.keys(redirectCache.redirects).length;
+    console.log(`🔄 Loaded redirect cache with ${redirectCount} cached redirect(s)`);
     
     // Filter out existing URLs before processing (only if not using --force)
     let filteredUrls = urls;
@@ -614,6 +720,22 @@ async function main() {
             throw new Error('Invalid GitHub URL format');
           }
           
+          // Check redirect cache first
+          const cachedRedirect = checkRedirectCache(redirectCache, url);
+          let effectiveUrl = url;
+          
+          if (cachedRedirect) {
+            console.log(`🔄 Using cached redirect: ${url} → ${cachedRedirect}`);
+            effectiveUrl = cachedRedirect;
+            
+            // Check for duplicates with cached redirect URL
+            const cachedDuplicate = checkDuplicateUrl(database, effectiveUrl);
+            if (cachedDuplicate.exists && !options.force) {
+              console.log(`⚠️  Skipped: Redirect target already exists as '${cachedDuplicate.key}'`);
+              return { status: 'skipped', url, reason: 'cached redirect duplicate' };
+            }
+          }
+          
           // Check for duplicates BEFORE making any API calls
           const initialDuplicate = checkDuplicateUrl(database, url);
           if (initialDuplicate.exists && !options.force) {
@@ -623,8 +745,16 @@ async function main() {
           
           // Fetch repository information
           console.log(`📊 Fetching repo info for ${parsed.owner}/${parsed.repo}...`);
-          const repoInfo = await fetchRepoInfo(parsed.owner, parsed.repo);
+          const repoInfo = await fetchRepoInfo(parsed.owner, parsed.repo, url);
           console.log(`⭐ Stars: ${repoInfo.stars} | Language: ${repoInfo.language || 'Unknown'}`);
+          
+          // Cache redirect if detected
+          if (repoInfo.redirectDetected && repoInfo.finalUrl) {
+            const redirectAdded = addRedirectToCache(redirectCache, url, repoInfo.finalUrl);
+            if (redirectAdded) {
+              saveRedirectCache(redirectCache);
+            }
+          }
           
           // Check for duplicates with final URL after any redirects
           if (repoInfo.finalUrl && repoInfo.finalUrl !== url && !options.force) {
