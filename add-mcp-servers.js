@@ -26,6 +26,7 @@ import fs from 'fs';
 import path from 'path';
 import https from 'https';
 import { fileURLToPath } from 'url';
+import { URL } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -38,6 +39,7 @@ const CONFIG = {
   timeout: 10000, // ms
   userAgent: 'MCP-Server-Discovery-Tool/1.0',
   maxRetries: 3,
+  maxRedirects: 5, // maximum number of redirects to follow
 };
 
 // Parse command line arguments
@@ -243,11 +245,36 @@ function delay(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-// Make HTTP request (adapted from update-server-data.js)
-function makeRequest(options) {
+// Make HTTP request with redirect handling (adapted from update-server-data.js)
+function makeRequest(options, maxRedirects = CONFIG.maxRedirects) {
   return new Promise((resolve, reject) => {
     const req = https.request(options, (res) => {
       let data = '';
+      
+      // Handle redirects (301, 302, 303, 307, 308)
+      if ([301, 302, 303, 307, 308].includes(res.statusCode) && res.headers.location) {
+        if (maxRedirects <= 0) {
+          reject(new Error(`Too many redirects. Max ${CONFIG.maxRedirects} redirects exceeded.`));
+          return;
+        }
+        
+        const redirectUrl = new URL(res.headers.location, `https://${options.hostname}`);
+        const redirectOptions = {
+          hostname: redirectUrl.hostname,
+          port: redirectUrl.port || 443,
+          path: redirectUrl.pathname + redirectUrl.search,
+          method: options.method,
+          headers: options.headers
+        };
+        
+        console.log(`🔄 Following redirect (${res.statusCode}): ${redirectUrl.href}`);
+        
+        // Follow redirect
+        makeRequest(redirectOptions, maxRedirects - 1)
+          .then(resolve)
+          .catch(reject);
+        return;
+      }
       
       res.on('data', (chunk) => {
         data += chunk;
