@@ -48,6 +48,20 @@ pids
 .Trashes
 ehthumbs.db
 Thumbs.db
-/data/mcps_data
-/data/readmes
-/data
+
+logs
+dev-debug.log
+# Dependency directories
+# Environment variables
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+# OS specific
+
+# Task files
+# tasks.json
+# tasks/ 
