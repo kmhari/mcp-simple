@@ -1,0 +1,1 @@
+Simple Model Context Protocol server for searching Duck Duck Go, based on [Open-WebUI's built-in Web Search feature](https://github.com/open-webui/open-webui/blob/3f3a5bb0ab8ce3425f317f1e57b084523aa2b2a5/backend/open_webui/retrieval/web/duckduckgo.py) and using SSE transport

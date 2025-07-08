@@ -199,6 +199,9 @@ function createServerCard(key, server) {
                 </div>
             </div>
             <p class="description">${server.description}</p>
+            <div class="view-more-container">
+                <span class="view-more-link" onclick="showReadme('${key}')" title="View README">View more</span>
+            </div>
         </div>
         <div class="card-footer">
             <div class="button-container">
