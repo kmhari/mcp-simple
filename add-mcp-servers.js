@@ -36,6 +36,7 @@ const CONFIG = {
   databasePath: path.join(__dirname, 'mcp-servers-database.json'),
   readmesDir: path.join(__dirname, 'public', 'readmes'),
   redirectCachePath: path.join(__dirname, 'data', 'redirect.json'),
+  missing404CachePath: path.join(__dirname, 'data', '404.txt'),
   requestDelay: 1000, // ms between requests to respect rate limits
   timeout: 10000, // ms
   userAgent: 'MCP-Server-Discovery-Tool/1.0',
@@ -306,6 +307,76 @@ function addRedirectToCache(cache, originalUrl, finalUrl) {
   return false;
 }
 
+// Load 404 missing repos cache
+function load404Cache() {
+  try {
+    if (!fs.existsSync(CONFIG.missing404CachePath)) {
+      // Create directory and initial file if it doesn't exist
+      const cacheDir = path.dirname(CONFIG.missing404CachePath);
+      if (!fs.existsSync(cacheDir)) {
+        fs.mkdirSync(cacheDir, { recursive: true });
+      }
+      
+      const initialContent = `# GitHub URLs that return 404 (Repository not found)
+# Format: One URL per line
+# This file is automatically managed by add-mcp-servers.js
+# Last updated: ${new Date().toISOString()}
+`;
+      
+      fs.writeFileSync(CONFIG.missing404CachePath, initialContent);
+      return [];
+    }
+    
+    const content = fs.readFileSync(CONFIG.missing404CachePath, 'utf8');
+    const urls = content
+      .split('\n')
+      .map(line => line.trim())
+      .filter(line => line && !line.startsWith('#'))
+      .map(url => normalizeGitHubUrl(url));
+    
+    return urls;
+  } catch (error) {
+    console.warn(`⚠️  Failed to load 404 cache: ${error.message}`);
+    return [];
+  }
+}
+
+// Save 404 missing repos cache
+function save404Cache(missingUrls) {
+  try {
+    const content = `# GitHub URLs that return 404 (Repository not found)
+# Format: One URL per line
+# This file is automatically managed by add-mcp-servers.js
+# Last updated: ${new Date().toISOString()}
+
+${missingUrls.join('\n')}
+`;
+    
+    fs.writeFileSync(CONFIG.missing404CachePath, content);
+  } catch (error) {
+    console.warn(`⚠️  Failed to save 404 cache: ${error.message}`);
+  }
+}
+
+// Check if URL is in 404 cache
+function check404Cache(cache404, url) {
+  const normalizedUrl = normalizeGitHubUrl(url);
+  return cache404.includes(normalizedUrl);
+}
+
+// Add URL to 404 cache
+function addTo404Cache(cache404, url) {
+  const normalizedUrl = normalizeGitHubUrl(url);
+  
+  if (!cache404.includes(normalizedUrl)) {
+    cache404.push(normalizedUrl);
+    console.log(`📝 Added to 404 cache: ${url}`);
+    return true;
+  }
+  
+  return false;
+}
+
 // Normalize GitHub URL by removing trailing slash and converting to lowercase for comparison
 function normalizeGitHubUrl(url) {
   if (!url) return '';
@@ -458,7 +529,11 @@ async function fetchRepoInfo(owner, repo, originalUrl = null) {
         originalUrl: originalUrl
       };
     } else if (response.statusCode === 404) {
-      throw new Error('Repository not found');
+      // Return special 404 response that can be handled by caller
+      const error = new Error('Repository not found');
+      error.isNotFound = true;
+      error.originalUrl = originalUrl;
+      throw error;
     } else if (response.statusCode === 403) {
       throw new Error('Rate limit exceeded or access forbidden');
     } else {
@@ -650,13 +725,16 @@ async function main() {
     
     console.log(`🔍 Found ${urls.length} GitHub URL(s) in input`);
     
-    // Load existing database and redirect cache
+    // Load existing database, redirect cache, and 404 cache
     const database = loadDatabase();
     console.log(`📊 Loaded database with ${Object.keys(database).length} existing servers`);
     
     const redirectCache = loadRedirectCache();
     const redirectCount = Object.keys(redirectCache.redirects).length;
     console.log(`🔄 Loaded redirect cache with ${redirectCount} cached redirect(s)`);
+    
+    const cache404 = load404Cache();
+    console.log(`❌ Loaded 404 cache with ${cache404.length} missing repo(s)`);
     
     // Filter out existing URLs before processing (only if not using --force)
     let filteredUrls = urls;
@@ -720,7 +798,13 @@ async function main() {
             throw new Error('Invalid GitHub URL format');
           }
           
-          // Check redirect cache first
+          // Check 404 cache first - skip if known to be missing
+          if (check404Cache(cache404, url) && !options.force) {
+            console.log(`❌ Skipped: URL is in 404 cache (repository not found)`);
+            return { status: 'skipped', url, reason: 'cached 404' };
+          }
+          
+          // Check redirect cache
           const cachedRedirect = checkRedirectCache(redirectCache, url);
           let effectiveUrl = url;
           
@@ -810,6 +894,16 @@ async function main() {
           };
           
         } catch (error) {
+          // Handle 404 errors specially - cache them
+          if (error.isNotFound) {
+            console.log(`❌ Repository not found: ${url}`);
+            const added = addTo404Cache(cache404, url);
+            if (added) {
+              save404Cache(cache404);
+            }
+            return { status: 'skipped', url, reason: '404 not found' };
+          }
+          
           console.error(`❌ Error processing ${url}: ${error.message}`);
           return { status: 'error', url, error: error.message };
         }

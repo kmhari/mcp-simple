@@ -71,3 +71,6 @@ list*.txt
 
 # Redirect cache
 data/redirect.json
+
+# 404 missing repos cache
+data/404.txt

@@ -26983,7 +26983,7 @@
   },
   "jordandalton-doordash-mcp-server": {
     "name": "DoorDash MCP Server",
-    "githubLink": "https://github.com/jordandalton/doordash-mcp-server",
+    "githubLink": "https://github.com/JordanDalton/DoorDash-MCP-Server",
     "package": "&&",
     "description": "To build the MCP server, run:",
     "installCommand": "npm install &&",
@@ -26992,9 +26992,9 @@
     "usageInstructions": "Install with: npm install &&. See README for configuration details.",
     "category": "File Management",
     "stars": 9,
-    "lastStarUpdate": "2025-07-08T11:22:24.332Z",
+    "lastStarUpdate": "2025-07-08T11:23:18.446Z",
     "logo": "",
-    "updated_at": "2025-07-08T11:22:24.333Z"
+    "updated_at": "2025-07-08T11:23:18.447Z"
   },
   "arrismo-kaggle-mcp": {
     "name": "Kaggle mcp",
