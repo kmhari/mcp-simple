@@ -1,0 +1,173 @@
+# Simple Snowflake MCP server
+
+Simple Snowflake MCP Server to work behind a corporate proxy (because I could not get that in a few minutes with existing servers, but my own server, yup). Still don't know if it's good or not. But it's good enough for now.
+
+### Tools
+
+The server exposes the following MCP tools to interact with Snowflake:
+
+- **execute-snowflake-sql**: Executes a SQL query on Snowflake and returns the result (list of dictionaries)
+- **list-snowflake-warehouses**: Lists available Data Warehouses (DWH) on Snowflake
+- **list-databases**: Lists all accessible Snowflake databases
+- **list-views**: Lists all views in a database and schema
+- **describe-view**: Gives details of a view (columns, SQL)
+- **query-view**: Queries a view with an optional row limit (markdown result)
+- **execute-query**: Executes a SQL query in read-only mode (SELECT, SHOW, DESCRIBE, EXPLAIN, WITH) or not (if `read_only` is false), result in markdown format
+
+## Quickstart
+
+### Install
+
+#### Claude Desktop
+
+On MacOS: `~/Library/Application\ Support/Claude/claude_desktop_config.json`
+
+On Windows: `%APPDATA%/Claude/claude_desktop_config.json`
+
+<details>
+  <summary>Development/Unpublished Servers Configuration</summary>
+
+
+  ```
+  "mcpServers": {
+    "simple_snowflake_mcp": {
+      "command": "uv",
+      "args": [
+        "--directory",
+        ".", // Use current directory for GitHub
+        "run",
+        "simple_snowflake_mcp"
+      ]
+    }
+  }
+  ```
+</details>
+
+<details>
+  <summary>Published Servers Configuration</summary>
+
+  ```
+  "mcpServers": {
+    "simple_snowflake_mcp": {
+      "command": "uvx",
+      "args": [
+        "simple_snowflake_mcp"
+      ]
+    }
+  }
+  ```
+</details>
+
+## Development
+
+### Building and Publishing
+
+To prepare the package for distribution:
+
+1. Sync dependencies and update lockfile:
+```bash
+uv sync
+```
+
+2. Build package distributions:
+```bash
+uv build
+```
+
+This will create source and wheel distributions in the `dist/` directory.
+
+3. Publish to PyPI:
+```bash
+uv publish
+```
+
+Note: You'll need to set PyPI credentials via environment variables or command flags:
+- Token: `--token` or `UV_PUBLISH_TOKEN`
+- Or username/password: `--username`/`UV_PUBLISH_USERNAME` and `--password`/`UV_PUBLISH_PASSWORD`
+
+### Debugging
+
+Since MCP servers run over stdio, debugging can be challenging. For the best debugging
+experience, we strongly recommend using the [MCP Inspector](https://github.com/modelcontextprotocol/inspector).
+
+You can launch the MCP Inspector via [`npm`](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm) with this command:
+
+```bash
+npx @modelcontextprotocol/inspector uv --directory . run simple-snowflake-mcp
+```
+
+Upon launching, the Inspector will display a URL that you can access in your browser to begin debugging.
+
+## New Feature: Snowflake SQL Execution
+
+The server exposes an MCP tool `execute-snowflake-sql` to execute a SQL query on Snowflake and return the result.
+
+### Usage
+
+Call the MCP tool `execute-snowflake-sql` with a `sql` argument containing the SQL query to execute. The result will be returned as a list of dictionaries (one per row).
+
+Example:
+```json
+{
+  "name": "execute-snowflake-sql",
+  "arguments": { "sql": "SELECT CURRENT_TIMESTAMP;" }
+}
+```
+
+The result will be returned in the MCP response.
+
+## Installation and configuration in VS Code
+
+1. **Clone the project and install dependencies**
+   ```sh
+   git clone <your-repo>
+   cd simple_snowflake_mcp
+   python -m venv .venv
+   .venv/Scripts/activate  # Windows
+   pip install -r requirements.txt  # or `uv sync --dev --all-extras` if available
+   ```
+
+2. **Configure Snowflake access**
+   - Copy `.env.example` to `.env` (or create `.env` at the root) and fill in your credentials:
+     ```env
+     SNOWFLAKE_USER=...
+     SNOWFLAKE_PASSWORD=...
+     SNOWFLAKE_ACCOUNT=...
+     # Optional: SNOWFLAKE_WAREHOUSE  # Optional: Snowflake warehouse name
+     # Optional: SNOWFLAKE_DATABASE   # Optional: default database name
+     # Optional: SNOWFLAKE_SCHEMA     # Optional: default schema name
+     # Optional: MCP_READ_ONLY=true|false  # Optional: true/false to force read-only mode
+     ```
+
+3. **Configure VS Code for MCP debugging**
+   - The `.vscode/mcp.json` file is already present:
+     ```json
+     {
+       "servers": {
+         "simple-snowflake-mcp": {
+           "type": "stdio",
+           "command": ".venv/Scripts/python.exe",
+           "args": ["-m", "simple_snowflake_mcp"]
+         }
+       }
+     }
+     ```
+   - Open the command palette (Ctrl+Shift+P), type `MCP: Start Server` and select `simple-snowflake-mcp`.
+
+4. **Usage**
+   - The exposed MCP tools allow you to query Snowflake (list-databases, list-views, describe-view, query-view, execute-query, etc.).
+   - For more examples, see the MCP protocol documentation: https://github.com/modelcontextprotocol/create-python-server
+
+## Supported MCP Functions
+
+The server exposes the following MCP tools to interact with Snowflake:
+
+- **execute-snowflake-sql**: Executes a SQL query on Snowflake and returns the result (list of dictionaries)
+- **list-snowflake-warehouses**: Lists available Data Warehouses (DWH) on Snowflake
+- **list-databases**: Lists all accessible Snowflake databases
+- **list-views**: Lists all views in a database and schema
+- **describe-view**: Gives details of a view (columns, SQL)
+- **query-view**: Queries a view with an optional row limit (markdown result)
+- **execute-query**: Executes a SQL query in read-only mode (SELECT, SHOW, DESCRIBE, EXPLAIN, WITH) or not (if `read_only` is false), result in markdown format
+
+For each tool, see the Usage section or the MCP documentation for the call format.
