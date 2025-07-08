@@ -23,10 +23,26 @@ export async function loadServers() {
 
 export async function loadStarsData() {
     try {
-        const response = await fetch('/mcp-servers-with-stars.json');
+        // Load stars data directly from the database
+        const response = await fetch('/api/servers');
         const data = await response.json();
-        setStarsData(data);
-        console.log('Stars data loaded:', Object.keys(data).length, 'servers');
+        
+        // Transform database format to expected stars data format
+        const starsDataFormatted = {};
+        Object.entries(data).forEach(([key, server]) => {
+            if (server.stars !== undefined || server.lastStarUpdate) {
+                starsDataFormatted[key] = {
+                    github: {
+                        stars: server.stars || 0,
+                        fetched_at: server.lastStarUpdate || server.updated_at,
+                        updated_at: server.updated_at
+                    }
+                };
+            }
+        });
+        
+        setStarsData(starsDataFormatted);
+        console.log('Stars data loaded from database:', Object.keys(starsDataFormatted).length, 'servers with stars');
         if (Object.keys(preConfiguredServers).length > 0) {
             if (window.displayServers) window.displayServers();
         }
@@ -39,15 +55,10 @@ export async function loadStarsData() {
 export function quickInstallServer(key) {
     const server = preConfiguredServers[key];
     
-    const cardElement = findCardElement(key);
-    if (cardElement) {
-        cardElement.classList.add('installing');
-        const statusIndicator = cardElement.querySelector('.status-indicator');
-        if (statusIndicator) {
-            statusIndicator.classList.add('installing');
-        }
-    }
+    // Store the original state for potential rollback
+    const originalConfig = { ...currentConfig };
     
+    // Optimistically update the UI immediately
     const installParts = server.installCommand.split(' ');
     const command = installParts[0];
     const args = installParts.slice(1);
@@ -65,44 +76,39 @@ export function quickInstallServer(key) {
     config.mcpServers[key] = serverConfig;
     setCurrentConfig(config);
     
+    // Update UI immediately
+    if (window.updateCurrentServers) window.updateCurrentServers();
+    document.getElementById('configEditor').value = JSON.stringify(config, null, 2);
+    if (window.displayServers) window.displayServers();
+    
+    // Send request to backend
     fetch('/api/config', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(config)
     }).then(response => {
-        if (response.ok) {
-            setTimeout(() => {
-                if (window.updateCurrentServers) window.updateCurrentServers();
-                document.getElementById('configEditor').value = JSON.stringify(config, null, 2);
-                if (window.displayServers) window.displayServers();
-            }, 300);
-        } else {
+        if (!response.ok) {
             throw new Error('Failed to save configuration');
         }
+        // Success - no additional UI updates needed since we already updated optimistically
     }).catch(error => {
-        showMessage(error.message, 'error');
-        if (cardElement) {
-            cardElement.classList.remove('installing');
-            const statusIndicator = cardElement.querySelector('.status-indicator');
-            if (statusIndicator) {
-                statusIndicator.classList.remove('installing');
-            }
-        }
+        // Rollback the optimistic update
+        setCurrentConfig(originalConfig);
+        if (window.updateCurrentServers) window.updateCurrentServers();
+        document.getElementById('configEditor').value = JSON.stringify(originalConfig, null, 2);
+        if (window.displayServers) window.displayServers();
+        
+        showMessage(`Failed to install ${server.name}: ${error.message}`, 'error');
     });
 }
 
 export function uninstallServer(key, silent = false) {
     const server = preConfiguredServers[key];
     if (silent || confirm(`Are you sure you want to uninstall ${server.name}?`)) {
-        const cardElement = findCardElement(key);
-        if (cardElement) {
-            cardElement.classList.add('uninstalling');
-            const statusIndicator = cardElement.querySelector('.status-indicator');
-            if (statusIndicator) {
-                statusIndicator.classList.add('uninstalling');
-            }
-        }
+        // Store the original state for potential rollback
+        const originalConfig = { ...currentConfig };
         
+        // Optimistically update the UI immediately
         const config = { ...currentConfig };
         if (config.mcpServers[key]) {
             delete config.mcpServers[key];
@@ -117,53 +123,66 @@ export function uninstallServer(key, silent = false) {
         
         setCurrentConfig(config);
         
+        // Update UI immediately
+        if (window.updateCurrentServers) window.updateCurrentServers();
+        document.getElementById('configEditor').value = JSON.stringify(config, null, 2);
+        if (window.displayServers) window.displayServers();
+        
+        // Send request to backend
         fetch('/api/config', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(config)
         }).then(response => {
-            if (response.ok) {
-                setTimeout(() => {
-                    if (window.updateCurrentServers) window.updateCurrentServers();
-                    document.getElementById('configEditor').value = JSON.stringify(config, null, 2);
-                    if (window.displayServers) window.displayServers();
-                }, 300);
-            } else {
+            if (!response.ok) {
                 throw new Error('Failed to save configuration');
             }
+            // Success - no additional UI updates needed since we already updated optimistically
         }).catch(error => {
-            showMessage(error.message, 'error');
-            if (cardElement) {
-                cardElement.classList.remove('uninstalling');
-                const statusIndicator = cardElement.querySelector('.status-indicator');
-                if (statusIndicator) {
-                    statusIndicator.classList.remove('uninstalling');
-                }
-            }
+            // Rollback the optimistic update
+            setCurrentConfig(originalConfig);
+            if (window.updateCurrentServers) window.updateCurrentServers();
+            document.getElementById('configEditor').value = JSON.stringify(originalConfig, null, 2);
+            if (window.displayServers) window.displayServers();
+            
+            showMessage(`Failed to uninstall ${server.name}: ${error.message}`, 'error');
         });
     }
 }
 
 export function removeServer(name) {
     if (confirm(`Are you sure you want to remove "${name}"?`)) {
+        // Store the original state for potential rollback
+        const originalConfig = { ...currentConfig };
+        
+        // Optimistically update the UI immediately
         const config = { ...currentConfig };
         delete config.mcpServers[name];
         setCurrentConfig(config);
         
+        // Update UI immediately
+        if (window.updateCurrentServers) window.updateCurrentServers();
+        document.getElementById('configEditor').value = JSON.stringify(config, null, 2);
+        if (window.displayServers) window.displayServers();
+        
+        // Send request to backend
         fetch('/api/config', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(config)
         }).then(response => {
-            if (response.ok) {
-                if (window.updateCurrentServers) window.updateCurrentServers();
-                document.getElementById('configEditor').value = JSON.stringify(config, null, 2);
-                if (window.displayServers) window.displayServers();
-            } else {
+            if (!response.ok) {
                 throw new Error('Failed to save configuration');
             }
+            // Success - no additional UI updates needed since we already updated optimistically
         }).catch(error => {
-            showMessage(error.message, 'error');
+            // Rollback the optimistic update
+            setCurrentConfig(originalConfig);
+            if (window.updateCurrentServers) window.updateCurrentServers();
+            document.getElementById('configEditor').value = JSON.stringify(originalConfig, null, 2);
+            if (window.displayServers) window.displayServers();
+            
+            showMessage(`Failed to remove ${name}: ${error.message}`, 'error');
         });
     }
 }

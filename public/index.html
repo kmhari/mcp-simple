@@ -36,13 +36,27 @@
         
         <div id="browse" class="tab-content active">
             <input type="text" class="search-box" placeholder="Search servers..." onkeyup="searchServers(this.value)">
-            <div class="group-by-container">
-                <label>Sort by:</label>
-                <select id="groupBySelect" onchange="handleGroupByChange(this.value)">
-                    <option value="none">Default</option>
-                    <option value="category">Category</option>
-                    <option value="stars">Most Stars</option>
-                </select>
+            <div class="filters-container">
+                <div class="group-by-container">
+                    <label>Sort by:</label>
+                    <select id="groupBySelect" onchange="handleGroupByChange(this.value)">
+                        <option value="none">Default</option>
+                        <option value="category">Category</option>
+                        <option value="stars">Most Stars</option>
+                    </select>
+                </div>
+                <div class="stars-filter-container">
+                    <label>Min stars:</label>
+                    <select id="starsFilterSelect" onchange="handleStarsFilterChange(this.value)">
+                        <option value="0">All servers</option>
+                        <option value="1">1+ stars</option>
+                        <option value="10">10+ stars</option>
+                        <option value="100">100+ stars</option>
+                        <option value="1000">1,000+ stars</option>
+                        <option value="5000">5,000+ stars</option>
+                        <option value="10000">10,000+ stars</option>
+                    </select>
+                </div>
             </div>
             <div id="serverGrid" class="server-grid">
                 <!-- Server cards will be populated here -->
