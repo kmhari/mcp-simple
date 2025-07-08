@@ -26983,7 +26983,7 @@
   },
   "jordandalton-doordash-mcp-server": {
     "name": "DoorDash MCP Server",
-    "githubLink": "https://github.com/JordanDalton/DoorDash-MCP-Server",
+    "githubLink": "https://github.com/jordandalton/doordash-mcp-server",
     "package": "&&",
     "description": "To build the MCP server, run:",
     "installCommand": "npm install &&",
@@ -26992,9 +26992,9 @@
     "usageInstructions": "Install with: npm install &&. See README for configuration details.",
     "category": "File Management",
     "stars": 9,
-    "lastStarUpdate": "2025-07-08T11:03:31.927Z",
+    "lastStarUpdate": "2025-07-08T11:22:24.332Z",
     "logo": "",
-    "updated_at": "2025-07-08T11:03:31.927Z"
+    "updated_at": "2025-07-08T11:22:24.333Z"
   },
   "arrismo-kaggle-mcp": {
     "name": "Kaggle mcp",
@@ -27090,7 +27090,7 @@
   },
   "mckinsey-vizro": {
     "name": "Vizro",
-    "githubLink": "https://github.com/mckinsey/vizro/",
+    "githubLink": "https://github.com/mckinsey/vizro",
     "package": "vizro",
     "description": "Vizro is a low-code toolkit for building high-quality data visualization apps.",
     "installCommand": "pip install vizro",
@@ -27099,9 +27099,9 @@
     "usageInstructions": "Install with: pip install vizro. See README for configuration details.",
     "category": "Version Control",
     "stars": 2985,
-    "lastStarUpdate": "2025-07-08T09:54:59.261Z",
+    "lastStarUpdate": "2025-07-08T11:21:49.843Z",
     "logo": "",
-    "updated_at": "2025-07-08T09:54:59.261Z"
+    "updated_at": "2025-07-08T11:21:49.843Z"
   },
   "optuna-optuna-mcp": {
     "name": "Optuna mcp",
@@ -27255,7 +27255,7 @@
   },
   "microsoft-markitdown": {
     "name": "Markitdown",
-    "githubLink": "https://github.com/microsoft/markitdown/",
+    "githubLink": "https://github.com/microsoft/markitdown",
     "package": "'markitdown[all]'`",
     "description": "Python tool for converting files and office documents to Markdown.",
     "installCommand": "pip install 'markitdown[all]'`",
@@ -27263,10 +27263,10 @@
     "optionalParams": [],
     "usageInstructions": "Install with: pip install 'markitdown[all]'`. See README for configuration details.",
     "category": "Version Control",
-    "stars": 60025,
-    "lastStarUpdate": "2025-07-08T09:55:19.124Z",
+    "stars": 60027,
+    "lastStarUpdate": "2025-07-08T11:21:51.894Z",
     "logo": "",
-    "updated_at": "2025-07-08T09:55:19.124Z"
+    "updated_at": "2025-07-08T11:21:51.894Z"
   },
   "aaronjmars-web3-research-mcp": {
     "name": "Web3 research mcp",
@@ -27382,7 +27382,7 @@
   },
   "bankless-onchain-mcp": {
     "name": "Onchain mcp",
-    "githubLink": "https://github.com/Bankless/onchain-mcp/",
+    "githubLink": "https://github.com/Bankless/onchain-mcp",
     "package": "@bankless/onchain-mcp",
     "description": "Bringing the bankless onchain API to MCP",
     "installCommand": "npm install @bankless/onchain-mcp",
@@ -27393,9 +27393,9 @@
     "usageInstructions": "Install with: npm install @bankless/onchain-mcp. See README for configuration details.",
     "category": "Version Control",
     "stars": 49,
-    "lastStarUpdate": "2025-07-08T09:55:33.186Z",
+    "lastStarUpdate": "2025-07-08T11:21:51.648Z",
     "logo": "",
-    "updated_at": "2025-07-08T09:55:33.186Z"
+    "updated_at": "2025-07-08T11:21:51.648Z"
   },
   "berlinbra-alpha-vantage-mcp": {
     "name": "Alpha vantage mcp",
@@ -27558,7 +27558,7 @@
   },
   "glaksmono-finbud-data-mcp": {
     "name": "Finbud data mcp",
-    "githubLink": "https://github.com/glaksmono/finbud-data-mcp/",
+    "githubLink": "https://github.com/glaksmono/finbud-data-mcp",
     "package": "finbud-data",
     "description": "AI & Developer centric financial data API",
     "installCommand": "npm install finbud-data",
@@ -27567,9 +27567,9 @@
     "usageInstructions": "Install with: npm install finbud-data. See README for configuration details.",
     "category": "Browser Automation",
     "stars": 1,
-    "lastStarUpdate": "2025-07-08T09:55:51.437Z",
+    "lastStarUpdate": "2025-07-08T11:21:51.579Z",
     "logo": "",
-    "updated_at": "2025-07-08T09:55:51.437Z"
+    "updated_at": "2025-07-08T11:21:51.579Z"
   },
   "heurist-network-heurist-mesh-mcp-server": {
     "name": "Heurist mesh mcp server",
@@ -28278,7 +28278,7 @@
   },
   "longportapp-openapi": {
     "name": "Openapi",
-    "githubLink": "https://github.com/longportapp/openapi/",
+    "githubLink": "https://github.com/longportapp/openapi",
     "package": "@longportapp/openapi",
     "description": "LongPort OpenAPI SDK Base.",
     "installCommand": "npx -y @longportapp/openapi",
@@ -28287,9 +28287,9 @@
     "usageInstructions": "Install with: npx -y @longportapp/openapi. See README for configuration details.",
     "category": "Version Control",
     "stars": 256,
-    "lastStarUpdate": "2025-07-08T09:57:08.260Z",
+    "lastStarUpdate": "2025-07-08T11:21:51.642Z",
     "logo": "",
-    "updated_at": "2025-07-08T09:57:08.260Z"
+    "updated_at": "2025-07-08T11:21:51.642Z"
   },
   "mcpdotdirect-evm-mcp-server": {
     "name": "Evm mcp server",
@@ -28712,7 +28712,7 @@
   },
   "rishijatia-fantasy-pl-mcp": {
     "name": "Fantasy pl mcp",
-    "githubLink": "https://github.com/rishijatia/fantasy-pl-mcp/",
+    "githubLink": "https://github.com/rishijatia/fantasy-pl-mcp",
     "package": "fpl-mcp",
     "description": "Fantasy Premier League MCP Server",
     "installCommand": "pip install fpl-mcp",
@@ -28723,9 +28723,9 @@
     "usageInstructions": "Install with: pip install fpl-mcp. See README for configuration details.",
     "category": "Version Control",
     "stars": 25,
-    "lastStarUpdate": "2025-07-08T09:57:55.194Z",
+    "lastStarUpdate": "2025-07-08T11:21:53.277Z",
     "logo": "",
-    "updated_at": "2025-07-08T09:57:55.194Z"
+    "updated_at": "2025-07-08T11:21:53.277Z"
   },
   "sonirico-mcp-stockfish": {
     "name": "Mcp stockfish",
@@ -29023,7 +29023,7 @@
   },
   "modelcontextprotocol-servers-archived": {
     "name": "Servers archived",
-    "githubLink": "https://github.com/modelcontextprotocol/servers-archived/",
+    "githubLink": "https://github.com/modelcontextprotocol/servers-archived",
     "package": "@modelcontextprotocol/servers-archived",
     "description": "Reference MCP servers that are no longer maintained",
     "installCommand": "npx -y @modelcontextprotocol/servers-archived",
@@ -29032,9 +29032,9 @@
     "usageInstructions": "Install with: npx -y @modelcontextprotocol/servers-archived. See README for configuration details.",
     "category": "Database",
     "stars": 81,
-    "lastStarUpdate": "2025-07-08T09:58:29.363Z",
+    "lastStarUpdate": "2025-07-08T11:21:53.333Z",
     "logo": "",
-    "updated_at": "2025-07-08T09:58:29.363Z"
+    "updated_at": "2025-07-08T11:21:53.333Z"
   },
   "jjsantos01-qgis-mcp": {
     "name": "Qgis mcp",
@@ -29070,7 +29070,7 @@
   },
   "saintdoresh-weather-mcp-claudedesktop": {
     "name": "Weather MCP ClaudeDesktop",
-    "githubLink": "https://github.com/SaintDoresh/Weather-MCP-ClaudeDesktop",
+    "githubLink": "https://github.com/SaintDoresh/Weather-MCP-ClaudeDesktop.git",
     "package": "-r",
     "description": "An MCP (Model Context Protocol) tool that provides real-time weather data, forecasts, and historical weather information using the OpenWeatherMap API, specifically designed for Claude Desktop.",
     "installCommand": "pip install -r",
@@ -29082,9 +29082,9 @@
     "usageInstructions": "Install with: pip install -r. See README for configuration details.",
     "category": "Version Control",
     "stars": 7,
-    "lastStarUpdate": "2025-07-08T11:20:28.546Z",
+    "lastStarUpdate": "2025-07-08T11:21:53.300Z",
     "logo": "",
-    "updated_at": "2025-07-08T11:20:28.546Z"
+    "updated_at": "2025-07-08T11:21:53.300Z"
   },
   "timlukahorstmann-mcp-weather": {
     "name": "Mcp weather",
@@ -29421,7 +29421,7 @@
   },
   "ananddtyagi-gif-creator-mcp": {
     "name": "Gif creator mcp",
-    "githubLink": "https://github.com/ananddtyagi/gif-creator-mcp/",
+    "githubLink": "https://github.com/ananddtyagi/gif-creator-mcp",
     "package": "@ananddtyagi/gif-creator-mcp",
     "description": "MCP that allows you to take your video and turn it into a gif. ",
     "installCommand": "npx -y @ananddtyagi/gif-creator-mcp",
@@ -29430,9 +29430,9 @@
     "usageInstructions": "Install with: npx -y @ananddtyagi/gif-creator-mcp. See README for configuration details.",
     "category": "Version Control",
     "stars": 7,
-    "lastStarUpdate": "2025-07-08T09:59:12.812Z",
+    "lastStarUpdate": "2025-07-08T11:21:54.793Z",
     "logo": "",
-    "updated_at": "2025-07-08T09:59:12.812Z"
+    "updated_at": "2025-07-08T11:21:54.793Z"
   },
   "bogdan01m-zapcap-mcp-server": {
     "name": "Zapcap mcp server",
@@ -29628,7 +29628,7 @@
   },
   "devflowinc-trieve": {
     "name": "Trieve",
-    "githubLink": "https://github.com/devflowinc/trieve/",
+    "githubLink": "https://github.com/devflowinc/trieve",
     "package": "@smithery/cli",
     "description": "All-in-one platform for search, recommendations, RAG, and analytics offered via API",
     "installCommand": "npx -y @smithery/cli",
@@ -29642,9 +29642,9 @@
     "usageInstructions": "Install with: npx -y @smithery/cli. See README for configuration details.",
     "category": "Database",
     "stars": 2346,
-    "lastStarUpdate": "2025-07-08T09:59:34.299Z",
+    "lastStarUpdate": "2025-07-08T11:21:54.854Z",
     "logo": "",
-    "updated_at": "2025-07-08T09:59:34.299Z"
+    "updated_at": "2025-07-08T11:21:54.854Z"
   },
   "dumpling-ai-mcp-server-dumplingai": {
     "name": "Mcp server dumplingai",
@@ -30123,7 +30123,7 @@
   },
   "vectorize-io-vectorize-mcp-server": {
     "name": "Vectorize mcp server",
-    "githubLink": "https://github.com/vectorize-io/vectorize-mcp-server/",
+    "githubLink": "https://github.com/vectorize-io/vectorize-mcp-server",
     "package": "@vectorize-io/vectorize-mcp-server@latest",
     "description": "Official Vectorize MCP Server",
     "installCommand": "npx -y @vectorize-io/vectorize-mcp-server@latest",
@@ -30134,9 +30134,9 @@
     "usageInstructions": "Install with: npx -y @vectorize-io/vectorize-mcp-server@latest. See README for configuration details.",
     "category": "Version Control",
     "stars": 73,
-    "lastStarUpdate": "2025-07-08T10:00:26.023Z",
+    "lastStarUpdate": "2025-07-08T11:21:54.958Z",
     "logo": "",
-    "updated_at": "2025-07-08T10:00:26.023Z"
+    "updated_at": "2025-07-08T11:21:54.958Z"
   },
   "vitorpavinato-ncbi-mcp-server": {
     "name": "Ncbi mcp server",
@@ -30580,7 +30580,7 @@
   },
   "safedep-vet": {
     "name": "Vet",
-    "githubLink": "https://github.com/safedep/vet/",
+    "githubLink": "https://github.com/safedep/vet",
     "package": "@safedep/vet",
     "description": "Next Generation Software Composition Analysis (SCA) with Malicious Package Detection, Code Context & Policy as Code",
     "installCommand": "npx -y @safedep/vet",
@@ -30589,9 +30589,9 @@
     "usageInstructions": "Install with: npx -y @safedep/vet. See README for configuration details.",
     "category": "Database",
     "stars": 530,
-    "lastStarUpdate": "2025-07-08T10:01:14.693Z",
+    "lastStarUpdate": "2025-07-08T11:21:56.626Z",
     "logo": "",
-    "updated_at": "2025-07-08T10:01:14.693Z"
+    "updated_at": "2025-07-08T11:21:56.626Z"
   },
   "sanyambassi-ciphertrust-manager-mcp-server": {
     "name": "Ciphertrust manager mcp server",
@@ -31382,7 +31382,7 @@
   },
   "ankitmalik84-agentic-longterm-memory": {
     "name": "Agentic Longterm Memory",
-    "githubLink": "https://github.com/ankitmalik84/Agentic_Longterm_Memory/",
+    "githubLink": "https://github.com/ankitmalik84/Agentic_Longterm_Memory",
     "package": "-r",
     "description": "Sophisticated AI chatbot with long-term memory capabilities, complete Notion workspace integration, and MCP (Model Context Protocol) implementation. Features semantic, episodic, and procedural memory systems.",
     "installCommand": "pip install -r",
@@ -31395,13 +31395,13 @@
     "usageInstructions": "Install with: pip install -r. See README for configuration details.",
     "category": "Database",
     "stars": 0,
-    "lastStarUpdate": "2025-07-08T10:02:40.074Z",
+    "lastStarUpdate": "2025-07-08T11:21:56.531Z",
     "logo": "",
-    "updated_at": "2025-07-08T10:02:40.074Z"
+    "updated_at": "2025-07-08T11:21:56.531Z"
   },
   "bart6114-my-bear-mcp-server": {
     "name": "My bear mcp server",
-    "githubLink": "https://github.com/bart6114/my-bear-mcp-server/",
+    "githubLink": "https://github.com/bart6114/my-bear-mcp-server",
     "package": "@bart6114/my-bear-mcp-server",
     "description": "A Model Context Protocol (MCP) server that allows AI assistants like Claude to read notes from the [Bear](https://bear.app/) note-taking app. This implementation connects directly to the Bear SQLite d",
     "installCommand": "npx -y @bart6114/my-bear-mcp-server",
@@ -31410,9 +31410,9 @@
     "usageInstructions": "Install with: npx -y @bart6114/my-bear-mcp-server. See README for configuration details.",
     "category": "Database",
     "stars": 11,
-    "lastStarUpdate": "2025-07-08T10:02:41.699Z",
+    "lastStarUpdate": "2025-07-08T11:21:56.486Z",
     "logo": "",
-    "updated_at": "2025-07-08T10:02:41.699Z"
+    "updated_at": "2025-07-08T11:21:56.486Z"
   },
   "billster45-mcp-chatgpt-responses": {
     "name": "Mcp chatgpt responses",
@@ -31795,7 +31795,7 @@
   },
   "j3k0-speech-sh": {
     "name": "Speech.sh",
-    "githubLink": "https://github.com/j3k0/speech.sh/",
+    "githubLink": "https://github.com/j3k0/speech.sh",
     "package": "@j3k0/speech.sh",
     "description": "Simple curl script to play aloud what you type, useful if your voice is suddenly broken.",
     "installCommand": "npx -y @j3k0/speech.sh",
@@ -31806,9 +31806,9 @@
     "usageInstructions": "Install with: npx -y @j3k0/speech.sh. See README for configuration details.",
     "category": "Version Control",
     "stars": 3,
-    "lastStarUpdate": "2025-07-08T10:03:22.911Z",
+    "lastStarUpdate": "2025-07-08T11:21:56.575Z",
     "logo": "",
-    "updated_at": "2025-07-08T10:03:22.911Z"
+    "updated_at": "2025-07-08T11:21:56.575Z"
   },
   "jagan-shanmugam-climatiq-mcp-server": {
     "name": "Climatiq mcp server",
@@ -31951,7 +31951,7 @@
   },
   "klavis-ai-klavis": {
     "name": "Klavis",
-    "githubLink": "https://github.com/Klavis-AI/klavis/",
+    "githubLink": "https://github.com/Klavis-AI/klavis",
     "package": "klavis",
     "description": "Klavis AI (YC X25):  Open Source MCP integration for AI applications",
     "installCommand": "pip install klavis",
@@ -31959,10 +31959,10 @@
     "optionalParams": [],
     "usageInstructions": "Install with: pip install klavis. See README for configuration details.",
     "category": "Database",
-    "stars": 2978,
-    "lastStarUpdate": "2025-07-08T10:03:39.615Z",
+    "stars": 2981,
+    "lastStarUpdate": "2025-07-08T11:21:58.067Z",
     "logo": "",
-    "updated_at": "2025-07-08T10:03:39.615Z"
+    "updated_at": "2025-07-08T11:21:58.067Z"
   },
   "ks-gen-ai-confluence-mcp-server": {
     "name": "Confluence mcp server",
@@ -32855,7 +32855,7 @@
   },
   "zhsama-duckduckgo-mpc-server": {
     "name": "Duckduckgo mcp server",
-    "githubLink": "https://github.com/zhsama/duckduckgo-mpc-server/",
+    "githubLink": "https://github.com/zhsama/duckduckgo-mpc-server",
     "package": "-g",
     "description": "English | [中文](README_zh.md)",
     "installCommand": "npm install -g",
@@ -32864,9 +32864,9 @@
     "usageInstructions": "Install with: npm install -g. See README for configuration details.",
     "category": "Browser Automation",
     "stars": 49,
-    "lastStarUpdate": "2025-07-08T11:02:45.150Z",
+    "lastStarUpdate": "2025-07-08T11:21:55.139Z",
     "logo": "",
-    "updated_at": "2025-07-08T11:02:45.150Z"
+    "updated_at": "2025-07-08T11:21:55.139Z"
   },
   "incentivai-quickchat-ai-mcp": {
     "name": "Quickchat ai mcp",
@@ -38081,5 +38081,20 @@
     "lastStarUpdate": "2025-07-08T11:20:57.498Z",
     "logo": "",
     "updated_at": "2025-07-08T11:20:57.498Z"
+  },
+  "cloudbet-sports-mcp-server": {
+    "name": "Sports mcp server",
+    "githubLink": "https://github.com/cloudbet/sports-mcp-server",
+    "package": "@cloudbet/sports-mcp-server",
+    "description": "Cloudbet Sports Data MCP Server",
+    "installCommand": "npx -y @cloudbet/sports-mcp-server",
+    "requiredEnvVars": [],
+    "optionalParams": [],
+    "usageInstructions": "Install with: npx -y @cloudbet/sports-mcp-server. See README for configuration details.",
+    "category": "File Management",
+    "stars": 1,
+    "lastStarUpdate": "2025-07-08T11:21:56.534Z",
+    "logo": "",
+    "updated_at": "2025-07-08T11:21:56.534Z"
   }
 }
