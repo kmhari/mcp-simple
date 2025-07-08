@@ -65,3 +65,6 @@ dev-debug.log
 # Task files
 # tasks.json
 # tasks/ 
+
+# URL list files
+list*.txt
