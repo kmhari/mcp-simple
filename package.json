@@ -2,19 +2,14 @@
   "name": "@oglabs/mcp",
   "version": "2.6.0",
   "description": "Interactive CLI tool and MCP server for managing MCP configurations with tech stack detection and recommendations",
-  "main": "mcp-manager.cjs",
+  "main": "mcp",
   "type": "module",
   "bin": {
-    "mcp": "./mcp-manager.js"
+    "mcp": "mcp"
   },
   "scripts": {
     "test": "echo \"No tests specified\" && exit 0",
-    "fetch-stars": "node fetch-github-stars.js",
-    "update-stale-stars": "node fetch-github-stars.js --stale",
-    "update-stars-7d": "node fetch-github-stars.js --stale --days 7",
-    "update-stars-14d": "node fetch-github-stars.js --stale --days 14",
-    "mcp-server": "node mcp-server.js",
-    "debug-mcp": "npx -y @modelcontextprotocol/inspector node mcp-server.js",
+    "start": "node mcp",
     "release": "npm version patch && git push --follow-tags",
     "release:patch": "npm version patch && git push --follow-tags",
     "release:minor": "npm version minor && git push --follow-tags",
