@@ -1,6 +1,6 @@
 {
   "name": "@oglabs/mcp",
-  "version": "2.6.13",
+  "version": "2.6.14",
   "description": "Interactive CLI tool and MCP server for managing MCP configurations with tech stack detection and recommendations",
   "main": "mcp-manager.cjs",
   "type": "module",
