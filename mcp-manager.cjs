@@ -192,6 +192,7 @@ class MCPManager {
         console.log('\n💡 MCP Server Mode:');
         console.log('   Run with --server to start as MCP server for tech stack detection');
         console.log('   Run with --web to start web interface');
+        console.log('   Run with --version to show version number');
         console.log('\nPress q to quit at any time');
         
         const choice = await this.prompt('\nSelect an option (1-11 or q): ');
@@ -1435,8 +1436,22 @@ class MCPManager {
 if (require.main === module) {
     const manager = new MCPManager();
     
-    // Check for --web argument
+    // Check for command line arguments
     const args = process.argv.slice(2);
+    
+    // Handle --version flag
+    if (args.includes('--version') || args.includes('-v')) {
+        try {
+            const packagePath = path.join(__dirname, 'package.json');
+            const packageData = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
+            console.log(`${packageData.name} v${packageData.version}`);
+            process.exit(0);
+        } catch (error) {
+            console.log('Version information not available');
+            process.exit(1);
+        }
+    }
+    
     if (args.includes('--web')) {
         manager.startWebServer();
     } else {

@@ -3,12 +3,26 @@
 import { spawn } from 'child_process';
 import { fileURLToPath } from 'url';
 import path from 'path';
+import fs from 'fs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Parse command line arguments
 const args = process.argv.slice(2);
+
+// Handle --version flag
+if (args.includes('--version') || args.includes('-v')) {
+    try {
+        const packagePath = path.join(__dirname, 'package.json');
+        const packageData = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
+        console.log(`${packageData.name} v${packageData.version}`);
+        process.exit(0);
+    } catch (error) {
+        console.log('Version information not available');
+        process.exit(1);
+    }
+}
 
 if (args.includes('--server')) {
     // Launch MCP server mode

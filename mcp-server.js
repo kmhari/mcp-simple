@@ -1024,6 +1024,21 @@ Recommended actions based on this quick assessment.`;
 
 // Start the server if this file is run directly
 if (import.meta.url === `file://${process.argv[1]}`) {
+    const args = process.argv.slice(2);
+    
+    // Handle --version flag
+    if (args.includes('--version') || args.includes('-v')) {
+        try {
+            const packagePath = path.join(__dirname, 'package.json');
+            const packageData = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
+            console.log(`${packageData.name} v${packageData.version} (MCP Server)`);
+            process.exit(0);
+        } catch (error) {
+            console.log('Version information not available');
+            process.exit(1);
+        }
+    }
+    
     const server = new TechStackMCPServer();
     server.start().catch(error => {
         console.error('Failed to start MCP server:', error);
