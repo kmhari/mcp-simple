@@ -23,7 +23,8 @@ const filesToCopy = [
   'mcp-server.js',
   'mcp-servers-database.json',
   'mcp-tools.json',
-  'package.json'
+  'package.json',
+  'LICENSE'
 ];
 
 const distDir = path.join(rootDir, 'dist');
@@ -74,14 +75,30 @@ const deployPackage = {
   main: originalPackage.main,
   type: originalPackage.type,
   bin: originalPackage.bin,
+  files: [
+    "mcp-manager.js",
+    "mcp-manager.cjs", 
+    "mcp-server.js",
+    "mcp-servers-database.json",
+    "mcp-tools.json",
+    "public/",
+    "README.md",
+    "LICENSE"
+  ],
   scripts: {
     start: 'node mcp-manager.cjs --web',
     server: 'node mcp-server.js'
   },
+  keywords: originalPackage.keywords,
   dependencies: originalPackage.dependencies,
   engines: originalPackage.engines,
   author: originalPackage.author,
-  license: originalPackage.license
+  license: originalPackage.license,
+  repository: originalPackage.repository,
+  bugs: originalPackage.bugs,
+  homepage: originalPackage.homepage,
+  preferGlobal: originalPackage.preferGlobal,
+  publishConfig: originalPackage.publishConfig
 };
 
 fs.writeFileSync(path.join(distDir, 'package.json'), JSON.stringify(deployPackage, null, 2));

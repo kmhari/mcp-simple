@@ -26,10 +26,10 @@
     "build:deploy": "node scripts/deploy.js",
     "preview": "vite preview --outDir dist",
     "prepublishOnly": "npm run build:deploy",
-    "release": "npm run prepublishOnly && npm version patch && git push --follow-tags && npm publish",
-    "release:patch": "npm run prepublishOnly && npm version patch && git push --follow-tags && npm publish",
-    "release:minor": "npm run prepublishOnly && npm version minor && git push --follow-tags && npm publish",
-    "release:major": "npm run prepublishOnly && npm version major && git push --follow-tags && npm publish"
+    "release": "npm run prepublishOnly && npm version patch && git push --follow-tags && cd dist && npm publish",
+    "release:patch": "npm run prepublishOnly && npm version patch && git push --follow-tags && cd dist && npm publish",
+    "release:minor": "npm run prepublishOnly && npm version minor && git push --follow-tags && cd dist && npm publish",
+    "release:major": "npm run prepublishOnly && npm version major && git push --follow-tags && cd dist && npm publish"
   },
   "keywords": [
     "mcp",
