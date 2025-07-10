@@ -1,6 +1,6 @@
 {
   "name": "@oglabs/mcp",
-  "version": "2.6.10",
+  "version": "2.6.12",
   "description": "Interactive CLI tool and MCP server for managing MCP configurations with tech stack detection and recommendations",
   "main": "mcp-manager.cjs",
   "type": "module",
@@ -28,7 +28,7 @@
     "prepublishOnly": "echo 'Use npm run release:* commands for publishing'",
     "release": "npm run release:patch",
     "release:patch": "node scripts/release.js patch",
-    "release:minor": "node scripts/release.js minor", 
+    "release:minor": "node scripts/release.js minor",
     "release:major": "node scripts/release.js major",
     "release:dry-run": "npm run build:deploy && cd dist && npm pack --dry-run"
   },

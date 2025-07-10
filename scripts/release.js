@@ -31,14 +31,14 @@ function updateVersion(type) {
     const newVersion = packageData.version;
     console.log(`📦 New version: ${newVersion}`);
     
-    // Step 3: Build deployment package
-    runCommand('npm run build:deploy', 'Build deployment package');
-    
-    // Step 4: Commit version bump and dist changes
-    runCommand('git add package.json dist/', 'Stage version and dist changes');
-    runCommand(`git commit -m "chore: release v${newVersion}"`, 'Commit release changes');
+    // Step 3: Commit version bump only
+    runCommand('git add package.json', 'Stage version change');
+    runCommand(`git commit -m "chore: release v${newVersion}"`, 'Commit version bump');
     runCommand(`git tag v${newVersion}`, 'Create version tag');
     runCommand('git push --follow-tags', 'Push changes and tags');
+    
+    // Step 4: Build deployment package (after git operations)
+    runCommand('npm run build:deploy', 'Build deployment package');
     
     // Step 5: Publish from dist
     console.log('📤 Publishing to npm...');
