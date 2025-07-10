@@ -736,13 +736,19 @@ h1 {
     flex-wrap: wrap;
 }
 
-.group-by-container, .stars-filter-container {
+.sort-by-container, .group-by-container, .stars-filter-container {
     display: flex;
     align-items: center;
     gap: 10px;
+    position: relative;
 }
 
-.group-by-container select, .stars-filter-container select {
+.stars-filter-container {
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.sort-by-container select, .group-by-container select, .stars-filter-container select {
     padding: 6px 12px;
     border: none;
     border-radius: 6px;
@@ -754,9 +760,48 @@ h1 {
     transition: box-shadow 0.2s;
 }
 
-.group-by-container select:focus, .stars-filter-container select:focus {
+.sort-by-container select:focus, .group-by-container select:focus, .stars-filter-container select:focus {
     outline: none;
     box-shadow: inset 1px 1px 2px rgba(0, 0, 0, .2);
+}
+
+.active-filter-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 8px;
+    background: #4299e1;
+    color: white;
+    border-radius: 4px;
+    font-size: 12px;
+    margin-top: 6px;
+    animation: filterFadeIn 0.3s ease-out;
+}
+
+.reset-filter-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 0 4px;
+    border-radius: 2px;
+    transition: background-color 0.2s;
+}
+
+.reset-filter-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+@keyframes filterFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .config-editor {

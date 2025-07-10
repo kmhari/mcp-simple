@@ -6,7 +6,8 @@ let starsData = {};
 let selectedCardIndex = -1;
 let visibleCards = [];
 let currentGroupBy = 'none';
-let currentStarsFilter = 0;
+let currentSortBy = 'a-z'; // Default sort: a-z, options: 'a-z', 'z-a', 'stars'
+let currentStarsFilter = 500; // Default to 500+ stars filter
 
 export {
     currentConfig,
@@ -16,6 +17,7 @@ export {
     selectedCardIndex,
     visibleCards,
     currentGroupBy,
+    currentSortBy,
     currentStarsFilter
 };
 
@@ -45,6 +47,10 @@ export function setVisibleCards(cards) {
 
 export function setCurrentGroupBy(groupBy) {
     currentGroupBy = groupBy;
+}
+
+export function setCurrentSortBy(sortBy) {
+    currentSortBy = sortBy;
 }
 
 export function setCurrentStarsFilter(starsFilter) {

@@ -5,6 +5,8 @@ import {
     starsData, 
     currentGroupBy,
     setCurrentGroupBy,
+    currentSortBy,
+    setCurrentSortBy,
     currentStarsFilter,
     setCurrentStarsFilter
 } from './state.js';
@@ -22,10 +24,17 @@ export function handleGroupByChange(value) {
     searchServers(searchValue);
 }
 
+export function handleSortByChange(value) {
+    setCurrentSortBy(value);
+    const searchValue = document.querySelector('.search-box').value;
+    searchServers(searchValue);
+}
+
 export function handleStarsFilterChange(value) {
     setCurrentStarsFilter(parseInt(value));
     const searchValue = document.querySelector('.search-box').value;
     searchServers(searchValue);
+    updateFilterIndicator(parseInt(value));
 }
 
 export function displayServers(servers = preConfiguredServers) {
@@ -59,8 +68,6 @@ export function displayServers(servers = preConfiguredServers) {
     
     if (currentGroupBy === 'category') {
         displayServersByCategory(servers, grid);
-    } else if (currentGroupBy === 'stars') {
-        displayServersByStars(servers, grid);
     } else {
         displayServersFlat(servers, grid);
     }
@@ -77,8 +84,8 @@ export function displayServersFlat(servers, grid) {
     container.className = 'category-grid';
     container.style.marginTop = '0';
     
+    // Servers are already sorted in getFilteredServers, so maintain that order
     const serversArray = Object.entries(servers).map(([key, server]) => ({ key, server }));
-    serversArray.sort((a, b) => a.server.name.localeCompare(b.server.name));
 
     serversArray.forEach(({ key, server }) => {
         const card = createServerCard(key, server);
@@ -90,7 +97,11 @@ export function displayServersFlat(servers, grid) {
 
 export function displayServersByCategory(servers, grid) {
     const categories = {};
-    Object.entries(servers).forEach(([key, server]) => {
+    
+    // Group servers into categories while preserving the sorted order
+    const serversArray = Object.entries(servers).map(([key, server]) => ({ key, server }));
+    
+    serversArray.forEach(({ key, server }) => {
         const category = server.category || 'Other';
         if (!categories[category]) {
             categories[category] = [];
@@ -98,6 +109,7 @@ export function displayServersByCategory(servers, grid) {
         categories[category].push({ key, server });
     });
     
+    // Sort category names, but keep servers within each category in their sorted order
     const sortedCategories = Object.keys(categories).sort();
     
     sortedCategories.forEach(category => {
@@ -113,6 +125,7 @@ export function displayServersByCategory(servers, grid) {
             <div class="category-grid accordion-content" data-category="${category}" style="display: none;">
         `;
         
+        // Servers within each category maintain the sort order from getFilteredServers
         categories[category].forEach(({ key, server }) => {
             const card = createServerCard(key, server);
             categorySection.querySelector('.category-grid').appendChild(card);
@@ -123,54 +136,6 @@ export function displayServersByCategory(servers, grid) {
     });
 }
 
-export function displayServersByStars(servers, grid) {
-    const serversArray = Object.entries(servers).map(([key, server]) => ({
-        key,
-        server,
-        stars: server.stars || 0
-    }));
-    
-    serversArray.sort((a, b) => b.stars - a.stars);
-    
-    // Create star ranges for grouping
-    const starRanges = [
-        { min: 10000, max: Infinity, label: '10,000+ stars', color: '#FFD700' },
-        { min: 5000, max: 9999, label: '5,000-9,999 stars', color: '#FFA500' },
-        { min: 1000, max: 4999, label: '1,000-4,999 stars', color: '#FF6347' },
-        { min: 100, max: 999, label: '100-999 stars', color: '#32CD32' },
-        { min: 10, max: 99, label: '10-99 stars', color: '#87CEEB' },
-        { min: 1, max: 9, label: '1-9 stars', color: '#DDA0DD' },
-        { min: 0, max: 0, label: 'No stars data', color: '#D3D3D3' }
-    ];
-    
-    starRanges.forEach(range => {
-        const rangeServers = serversArray.filter(({ stars }) => 
-            stars >= range.min && stars <= range.max
-        );
-        
-        if (rangeServers.length > 0) {
-            const categorySection = document.createElement('div');
-            categorySection.className = 'category-section collapsed';
-            const categoryId = `stars-${range.min}-${range.max}`;
-            categorySection.innerHTML = `
-                <h2 class="category-title accordion-header" style="color: ${range.color};" onclick="toggleCategory('${categoryId}')">
-                    <span class="accordion-icon">▶</span>
-                    ⭐ ${range.label} 
-                    <span class="category-count">(${rangeServers.length})</span>
-                </h2>
-                <div class="category-grid accordion-content" data-category="${categoryId}" style="display: none;">
-            `;
-            
-            rangeServers.forEach(({ key, server }) => {
-                const card = createServerCard(key, server);
-                categorySection.querySelector('.category-grid').appendChild(card);
-            });
-            
-            categorySection.innerHTML += '</div>';
-            grid.appendChild(categorySection);
-        }
-    });
-}
 
 export function createServerCard(key, server) {
     const card = document.createElement('div');
@@ -410,10 +375,10 @@ export function restoreExpandedStates() {
  * @returns {Object} Filtered servers object
  */
 function getFilteredServers(query) {
-    const filtered = {};
     const searchTerm = query ? query.toLowerCase() : '';
     
-    Object.entries(preConfiguredServers).forEach(([key, server]) => {
+    // First, filter servers based on search and stars criteria
+    const filteredEntries = Object.entries(preConfiguredServers).filter(([key, server]) => {
         // Apply search filter
         const matchesSearch = !query || 
             (server.name && server.name.toLowerCase().includes(searchTerm)) ||
@@ -425,9 +390,29 @@ function getFilteredServers(query) {
         const serverStars = server.stars || 0;
         const matchesStarsFilter = serverStars >= currentStarsFilter;
         
-        if (matchesSearch && matchesStarsFilter) {
-            filtered[key] = server;
+        return matchesSearch && matchesStarsFilter;
+    });
+    
+    // Sort the filtered entries based on currentSortBy
+    filteredEntries.sort(([keyA, serverA], [keyB, serverB]) => {
+        switch (currentSortBy) {
+            case 'a-z':
+                return (serverA.name || '').localeCompare(serverB.name || '');
+            case 'z-a':
+                return (serverB.name || '').localeCompare(serverA.name || '');
+            case 'stars':
+                const starsA = serverA.stars || 0;
+                const starsB = serverB.stars || 0;
+                return starsB - starsA; // Descending order (most stars first)
+            default:
+                return (serverA.name || '').localeCompare(serverB.name || ''); // Default to a-z
         }
+    });
+    
+    // Convert back to object format
+    const filtered = {};
+    filteredEntries.forEach(([key, server]) => {
+        filtered[key] = server;
     });
     
     return filtered;
@@ -454,4 +439,27 @@ export function searchServers(query) {
             grid.innerHTML = `<div style="text-align: center; padding: 40px; color: #666;">No servers found${searchText}${starsText}.</div>`;
         }
     }
+}
+
+// Update the visual indicator for active star filter
+export function updateFilterIndicator(starsValue) {
+    const indicator = document.getElementById('activeFilterIndicator');
+    const filterText = document.getElementById('activeFilterText');
+    
+    if (starsValue > 0) {
+        const text = starsValue >= 1000 ? `${starsValue/1000}k+ stars` : `${starsValue}+ stars`;
+        filterText.textContent = text;
+        indicator.style.display = 'flex';
+    } else {
+        indicator.style.display = 'none';
+    }
+}
+
+// Reset the stars filter to show all servers
+export function resetStarsFilter() {
+    setCurrentStarsFilter(0);
+    document.getElementById('starsFilterSelect').value = '0';
+    updateFilterIndicator(0);
+    const searchValue = document.querySelector('.search-box').value;
+    searchServers(searchValue);
 }

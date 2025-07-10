@@ -1,7 +1,7 @@
 // Main application entry point - refactored with modules
 import { loadConfig, saveConfig } from './config.js';
 import { loadServers, loadStarsData, quickInstallServer, uninstallServer, removeServer } from './servers.js';
-import { handleGroupByChange, handleStarsFilterChange, searchServers, updateCurrentServers, displayServers, toggleCategory, restoreExpandedStates } from './ui.js';
+import { handleGroupByChange, handleSortByChange, handleStarsFilterChange, searchServers, updateCurrentServers, displayServers, toggleCategory, restoreExpandedStates, updateFilterIndicator, resetStarsFilter } from './ui.js';
 import { initVirtualScrolling, updateVirtualList, refreshVirtualList } from './virtual-scroll.js';
 import { loadVariables, updateVariablesList, handleVariableChange, saveIndividualVariable, fetchFromEnvForVariables, saveVariables } from './variables.js';
 import { clearSelection, initializeKeyboardNavigation } from './keyboard.js';
@@ -38,6 +38,9 @@ async function init() {
     await loadVariables();
     await loadProjectInfo();
     updateCurrentServers();
+    
+    // Initialize filter indicator with default 500+ stars filter
+    updateFilterIndicator(500);
     
     setTimeout(checkForUpdates, 2000);
     
@@ -320,7 +323,9 @@ window.onclick = function(event) {
 
 // Make all functions globally available for HTML onclick handlers
 window.handleGroupByChange = handleGroupByChange;
+window.handleSortByChange = handleSortByChange;
 window.handleStarsFilterChange = handleStarsFilterChange;
+window.resetStarsFilter = resetStarsFilter;
 window.searchServers = searchServers;
 window.updateCurrentServers = updateCurrentServers;
 window.displayServers = displayServers;

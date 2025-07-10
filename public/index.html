@@ -39,12 +39,19 @@
         <div id="browse" class="tab-content active">
             <input type="text" class="search-box" placeholder="Search servers..." onkeyup="searchServers(this.value)">
             <div class="filters-container">
-                <div class="group-by-container">
+                <div class="sort-by-container">
                     <label>Sort by:</label>
+                    <select id="sortBySelect" onchange="handleSortByChange(this.value)">
+                        <option value="a-z">A → Z</option>
+                        <option value="z-a">Z → A</option>
+                        <option value="stars">Most Stars</option>
+                    </select>
+                </div>
+                <div class="group-by-container">
+                    <label>Group by:</label>
                     <select id="groupBySelect" onchange="handleGroupByChange(this.value)">
                         <option value="none">Default</option>
                         <option value="category">Category</option>
-                        <option value="stars">Most Stars</option>
                     </select>
                 </div>
                 <div class="stars-filter-container">
@@ -54,10 +61,15 @@
                         <option value="1">1+ stars</option>
                         <option value="10">10+ stars</option>
                         <option value="100">100+ stars</option>
+                        <option value="500" selected>500+ stars</option>
                         <option value="1000">1,000+ stars</option>
                         <option value="5000">5,000+ stars</option>
                         <option value="10000">10,000+ stars</option>
                     </select>
+                    <div id="activeFilterIndicator" class="active-filter-indicator" style="display: none;">
+                        <span id="activeFilterText">500+ stars</span>
+                        <button id="resetFilterBtn" class="reset-filter-btn" onclick="resetStarsFilter()" title="Reset filter">×</button>
+                    </div>
                 </div>
             </div>
             <div id="serverGrid" class="server-grid">
