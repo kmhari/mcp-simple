@@ -1,0 +1,2403 @@
+let currentConfig = { mcpServers: {} };
+let preConfiguredServers = {};
+let savedVariables = {};
+let starsData = {};
+let selectedCardIndex = -1;
+let visibleCards = [];
+
+// Keyboard navigation helper functions
+function clearSelection() {
+    selectedCardIndex = -1;
+    const cards = document.querySelectorAll('.server-card');
+    cards.forEach(card => {
+        card.classList.remove('keyboard-selected');
+    });
+}
+
+function findCardElement(serverKey) {
+    // Find the card element for the given server key
+    const cards = document.querySelectorAll('.server-card');
+    for (const card of cards) {
+        const h3 = card.querySelector('h3');
+        if (h3) {
+            // Check if this card corresponds to our server
+            const server = preConfiguredServers[serverKey];
+            if (server && h3.textContent.trim() === server.name) {
+                return card;
+            }
+        }
+    }
+    return null;
+}
+
+async function init() {
+    await loadConfig();
+    await loadServers();
+    await loadStarsData();
+    await loadVariables();
+    updateCurrentServers();
+    
+    // Check for updates after a short delay
+    setTimeout(checkForUpdates, 2000);
+    
+    // Auto-focus search input
+    const searchBox = document.querySelector('.search-box');
+    if (searchBox) {
+        searchBox.focus();
+    }
+    
+    // Initialize keyboard navigation
+    initializeKeyboardNavigation();
+}
+
+async function loadServers() {
+    try {
+        const response = await fetch('/api/servers');
+        preConfiguredServers = await response.json();
+        displayServers();
+    } catch (error) {
+        showMessage('Failed to load servers', 'error');
+    }
+}
+
+async function loadStarsData() {
+    try {
+        const response = await fetch('/mcp-servers-with-stars.json');
+        starsData = await response.json();
+        console.log('Stars data loaded:', Object.keys(starsData).length, 'servers');
+        // Re-display servers to show stars after loading
+        if (Object.keys(preConfiguredServers).length > 0) {
+            displayServers();
+        }
+    } catch (error) {
+        console.log('Stars data not available:', error.message);
+        starsData = {};
+    }
+}
+
+async function loadConfig() {
+    try {
+        const response = await fetch('/api/config');
+        currentConfig = await response.json();
+        console.log('Loaded config:', currentConfig);
+        document.getElementById('configEditor').value = JSON.stringify(currentConfig, null, 2);
+        updateCurrentServers();
+        // Re-display servers after config is loaded to update installation status
+        if (Object.keys(preConfiguredServers).length > 0) {
+            displayServers();
+        }
+    } catch (error) {
+        console.error('Error loading config:', error);
+        showMessage('Failed to load configuration', 'error');
+    }
+}
+
+async function saveConfig() {
+    try {
+        const configText = document.getElementById('configEditor').value;
+        const config = JSON.parse(configText);
+        
+        const response = await fetch('/api/config', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(config)
+        });
+        
+        if (response.ok) {
+            currentConfig = config;
+            console.log('Saved config:', currentConfig);
+            showMessage('Configuration saved successfully', 'success');
+            updateCurrentServers();
+            displayServers(); // Re-display to update installation status
+        } else {
+            throw new Error('Failed to save configuration');
+        }
+    } catch (error) {
+        showMessage(error.message, 'error');
+    }
+}
+
+let currentGroupBy = 'none';
+
+function handleGroupByChange(value) {
+    currentGroupBy = value;
+    const searchValue = document.querySelector('.search-box').value;
+    searchServers(searchValue);
+}
+
+function displayServers(servers = preConfiguredServers) {
+    const grid = document.getElementById('serverGrid');
+    grid.innerHTML = '';
+    
+    if (currentGroupBy === 'category') {
+        displayServersByCategory(servers, grid);
+    } else if (currentGroupBy === 'stars') {
+        displayServersByStars(servers, grid);
+    } else {
+        displayServersFlat(servers, grid);
+    }
+}
+
+function isServerInstalled(key, server) {
+    console.log("=== Checking if server " + key + " is installed ===");
+    console.log("Server install command: " + server.installCommand);
+    console.log("Current config state:", currentConfig);
+    
+    if (!currentConfig || !currentConfig.mcpServers) {
+        console.log("No mcpServers found in config");
+        return false;
+    }
+
+    return Object.entries(currentConfig.mcpServers).some(([name, config]) => {
+        console.log("");
+        console.log("Comparing with installed server: " + name );
+        console.log("  Installed config:", JSON.stringify(config));
+
+        // Exact key match
+        if (name === key) {
+            console.log("  ✓ Exact key match found!");
+            return true;
+        }
+
+        // Reconstruct the install command from the config
+        const installedCommand = config.command + " " + config.args.join(" ");
+        console.log("  Reconstructed command: " + installedCommand);
+        console.log("  Expected command: " + server.installCommand);
+        
+        // Direct comparison of full commands
+        if (installedCommand === server.installCommand) {
+            console.log("  ✓ Full command match found!");
+            return true;
+        }
+
+        // Also check if commands are equivalent (handling extra spaces)
+        const normalizeCommand = (cmd) => cmd.trim().replace(/\s+/g, ' ');
+        if (normalizeCommand(installedCommand) === normalizeCommand(server.installCommand)) {
+            console.log("  ✓ Normalized command match found!");
+            return true;
+        }
+
+        console.log("  ✗ No match");
+        return false;
+    });
+}
+
+function findExistingServerName(key, server) {
+    if (!currentConfig || !currentConfig.mcpServers) {
+        return key;
+    }
+
+    // First try exact key match
+    if (currentConfig.mcpServers[key]) {
+        return key;
+    }
+
+    // Then try command match
+    for (const [name, config] of Object.entries(currentConfig.mcpServers)) {
+        const installedCommand = config.command + " " + config.args.join(" ");
+        const normalizeCommand = (cmd) => cmd.trim().replace(/\s+/g, ' ');
+        
+        if (installedCommand === server.installCommand || 
+            normalizeCommand(installedCommand) === normalizeCommand(server.installCommand)) {
+            return name;
+        }
+    }
+
+    return key;
+}
+
+function displayServersFlat(servers, grid) {
+    // Create a single container for all servers
+    const container = document.createElement('div');
+    container.className = 'category-grid';
+    container.style.marginTop = '0';
+    console.log({servers,mcp:currentConfig})
+    // Convert servers object to array and sort by name
+    const serversArray = Object.entries(servers).map(([key, server]) => ({ key, server }));
+    serversArray.sort((a, b) => a.server.name.localeCompare(b.server.name));
+
+    // Add all servers without grouping
+    serversArray.forEach(({ key, server }) => {
+        const card = document.createElement('div');
+        card.className = 'server-card';
+        
+        // Check if server is already installed
+        const isInstalled = isServerInstalled(key, server);
+        // Check if server requires configuration
+        const requiresConfig = server.requiredEnvVars && server.requiredEnvVars.length > 0;
+        
+        // Add data-selected attribute if installed
+        if (isInstalled) {
+            card.setAttribute('data-selected', '');
+        }
+        
+        // Get stars info for this server
+        const serverStars = starsData[key];
+        const formatStars = (count) => {
+            if (count >= 1000) {
+                return (count / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
+            }
+            return count.toString();
+        };
+        
+        const starSvg = '<svg class="star-icon" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>';
+        
+        const starsDisplay = serverStars && serverStars.github && serverStars.github.stars !== undefined
+            ? `<div class="stars-info">${starSvg} ${formatStars(serverStars.github.stars)}</div>`
+            : '';
+
+        card.innerHTML = `
+            <div>
+                <div class="card-header">
+                    <h3>${server.githubLink ? `<a href="${server.githubLink}" target="_blank" rel="noopener noreferrer">${server.name}</a>` : server.name}</h3>
+                    ${starsDisplay}
+                </div>
+                <p class="description">${server.description}</p>
+            </div>
+            <div class="card-footer">
+                <div class="button-container">
+                    ${isInstalled ? 
+                        `<button class="btn-configure" onclick="configureServer('${key}')">Reconfigure</button>
+                         <button class="btn-uninstall" onclick="uninstallServer('${key}')">Remove</button>` :
+                        `<button class="btn-configure" onclick="configureServer('${key}')">Configure</button>
+                         ${!requiresConfig ? 
+                            `<button onclick="quickInstallServer('${key}')">Install</button>` : ''
+                         }`
+                    }
+                </div>
+                <div class="status-indicator ${isInstalled ? 'installed' : ''}"></div>
+            </div>
+        `;
+        
+        // Add click handler for direct installation/uninstallation
+        if (!requiresConfig) {
+            card.style.cursor = 'pointer';
+            card.addEventListener('click', (e) => {
+                // Don't trigger if clicking on buttons
+                if (!e.target.closest('button')) {
+                    if (isInstalled) {
+                        uninstallServer(key, true);
+                    } else {
+                        quickInstallServer(key);
+                    }
+                }
+            });
+        }
+        
+        container.appendChild(card);
+    });
+    
+    grid.appendChild(container);
+    
+    // Clean up any lingering animation classes
+    setTimeout(() => {
+        const cards = document.querySelectorAll('.server-card');
+        cards.forEach(card => {
+            card.classList.remove('installing', 'uninstalling');
+            const indicator = card.querySelector('.status-indicator');
+            if (indicator) {
+                indicator.classList.remove('installing', 'uninstalling');
+            }
+        });
+    }, 100);
+}
+
+
+function displayServersByCategory(servers, grid) {
+    // Group servers by category
+    const categories = {};
+    Object.entries(servers).forEach(([key, server]) => {
+        const category = server.category || 'Other';
+        if (!categories[category]) {
+            categories[category] = [];
+        }
+        categories[category].push({ key, server });
+    });
+    
+    // Sort categories and display them
+    const sortedCategories = Object.keys(categories).sort();
+    
+    sortedCategories.forEach(category => {
+        // Create category section
+        const categorySection = document.createElement('div');
+        categorySection.className = 'category-section';
+        categorySection.setAttribute('data-category', category);
+        categorySection.innerHTML = `
+            <h2 class="category-title">${category} <span class="category-count">(${categories[category].length})</span></h2>
+            <div class="category-grid">
+        `;
+        
+        // Add servers in this category
+        categories[category].forEach(({ key, server }) => {
+            const card = document.createElement('div');
+            card.className = 'server-card';
+            
+            // Check if server is already installed
+            const isInstalled = isServerInstalled(key, server);
+            // Check if server requires configuration
+            const requiresConfig = server.requiredEnvVars && server.requiredEnvVars.length > 0;
+            
+            // Add data-selected attribute if installed
+            if (isInstalled) {
+                card.setAttribute('data-selected', '');
+            }
+            
+            // Get stars info for this server
+            const serverStars = starsData[key];
+            const starsDisplay = serverStars && serverStars.github && serverStars.github.stars !== undefined
+                ? `<div class="stars-info">⭐ ${serverStars.github.stars.toLocaleString()}</div>`
+                : '';
+
+            card.innerHTML = `
+                <div>
+                    <h3>${server.githubLink ? `<a href="${server.githubLink}" target="_blank" rel="noopener noreferrer">${server.name}</a>` : server.name}</h3>
+                    <p class="description">${server.description}</p>
+                    ${starsDisplay}
+                </div>
+                <div class="card-footer">
+                    <div class="button-container">
+                        ${isInstalled ? 
+                            `<button class="btn-configure" onclick="configureServer('${key}')">Reconfigure</button>
+                             <button class="btn-uninstall" onclick="uninstallServer('${key}')">Remove</button>` :
+                            `<button class="btn-configure" onclick="configureServer('${key}')">Configure</button>
+                             ${!requiresConfig ? 
+                                `<button onclick="quickInstallServer('${key}')">Install</button>` : ''
+                             }`
+                        }
+                    </div>
+                    <div class="status-indicator ${isInstalled ? 'installed' : ''}"></div>
+                </div>
+            `;
+            
+            // Add click handler for direct installation/uninstallation
+            if (!requiresConfig) {
+                card.style.cursor = 'pointer';
+                card.addEventListener('click', (e) => {
+                    // Don't trigger if clicking on buttons
+                    if (!e.target.closest('button')) {
+                        if (isInstalled) {
+                            uninstallServer(key, true);
+                        } else {
+                            quickInstallServer(key);
+                        }
+                    }
+                });
+            }
+            
+            categorySection.querySelector('.category-grid').appendChild(card);
+        });
+        
+        categorySection.innerHTML += '</div>';
+        grid.appendChild(categorySection);
+    });
+    
+    // Clean up any lingering animation classes
+    setTimeout(() => {
+        const cards = document.querySelectorAll('.server-card');
+        cards.forEach(card => {
+            card.classList.remove('installing', 'uninstalling');
+            const indicator = card.querySelector('.status-indicator');
+            if (indicator) {
+                indicator.classList.remove('installing', 'uninstalling');
+            }
+        });
+    }, 100);
+}
+
+function displayServersByStars(servers, grid) {
+    // Convert servers object to array and sort by stars
+    const serversArray = Object.entries(servers).map(([key, server]) => ({
+        key,
+        server,
+        stars: (starsData[key] && starsData[key].github && starsData[key].github.stars) || 0
+    }));
+    
+    // Sort by stars (descending)
+    serversArray.sort((a, b) => b.stars - a.stars);
+    
+    // Create a single container for all servers
+    const container = document.createElement('div');
+    container.className = 'category-grid';
+    container.style.marginTop = '0';
+    
+    // Add sorted servers
+    serversArray.forEach(({ key, server }) => {
+        const card = document.createElement('div');
+        card.className = 'server-card';
+        
+        // Check if server is already installed
+        const isInstalled = isServerInstalled(key, server);
+        // Check if server requires configuration
+        const requiresConfig = server.requiredEnvVars && server.requiredEnvVars.length > 0;
+        
+        // Add data-selected attribute if installed
+        if (isInstalled) {
+            card.setAttribute('data-selected', '');
+        }
+        
+        // Get stars info for this server
+        const serverStars = starsData[key];
+        const formatStars = (count) => {
+            if (count >= 1000) {
+                return (count / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
+            }
+            return count.toString();
+        };
+        
+        const starSvg = '<svg class="star-icon" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>';
+        
+        const starsDisplay = serverStars && serverStars.github && serverStars.github.stars !== undefined
+            ? `<div class="stars-info">${starSvg} ${formatStars(serverStars.github.stars)}</div>`
+            : '';
+
+        card.innerHTML = `
+            <div>
+                <div class="card-header">
+                    <h3>${server.githubLink ? `<a href="${server.githubLink}" target="_blank" rel="noopener noreferrer">${server.name}</a>` : server.name}</h3>
+                    ${starsDisplay}
+                </div>
+                <p class="description">${server.description}</p>
+            </div>
+            <div class="card-footer">
+                <div class="button-container">
+                    ${isInstalled ? 
+                        `<button class="btn-configure" onclick="configureServer('${key}')">Reconfigure</button>
+                         <button class="btn-uninstall" onclick="uninstallServer('${key}')">Remove</button>` :
+                        `<button class="btn-configure" onclick="configureServer('${key}')">Configure</button>
+                         ${!requiresConfig ? 
+                            `<button onclick="quickInstallServer('${key}')">Install</button>` : ''
+                         }`
+                    }
+                </div>
+                <div class="status-indicator ${isInstalled ? 'installed' : ''}"></div>
+            </div>
+        `;
+        
+        // Add click handler for direct installation/uninstallation
+        if (!requiresConfig) {
+            card.style.cursor = 'pointer';
+            card.addEventListener('click', (e) => {
+                // Don't trigger if clicking on buttons
+                if (!e.target.closest('button')) {
+                    if (isInstalled) {
+                        uninstallServer(key, true);
+                    } else {
+                        quickInstallServer(key);
+                    }
+                }
+            });
+        }
+        
+        container.appendChild(card);
+    });
+    
+    grid.appendChild(container);
+    
+    // Clean up any lingering animation classes
+    setTimeout(() => {
+        const cards = document.querySelectorAll('.server-card');
+        cards.forEach(card => {
+            card.classList.remove('installing', 'uninstalling');
+            const indicator = card.querySelector('.status-indicator');
+            if (indicator) {
+                indicator.classList.remove('installing', 'uninstalling');
+            }
+        });
+    }, 100);
+}
+
+function updateCurrentServers() {
+    const list = document.getElementById('currentServerList');
+    list.innerHTML = '';
+    
+    if (Object.keys(currentConfig.mcpServers).length === 0) {
+        list.innerHTML = '<li class="server-item">No servers configured</li>';
+        return;
+    }
+    
+    Object.entries(currentConfig.mcpServers).forEach(([name, config]) => {
+        const item = document.createElement('li');
+        item.className = 'server-item';
+        item.innerHTML = `
+            <div class="server-info">
+                <h4>${name}</h4>
+                <div class="details">
+                    Command: ${config.command} ${config.args.join(' ')}
+                    ${config.env ? '<br>Env: ' + JSON.stringify(config.env) : ''}
+                </div>
+            </div>
+            <div class="server-actions">
+                <button class="btn-edit" onclick="editServer('${name}')">Edit</button>
+                <button class="btn-remove" onclick="removeServer('${name}')">Remove</button>
+            </div>
+        `;
+        list.appendChild(item);
+    });
+}
+
+function searchServers(query) {
+    // Clear keyboard selection when searching
+    clearSelection();
+    
+    if (!query) {
+        displayServers();
+        return;
+    }
+    
+    const filtered = {};
+    const searchTerm = query.toLowerCase();
+    
+    Object.entries(preConfiguredServers).forEach(([key, server]) => {
+        if ((server.name && server.name.toLowerCase().includes(searchTerm)) ||
+            (server.description && server.description.toLowerCase().includes(searchTerm)) ||
+            (server.category && server.category.toLowerCase().includes(searchTerm)) ||
+            (server.package && server.package.toLowerCase().includes(searchTerm))) {
+            filtered[key] = server;
+        }
+    });
+    
+    displayServers(filtered);
+    
+    // Show a message if no results
+    if (Object.keys(filtered).length === 0) {
+        const grid = document.getElementById('serverGrid');
+        grid.innerHTML = '<div style="text-align: center; padding: 40px; color: #666;">No servers found matching your search.</div>';
+    }
+}
+
+async function configureServer(key) {
+    const server = preConfiguredServers[key];
+    const modal = document.getElementById('serverModal');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalBody = document.getElementById('modalBody');
+    
+    // Check if server is already installed to determine if this is a reconfigure
+    const isReconfigure = isServerInstalled(key, server);
+    const existingServerName = isReconfigure ? findExistingServerName(key, server) : key;
+    const existingConfig = isReconfigure ? currentConfig.mcpServers[existingServerName] : null;
+    
+    modalTitle.textContent = `${isReconfigure ? 'Reconfigure' : 'Configure'} ${server.name}`;
+    
+    // Check if .env file exists
+    let envVariables = {};
+    try {
+        const response = await fetch('/api/env-variables');
+        const data = await response.json();
+        if (data.exists) {
+            envVariables = data.variables;
+        }
+    } catch (error) {
+        console.error('Error fetching .env variables:', error);
+    }
+    
+    // Check if git repository is available
+    let gitInfo = null;
+    try {
+        const response = await fetch('/api/git-info');
+        const data = await response.json();
+        if (data.success && data.gitInfo) {
+            gitInfo = data.gitInfo;
+        }
+    } catch (error) {
+        console.error('Error fetching git info:', error);
+    }
+    
+    let formHtml = `
+        <form onsubmit="installServer(event, '${key}')">
+            <div class="form-group">
+                <label>Server Name</label>
+                <input type="text" id="serverName" value="${existingServerName}" required>
+                <small>Name for this server in your configuration</small>
+            </div>
+    `;
+    
+    // Add authentication method selector for servers that support it
+    if (server.authMethods) {
+        // Determine current auth method based on existing config
+        let currentAuthMethod = '';
+        if (existingConfig && existingConfig.env) {
+            if (existingConfig.env.SLACK_MCP_XOXP_TOKEN) {
+                currentAuthMethod = 'oauth';
+            } else if (existingConfig.env.SLACK_MCP_XOXC_TOKEN || existingConfig.env.SLACK_MCP_XOXD_TOKEN) {
+                currentAuthMethod = 'browser';
+            }
+        }
+        
+        formHtml += `
+            <div class="form-group">
+                <label>Authentication Method</label>
+                <select id="authMethod" onchange="updateAuthMethodFields('${key}')" required>
+                    <option value="">Select authentication method...</option>
+                    ${Object.entries(server.authMethods).map(([methodKey, method]) => `
+                        <option value="${methodKey}" ${currentAuthMethod === methodKey ? 'selected' : ''}>
+                            ${method.name}
+                        </option>
+                    `).join('')}
+                </select>
+                <small id="authMethodDescription" style="display: block; margin-top: 5px; color: #666;">
+                    ${currentAuthMethod && server.authMethods[currentAuthMethod] ? 
+                        server.authMethods[currentAuthMethod].description : 
+                        'Choose an authentication method to see required fields'}
+                </small>
+            </div>
+            <div id="authMethodFields"></div>
+        `;
+    }
+    
+    if (server.requiredEnvVars && server.requiredEnvVars.length > 0) {
+        formHtml += '<h4>Required Configuration</h4>';
+        server.requiredEnvVars.forEach(envVar => {
+            // Priority: existing config value > saved variable > empty
+            let currentValue = '';
+            if (existingConfig && existingConfig.env && existingConfig.env[envVar]) {
+                currentValue = existingConfig.env[envVar];
+            } else {
+                currentValue = savedVariables[envVar] || '';
+            }
+            
+            // Determine available sources
+            const sources = [];
+            if (savedVariables[envVar]) {
+                sources.push({ type: 'global', label: 'global variables', value: savedVariables[envVar] });
+            }
+            if (envVariables[envVar] !== undefined) {
+                sources.push({ type: 'env', label: '.env file', value: envVariables[envVar] });
+            }
+            if (gitInfo && (envVar === 'GITHUB_REPO' || envVar === 'GITHUB_OWNER')) {
+                const gitValue = envVar === 'GITHUB_REPO' ? gitInfo.fullName : gitInfo.owner;
+                sources.push({ type: 'git', label: 'git repository', value: gitValue });
+            }
+            
+            const hasMultipleSources = sources.length > 1;
+            const buttonWidth = hasMultipleSources ? '90px' : (sources.length === 1 ? '90px' : '8px');
+            
+            formHtml += `
+                <div class="form-group">
+                    <label>${envVar}</label>
+                    <div style="position: relative;">
+                        <input type="text" name="env_${envVar}" id="env_${envVar}" value="${currentValue}" required style="padding-right: ${buttonWidth};">
+                        ${sources.length > 0 ? (
+                            hasMultipleSources ? `
+                                <div class="fetch-dropdown" style="position: absolute; right: 4px; top: 50%; transform: translateY(-50%);">
+                                    <button type="button" class="btn-fetch-multi" onclick="toggleFetchDropdown('${envVar}')" title="Fetch from multiple sources">
+                                        <span style="font-size: 12px;">📥  fetch  ▼</span>
+                                    </button>
+                                    <div class="dropdown-content" id="dropdown-${envVar}" style="display: none;">
+                                        ${sources.map(source => `
+                                            <a href="#" onclick="fetchFromSource('${envVar}', '${source.type}'); return false;" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                                📋 ${source.label}: <span style="color: #666; font-size: 11px;">${source.value.length > 20 ? source.value.substring(0, 20) + '...' : source.value}</span>
+                                            </a>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            ` : `
+                                <button type="button" class="btn-fetch-single" onclick="fetchFromSource('${envVar}', '${sources[0].type}')" title="Fetch from ${sources[0].label}">
+                                    <span style="font-size: 12px;">📋 fetch from ${sources[0].type}</span>
+                                </button>
+                            `
+                        ) : ''}
+                    </div>
+                    ${currentValue && (existingConfig && existingConfig.env && existingConfig.env[envVar]) ? '<small style="color: #3498db;">✓ Current server value</small>' : (currentValue ? '<small style="color: #27ae60;">✓ Using saved value from Variables tab</small>' : '')}
+                    ${key === 'slack' && envVar === 'SLACK_BOT_TOKEN' ? 
+                        `<button type="button" class="btn-secondary" style="margin-top: 8px;" onclick="getSlackTokenWithSkyvern()">
+                            Get Token with Skyvern
+                        </button>` : ''}
+                    ${key === 'clickup' && envVar === 'CLICKUP_API_KEY' ? 
+                        `<button type="button" class="btn-secondary" style="margin-top: 8px;" onclick="getClickUpAPIKeyWithSkyvern()">
+                            Get API Key with Skyvern
+                        </button>` : ''}
+                </div>
+            `;
+        });
+    }
+    
+    if (server.optionalParams && server.optionalParams.length > 0) {
+        formHtml += '<h4>Optional Parameters</h4>';
+        server.optionalParams.forEach(param => {
+            // Priority: existing config value > saved variable > empty
+            let currentValue = '';
+            if (existingConfig && existingConfig.env && existingConfig.env[param]) {
+                currentValue = existingConfig.env[param];
+            } else {
+                currentValue = savedVariables[param] || '';
+            }
+            
+            // Determine available sources for optional params
+            const sources = [];
+            if (savedVariables[param]) {
+                sources.push({ type: 'global', label: 'global variables', value: savedVariables[param] });
+            }
+            if (envVariables[param] !== undefined) {
+                sources.push({ type: 'env', label: '.env file', value: envVariables[param] });
+            }
+            
+            const hasMultipleSources = sources.length > 1;
+            const buttonWidth = hasMultipleSources ? '90px' : (sources.length === 1 ? '90px' : '8px');
+            
+            formHtml += `
+                <div class="form-group">
+                    <label>${param}</label>
+                    <div style="position: relative;">
+                        <input type="text" name="opt_${param}" value="${currentValue}" style="padding-right: ${buttonWidth};">
+                        ${sources.length > 0 ? (
+                            hasMultipleSources ? `
+                                <div class="fetch-dropdown" style="position: absolute; right: 4px; top: 50%; transform: translateY(-50%);">
+                                    <button type="button" class="btn-fetch-multi" onclick="toggleFetchDropdown('opt_${param}')" title="Fetch from multiple sources">
+                                        <span style="font-size: 12px;">📥 fetch from ▼</span>
+                                    </button>
+                                    <div class="dropdown-content" id="dropdown-opt_${param}" style="display: none;">
+                                        ${sources.map(source => `
+                                            <a href="#" onclick="fetchFromSourceOpt('${param}', '${source.type}'); return false;">
+                                                📋 ${source.label}
+                                                <small style="display: block; color: #666; font-size: 10px; margin-top: 2px; word-break: break-all;">${source.value.length > 30 ? source.value.substring(0, 30) + '...' : source.value}</small>
+                                            </a>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            ` : `
+                                <button type="button" class="btn-fetch-single" onclick="fetchFromSourceOpt('${param}', '${sources[0].type}')" title="Fetch from ${sources[0].label}">
+                                    <span style="font-size: 12px;">📋 fetch from ${sources[0].type}</span>
+                                </button>
+                            `
+                        ) : ''}
+                    </div>
+                    ${currentValue && (existingConfig && existingConfig.env && existingConfig.env[param]) ? '<small style="color: #3498db;">✓ Current server value</small>' : (currentValue ? '<small style="color: #27ae60;">✓ Using saved value from Variables tab</small>' : '')}
+                </div>
+            `;
+        });
+    }
+    
+    formHtml += `
+        <div class="button-group">
+            <button type="submit" class="btn-primary">${isReconfigure ? 'Update Server' : 'Add Server'}</button>
+            <button type="button" class="btn-secondary" onclick="closeModal()">Cancel</button>
+        </div>
+    </form>
+    `;
+    
+    modalBody.innerHTML = formHtml;
+    modal.style.display = 'block';
+    
+    // If there's an authentication method selector and a pre-selected value, update the fields
+    if (server.authMethods) {
+        const authMethodSelect = document.getElementById('authMethod');
+        if (authMethodSelect && authMethodSelect.value) {
+            updateAuthMethodFields(key);
+        }
+    }
+}
+
+function quickInstallServer(key) {
+    const server = preConfiguredServers[key];
+    
+    // Find the card element and trigger animation
+    const cardElement = findCardElement(key);
+    if (cardElement) {
+        cardElement.classList.add('installing');
+        const statusIndicator = cardElement.querySelector('.status-indicator');
+        if (statusIndicator) {
+            statusIndicator.classList.add('installing');
+        }
+    }
+    
+    // Parse the install command to get command and args
+    const installParts = server.installCommand.split(' ');
+    const command = installParts[0];
+    const args = installParts.slice(1);
+    
+    const serverConfig = {
+        command,
+        args: [...args]
+    };
+    
+    // Add empty env object only if there are optional params
+    if (server.optionalParams && server.optionalParams.length > 0) {
+        serverConfig.env = {};
+    }
+    
+    // Use the key as the server name
+    currentConfig.mcpServers[key] = serverConfig;
+    
+    // Save configuration
+    fetch('/api/config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(currentConfig)
+    }).then(response => {
+        if (response.ok) {
+            // Delay the UI update to allow animation to complete
+            setTimeout(() => {
+                updateCurrentServers();
+                document.getElementById('configEditor').value = JSON.stringify(currentConfig, null, 2);
+                displayServers(); // Re-display to update installation status
+            }, 300);
+        } else {
+            throw new Error('Failed to save configuration');
+        }
+    }).catch(error => {
+        showMessage(error.message, 'error');
+        // Remove animation classes on error
+        if (cardElement) {
+            cardElement.classList.remove('installing');
+            const statusIndicator = cardElement.querySelector('.status-indicator');
+            if (statusIndicator) {
+                statusIndicator.classList.remove('installing');
+            }
+        }
+    });
+}
+
+function installServer(event, key) {
+    event.preventDefault();
+    
+    const server = preConfiguredServers[key];
+    const form = event.target;
+    const serverName = form.serverName.value;
+    
+    // Check if this is an update (reconfigure)
+    const isReconfigure = isServerInstalled(key, server);
+    const existingServerName = isReconfigure ? findExistingServerName(key, server) : null;
+    
+    const installParts = server.installCommand.split(' ');
+    const command = installParts[0];
+    const args = installParts.slice(1);
+    
+    const serverConfig = {
+        command,
+        args: [...args],
+        env: {}
+    };
+    
+    // Collect environment variables
+    const formData = new FormData(form);
+    for (const [key, value] of formData.entries()) {
+        if (key.startsWith('env_') && value) {
+            const envVar = key.substring(4);
+            serverConfig.env[envVar] = value;
+            
+            // Update saved variables if value changed
+            if (savedVariables[envVar] !== value) {
+                savedVariables[envVar] = value;
+                saveVariables(); // Save the updated variable
+            }
+        } else if (key.startsWith('opt_') && value) {
+            const param = key.substring(4);
+            serverConfig.env[param] = value;
+            
+            // Update saved variables if value changed
+            if (savedVariables[param] !== value) {
+                savedVariables[param] = value;
+                saveVariables(); // Save the updated variable
+            }
+        }
+    }
+    
+    // If reconfiguring and name changed, remove old entry
+    if (isReconfigure && existingServerName && existingServerName !== serverName) {
+        delete currentConfig.mcpServers[existingServerName];
+    }
+    
+    currentConfig.mcpServers[serverName] = serverConfig;
+    
+    // Save configuration
+    fetch('/api/config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(currentConfig)
+    }).then(response => {
+        if (response.ok) {
+            updateCurrentServers();
+            document.getElementById('configEditor').value = JSON.stringify(currentConfig, null, 2);
+            closeModal();
+            displayServers(); // Re-display to update installation status
+        } else {
+            throw new Error('Failed to save configuration');
+        }
+    }).catch(error => {
+        showMessage(error.message, 'error');
+    });
+}
+
+function addCustomServer(event) {
+    event.preventDefault();
+    
+    const name = document.getElementById('customName').value;
+    const command = document.getElementById('customCommand').value;
+    const argsInput = document.getElementById('customArgs').value;
+    const envInput = document.getElementById('customEnv').value;
+    
+    const args = argsInput.split(',').map(arg => arg.trim()).filter(arg => arg);
+    const env = {};
+    
+    if (envInput.trim()) {
+        envInput.split(',').forEach(pair => {
+            const [key, value] = pair.split('=').map(s => s.trim());
+            if (key && value) {
+                env[key] = value;
+            }
+        });
+    }
+    
+    currentConfig.mcpServers[name] = {
+        command,
+        args,
+        ...(Object.keys(env).length > 0 && { env })
+    };
+    
+    // Save configuration
+    fetch('/api/config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(currentConfig)
+    }).then(response => {
+        if (response.ok) {
+            updateCurrentServers();
+            document.getElementById('configEditor').value = JSON.stringify(currentConfig, null, 2);
+            event.target.reset();
+            switchTab('current');
+        } else {
+            throw new Error('Failed to save configuration');
+        }
+    }).catch(error => {
+        showMessage(error.message, 'error');
+    });
+}
+
+function removeServer(name) {
+    if (confirm(`Are you sure you want to remove "${name}"?`)) {
+        delete currentConfig.mcpServers[name];
+        
+        fetch('/api/config', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(currentConfig)
+        }).then(response => {
+            if (response.ok) {
+                updateCurrentServers();
+                document.getElementById('configEditor').value = JSON.stringify(currentConfig, null, 2);
+                displayServers(); // Re-display to update installation status
+            } else {
+                throw new Error('Failed to save configuration');
+            }
+        }).catch(error => {
+            showMessage(error.message, 'error');
+        });
+    }
+}
+
+function uninstallServer(key, silent = false) {
+    const server = preConfiguredServers[key];
+    if (silent || confirm(`Are you sure you want to uninstall ${server.name}?`)) {
+        // Find the card element and trigger animation
+        const cardElement = findCardElement(key);
+        if (cardElement) {
+            cardElement.classList.add('uninstalling');
+            const statusIndicator = cardElement.querySelector('.status-indicator');
+            if (statusIndicator) {
+                statusIndicator.classList.add('uninstalling');
+            }
+        }
+        
+        // Check if server exists with exact key match
+        if (currentConfig.mcpServers[key]) {
+            delete currentConfig.mcpServers[key];
+        } else {
+            // If not found by key, search by matching command
+            Object.entries(currentConfig.mcpServers).forEach(([name, config]) => {
+                const installedCommand = config.command + " " + config.args.join(" ");
+                if (installedCommand === server.installCommand) {
+                    delete currentConfig.mcpServers[name];
+                }
+            });
+        }
+        
+        fetch('/api/config', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(currentConfig)
+        }).then(response => {
+            if (response.ok) {
+                // Delay the UI update to allow animation to complete
+                setTimeout(() => {
+                    updateCurrentServers();
+                    document.getElementById('configEditor').value = JSON.stringify(currentConfig, null, 2);
+                    displayServers(); // Re-display to update installation status
+                }, 300);
+            } else {
+                throw new Error('Failed to save configuration');
+            }
+        }).catch(error => {
+            showMessage(error.message, 'error');
+            // Remove animation classes on error
+            if (cardElement) {
+                cardElement.classList.remove('uninstalling');
+                const statusIndicator = cardElement.querySelector('.status-indicator');
+                if (statusIndicator) {
+                    statusIndicator.classList.remove('uninstalling');
+                }
+            }
+        });
+    }
+}
+
+function editServer(name) {
+    const server = currentConfig.mcpServers[name];
+    if (!server) {
+        showMessage('Server not found', 'error');
+        return;
+    }
+    
+    const modal = document.getElementById('serverModal');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalBody = document.getElementById('modalBody');
+    
+    modalTitle.textContent = `Edit Server: ${name}`;
+    
+    let envVarsHtml = '';
+    if (server.env && Object.keys(server.env).length > 0) {
+        envVarsHtml = '<h4>Environment Variables</h4>';
+        Object.entries(server.env).forEach(([key, value]) => {
+            envVarsHtml += `
+                <div class="form-group">
+                    <label>${key}</label>
+                    <input type="text" name="env_${key}" value="${value}">
+                    <button type="button" class="btn-remove" style="padding: 4px 8px; font-size: 12px;" onclick="this.parentElement.remove()">Remove</button>
+                </div>
+            `;
+        });
+    }
+    
+    modalBody.innerHTML = `
+        <form onsubmit="updateServer(event, '${name}')">
+            <div class="form-group">
+                <label>Server Name</label>
+                <input type="text" id="editServerName" value="${name}" required>
+                <small>Rename this server configuration</small>
+            </div>
+            <div class="form-group">
+                <label>Command</label>
+                <input type="text" id="editCommand" value="${server.command}" required>
+            </div>
+            <div class="form-group">
+                <label>Arguments (comma-separated)</label>
+                <input type="text" id="editArgs" value="${server.args.join(', ')}">
+            </div>
+            <div id="envVarsContainer">
+                ${envVarsHtml}
+            </div>
+            <button type="button" class="btn-secondary" style="margin: 10px 0;" onclick="addEnvVar()">Add Environment Variable</button>
+            <div class="button-group">
+                <button type="submit" class="btn-primary">Save Changes</button>
+                <button type="button" class="btn-secondary" onclick="closeModal()">Cancel</button>
+            </div>
+        </form>
+    `;
+    
+    modal.style.display = 'block';
+}
+
+function addEnvVar() {
+    const container = document.getElementById('envVarsContainer');
+    if (!container.querySelector('h4')) {
+        container.innerHTML = '<h4>Environment Variables</h4>' + container.innerHTML;
+    }
+    
+    const newEnvVar = document.createElement('div');
+    newEnvVar.className = 'form-group';
+    newEnvVar.innerHTML = `
+        <input type="text" name="env_key" placeholder="Variable name" style="width: 45%; margin-right: 2%;">
+        <input type="text" name="env_value" placeholder="Value" style="width: 45%; margin-right: 2%;">
+        <button type="button" class="btn-remove" style="padding: 4px 8px; font-size: 12px;" onclick="this.parentElement.remove()">Remove</button>
+    `;
+    container.appendChild(newEnvVar);
+}
+
+function updateServer(event, oldName) {
+    event.preventDefault();
+    
+    const form = event.target;
+    const newName = form.editServerName.value;
+    const command = form.editCommand.value;
+    const argsInput = form.editArgs.value;
+    
+    const args = argsInput.split(',').map(arg => arg.trim()).filter(arg => arg);
+    const env = {};
+    
+    // Collect existing environment variables
+    const envInputs = form.querySelectorAll('input[name^="env_"]:not([name="env_key"]):not([name="env_value"])');
+    envInputs.forEach(input => {
+        const key = input.name.substring(4);
+        if (input.value) {
+            env[key] = input.value;
+        }
+    });
+    
+    // Collect new environment variables
+    const newEnvKeys = form.querySelectorAll('input[name="env_key"]');
+    const newEnvValues = form.querySelectorAll('input[name="env_value"]');
+    newEnvKeys.forEach((keyInput, index) => {
+        if (keyInput.value && newEnvValues[index].value) {
+            env[keyInput.value] = newEnvValues[index].value;
+        }
+    });
+    
+    // If name changed, delete old entry
+    if (newName !== oldName) {
+        delete currentConfig.mcpServers[oldName];
+    }
+    
+    // Update configuration
+    currentConfig.mcpServers[newName] = {
+        command,
+        args,
+        ...(Object.keys(env).length > 0 && { env })
+    };
+    
+    // Save configuration
+    fetch('/api/config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(currentConfig)
+    }).then(response => {
+        if (response.ok) {
+            showMessage(`Updated "${newName}" successfully`, 'success');
+            updateCurrentServers();
+            document.getElementById('configEditor').value = JSON.stringify(currentConfig, null, 2);
+            closeModal();
+        } else {
+            throw new Error('Failed to save configuration');
+        }
+    }).catch(error => {
+        showMessage(error.message, 'error');
+    });
+}
+
+function switchTab(tabId) {
+    document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+    
+    event.target.classList.add('active');
+    document.getElementById(tabId).classList.add('active');
+}
+
+function closeModal() {
+    document.getElementById('serverModal').style.display = 'none';
+}
+
+function showMessage(text, type) {
+    const message = document.getElementById('message');
+    message.textContent = text;
+    message.className = `message ${type}`;
+    message.style.display = 'block';
+    
+    setTimeout(() => {
+        message.style.display = 'none';
+    }, 5000);
+}
+
+async function getSlackTokenWithSkyvern() {
+    // Show step-by-step guide modal
+    showSlackTokenGuide();
+}
+
+async function getClickUpAPIKeyWithSkyvern() {
+    // Show step-by-step guide modal
+    showClickUpAPIKeyGuide();
+}
+
+function showSlackTokenGuide() {
+    const modal = document.getElementById('serverModal');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalBody = document.getElementById('modalBody');
+    
+    modalTitle.textContent = 'Get Slack Bot Token - Step by Step';
+    
+    modalBody.innerHTML = `
+        <div class="slack-token-guide">
+            <h3>Manual Steps:</h3>
+            <ol>
+                <li>
+                    <strong>Go to Slack API Apps page</strong><br>
+                    <a href="https://api.slack.com/apps" target="_blank" class="btn-secondary">Open Slack Apps</a>
+                </li>
+                <li>
+                    <strong>Create a new app or select existing app</strong><br>
+                    <small>If creating new: Choose "From scratch" and give it a name</small>
+                </li>
+                <li>
+                    <strong>Navigate to "OAuth & Permissions" in the left sidebar</strong>
+                </li>
+                <li>
+                    <strong>Add Bot Token Scopes</strong><br>
+                    <small>Common scopes: chat:write, channels:read, users:read</small>
+                </li>
+                <li>
+                    <strong>Install to Workspace</strong><br>
+                    <small>Click "Install to Workspace" button and authorize</small>
+                </li>
+                <li>
+                    <strong>Copy the Bot User OAuth Token</strong><br>
+                    <small>It starts with "xoxb-"</small>
+                </li>
+            </ol>
+            
+            <div class="form-group">
+                <label>Paste your Bot Token here:</label>
+                <input type="text" id="manual_slack_token" placeholder="xoxb-your-token-here">
+            </div>
+            
+            <h4>Or use Skyvern automation:</h4>
+            <button type="button" class="btn-primary" onclick="launchSkyvernAutomation()">
+                Launch Skyvern Browser Automation
+            </button>
+            
+            <div class="button-group" style="margin-top: 20px;">
+                <button type="button" class="btn-primary" onclick="applySlackToken()">Apply Token</button>
+                <button type="button" class="btn-secondary" onclick="closeModal()">Cancel</button>
+            </div>
+        </div>
+        
+        <style>
+            .slack-token-guide ol {
+                margin: 20px 0;
+                padding-left: 20px;
+            }
+            .slack-token-guide li {
+                margin: 15px 0;
+                line-height: 1.5;
+            }
+            .slack-token-guide a {
+                display: inline-block;
+                margin: 5px 0;
+            }
+        </style>
+    `;
+    
+    modal.style.display = 'block';
+}
+
+function applySlackToken() {
+    const token = document.getElementById('manual_slack_token').value;
+    if (token) {
+        document.getElementById('env_SLACK_BOT_TOKEN').value = token;
+        closeModal();
+        showMessage('Slack token applied successfully', 'success');
+    } else {
+        showMessage('Please enter a token', 'error');
+    }
+}
+
+async function launchSkyvernAutomation() {
+    const button = event.target;
+    const originalText = button.textContent;
+    button.disabled = true;
+    button.textContent = 'Launching browser automation...';
+    
+    try {
+        // Use the direct Slack automation instead of Skyvern MCP server
+        button.textContent = 'Running Slack token automation...';
+        
+        // Call the built-in Slack automation endpoint
+        const response = await fetch('/api/slack-automation', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action: 'create_slack_token'
+            })
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to start Slack automation');
+        }
+        
+        const result = await response.json();
+        
+        if (result.success && result.token) {
+            document.getElementById('manual_slack_token').value = result.token;
+            button.textContent = 'Token Retrieved! Click Apply Token';
+            showMessage('Token found! Click "Apply Token" to use it', 'success');
+        } else {
+            button.textContent = 'Automation completed - Check result and paste token';
+            showMessage('Please check the automation result and paste the token above', 'info');
+        }
+        
+        button.disabled = false;
+        
+    } catch (error) {
+        showMessage('Error: ' + error.message, 'error');
+        button.textContent = originalText;
+        button.disabled = false;
+    }
+}
+
+function showClickUpAPIKeyGuide() {
+    const modal = document.getElementById('serverModal');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalBody = document.getElementById('modalBody');
+    
+    modalTitle.textContent = 'Get ClickUp API Key - Step by Step';
+    
+    modalBody.innerHTML = `
+        <div class="clickup-api-guide">
+            <h3>Manual Steps:</h3>
+            <ol>
+                <li>
+                    <strong>Go to ClickUp Settings</strong><br>
+                    <a href="https://app.clickup.com/settings/apps" target="_blank" class="btn-secondary">Open ClickUp Settings</a>
+                </li>
+                <li>
+                    <strong>Find "API Token" section</strong><br>
+                    <small>Look for "Apps" or "My Apps" in the settings</small>
+                </li>
+                <li>
+                    <strong>Generate Personal Token</strong><br>
+                    <small>Click "Generate" or "Create Personal Token"</small>
+                </li>
+                <li>
+                    <strong>Copy the API token</strong><br>
+                    <small>The token will be displayed once - make sure to copy it!</small>
+                </li>
+            </ol>
+            
+            <div class="form-group">
+                <label>Paste your API Key here:</label>
+                <input type="text" id="manual_clickup_api_key" placeholder="pk_your-api-key-here">
+            </div>
+            
+            <h4>Or use Skyvern automation:</h4>
+            <button type="button" class="btn-primary" onclick="launchClickUpSkyvernAutomation()">
+                Launch Skyvern Browser Automation
+            </button>
+            <small style="display: block; margin-top: 8px; color: #666;">
+                Skyvern will automatically navigate ClickUp and help you retrieve your API key
+            </small>
+            
+            <div class="button-group" style="margin-top: 20px;">
+                <button type="button" class="btn-primary" onclick="applyClickUpAPIKey()">Apply API Key</button>
+                <button type="button" class="btn-secondary" onclick="closeModal()">Cancel</button>
+            </div>
+        </div>
+        
+        <style>
+            .clickup-api-guide ol {
+                margin: 20px 0;
+                padding-left: 20px;
+            }
+            .clickup-api-guide li {
+                margin: 15px 0;
+                line-height: 1.5;
+            }
+            .clickup-api-guide a {
+                display: inline-block;
+                margin: 5px 0;
+            }
+        </style>
+    `;
+    
+    modal.style.display = 'block';
+}
+
+function applyClickUpAPIKey() {
+    const apiKey = document.getElementById('manual_clickup_api_key').value;
+    if (apiKey) {
+        document.getElementById('env_CLICKUP_API_KEY').value = apiKey;
+        closeModal();
+        showMessage('ClickUp API key applied successfully', 'success');
+    } else {
+        showMessage('Please enter an API key', 'error');
+    }
+}
+
+async function launchClickUpSkyvernAutomation() {
+    const button = event.target;
+    const originalText = button.textContent;
+    button.disabled = true;
+    button.textContent = 'Launching Skyvern automation...';
+    
+    try {
+        // Call the ClickUp automation endpoint
+        const response = await fetch('/api/clickup-automation', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action: 'get_api_key_with_skyvern'
+            })
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to start ClickUp automation');
+        }
+        
+        const result = await response.json();
+        
+        if (result.success && result.apiKey) {
+            document.getElementById('manual_clickup_api_key').value = result.apiKey;
+            button.textContent = 'API Key Retrieved! Click Apply API Key';
+            showMessage('API key found! Click "Apply API Key" to use it', 'success');
+        } else {
+            button.textContent = 'Automation completed - Check result and paste API key';
+            showMessage('Please check the automation result and paste the API key above', 'info');
+        }
+        
+        button.disabled = false;
+        
+    } catch (error) {
+        showMessage('Error: ' + error.message, 'error');
+        button.textContent = originalText;
+        button.disabled = false;
+    }
+}
+
+// Variables management functions
+async function loadVariables() {
+    try {
+        const response = await fetch('/api/variables');
+        if (response.ok) {
+            savedVariables = await response.json();
+        }
+    } catch (error) {
+        console.error('Failed to load variables:', error);
+    }
+}
+
+async function updateVariablesList() {
+    const container = document.getElementById('variablesList');
+    container.innerHTML = '';
+    
+    // Collect all unique environment variables from all servers
+    const variableUsage = {};
+    
+    // Scan pre-configured servers
+    Object.entries(preConfiguredServers).forEach(([key, server]) => {
+        if (server.requiredEnvVars) {
+            server.requiredEnvVars.forEach(varName => {
+                if (!variableUsage[varName]) {
+                    variableUsage[varName] = [];
+                }
+                variableUsage[varName].push(server.name);
+            });
+        }
+    });
+    
+    // Scan current configuration
+    Object.entries(currentConfig.mcpServers).forEach(([name, config]) => {
+        if (config.env) {
+            Object.keys(config.env).forEach(varName => {
+                if (!variableUsage[varName]) {
+                    variableUsage[varName] = [];
+                }
+                if (!variableUsage[varName].includes(name)) {
+                    variableUsage[varName].push(name);
+                }
+            });
+        }
+    });
+    
+    // Check for .env file availability
+    let envVariables = {};
+    try {
+        const response = await fetch('/api/env-variables');
+        const data = await response.json();
+        if (data.exists) {
+            envVariables = data.variables;
+        }
+    } catch (error) {
+        console.error('Error fetching .env variables:', error);
+    }
+    
+    // Create UI for each variable
+    Object.entries(variableUsage).sort().forEach(([varName, servers]) => {
+        const item = document.createElement('div');
+        item.className = 'variable-item';
+        item.setAttribute('data-var-name', varName);
+        
+        const value = savedVariables[varName] || '';
+        const hasEnvValue = envVariables[varName] !== undefined;
+        const isEmpty = !value;
+        
+        item.innerHTML = `
+            <div class="variable-header">
+                <div class="variable-name">${varName}</div>
+                <button type="button" class="variable-save-btn" onclick="saveIndividualVariable('${varName}')" title="Save this variable">
+                    Save
+                </button>
+            </div>
+            <div style="position: relative;">
+                <input type="text" 
+                       class="variable-input" 
+                       data-var-name="${varName}"
+                       data-original-value="${value}"
+                       value="${value}"
+                       placeholder="Enter value for ${varName}"
+                       oninput="handleVariableChange('${varName}')"
+                       style="padding-right: ${hasEnvValue && isEmpty ? '110px' : '8px'};">
+                ${hasEnvValue && isEmpty ? `
+                    <button type="button" class="btn-env-fetch" onclick="fetchFromEnvForVariables('${varName}')" title="Fetch from .env file">
+                        <span style="font-size: 12px;">📋 fetch from .env</span>
+                    </button>
+                ` : ''}
+                ${!isEmpty && hasEnvValue ? `
+                    <small style="color: #27ae60; font-size: 12px; display: block; margin-top: 4px;">✓ Value available in .env file</small>
+                ` : ''}
+            </div>
+            <div class="variable-usage">
+                <strong>Used by:</strong> ${servers.join(', ')}
+            </div>
+        `;
+        
+        container.appendChild(item);
+    });
+    
+    if (Object.keys(variableUsage).length === 0) {
+        container.innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">No environment variables found in configured servers.</p>';
+    }
+}
+
+// Handle input changes to show save button and change background
+function handleVariableChange(varName) {
+    const input = document.querySelector(`input[data-var-name="${varName}"]`);
+    const item = document.querySelector(`.variable-item[data-var-name="${varName}"]`);
+    const saveBtn = item.querySelector('.variable-save-btn');
+    
+    if (!input || !item || !saveBtn) return;
+    
+    const originalValue = input.getAttribute('data-original-value') || '';
+    const currentValue = input.value.trim();
+    
+    // Check if value has changed
+    if (currentValue !== originalValue) {
+        // Show save button and change background to ember yellow
+        saveBtn.classList.add('show');
+        item.classList.add('changed');
+        item.classList.remove('saved', 'saved-success');
+    } else {
+        // Hide save button and remove changed background
+        saveBtn.classList.remove('show');
+        item.classList.remove('changed', 'saved', 'saved-success');
+    }
+}
+
+// Save individual variable
+async function saveIndividualVariable(varName) {
+    const input = document.querySelector(`input[data-var-name="${varName}"]`);
+    const item = document.querySelector(`.variable-item[data-var-name="${varName}"]`);
+    const saveBtn = item.querySelector('.variable-save-btn');
+    
+    if (!input || !item || !saveBtn) return;
+    
+    const value = input.value.trim();
+    
+    try {
+        // Create a copy of current saved variables and update the specific one
+        const updatedVariables = { ...savedVariables };
+        if (value) {
+            updatedVariables[varName] = value;
+        } else {
+            delete updatedVariables[varName];
+        }
+        
+        const response = await fetch('/api/variables', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(updatedVariables)
+        });
+        
+        if (response.ok) {
+            // Update saved variables
+            savedVariables = updatedVariables;
+            
+            // Update the original value attribute
+            input.setAttribute('data-original-value', value);
+            
+            // Hide save button and show success feedback
+            saveBtn.classList.remove('show');
+            item.classList.remove('changed');
+            item.classList.add('saved-success');
+            
+            showMessage(`Variable ${varName} saved successfully`, 'success');
+        } else {
+            throw new Error('Failed to save variable');
+        }
+    } catch (error) {
+        showMessage(`Error saving ${varName}: ` + error.message, 'error');
+    }
+}
+
+async function saveVariables() {
+    const variables = {};
+    
+    // Collect all variable values
+    document.querySelectorAll('.variable-input').forEach(input => {
+        const varName = input.getAttribute('data-var-name');
+        const value = input.value.trim();
+        if (value) {
+            variables[varName] = value;
+        }
+    });
+    
+    try {
+        const response = await fetch('/api/variables', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(variables)
+        });
+        
+        if (response.ok) {
+            savedVariables = variables;
+            showMessage('Variables saved successfully', 'success');
+        } else {
+            throw new Error('Failed to save variables');
+        }
+    } catch (error) {
+        showMessage('Error saving variables: ' + error.message, 'error');
+    }
+}
+
+// Update switchTab to handle variables tab
+const originalSwitchTab = switchTab;
+switchTab = function(tabName) {
+    originalSwitchTab(tabName);
+    if (tabName === 'variables') {
+        updateVariablesList();
+    }
+};
+
+// Close modal when clicking outside, and close dropdowns when clicking outside
+window.onclick = function(event) {
+    const modal = document.getElementById('serverModal');
+    if (event.target === modal) {
+        closeModal();
+    }
+    
+    // Close dropdowns when clicking outside
+    if (!event.target.closest('.fetch-dropdown')) {
+        const allDropdowns = document.querySelectorAll('.dropdown-content');
+        allDropdowns.forEach(dropdown => {
+            dropdown.style.display = 'none';
+        });
+    }
+}
+
+// Function to fetch value from .env and populate input
+async function fetchFromEnv(varName) {
+    try {
+        const response = await fetch('/api/env-variables');
+        const data = await response.json();
+        
+        if (data.exists && data.variables[varName]) {
+            // Find the input field and set its value
+            const envInput = document.getElementById(`env_${varName}`);
+            const optInput = document.querySelector(`input[name="opt_${varName}"]`);
+            
+            if (envInput) {
+                envInput.value = data.variables[varName];
+            } else if (optInput) {
+                optInput.value = data.variables[varName];
+            }
+            
+            showMessage(`Fetched ${varName} from .env file`, 'success');
+        } else {
+            showMessage(`${varName} not found in .env file`, 'error');
+        }
+    } catch (error) {
+        showMessage('Error fetching from .env file', 'error');
+    }
+}
+
+// Function to fetch git repository information and populate input
+async function fetchFromGit(varName) {
+    try {
+        const response = await fetch('/api/git-info');
+        const data = await response.json();
+        
+        if (data.success && data.gitInfo) {
+            const gitInfo = data.gitInfo;
+            let value = '';
+            
+            if (varName === 'GITHUB_REPO') {
+                value = gitInfo.fullName;
+            } else if (varName === 'GITHUB_OWNER') {
+                value = gitInfo.owner;
+            }
+            
+            if (value) {
+                // Find the input field and set its value
+                const envInput = document.getElementById(`env_${varName}`);
+                const optInput = document.querySelector(`input[name="opt_${varName}"]`);
+                
+                if (envInput) {
+                    envInput.value = value;
+                } else if (optInput) {
+                    optInput.value = value;
+                }
+                
+                // Auto-fill GITHUB_OWNER if GITHUB_REPO was fetched
+                if (varName === 'GITHUB_REPO') {
+                    const ownerInput = document.getElementById('env_GITHUB_OWNER');
+                    if (ownerInput && !ownerInput.value) {
+                        ownerInput.value = gitInfo.owner;
+                        showMessage(`Fetched ${varName} from git and auto-filled GITHUB_OWNER`, 'success');
+                    } else {
+                        showMessage(`Fetched ${varName} from git repository`, 'success');
+                    }
+                } else {
+                    showMessage(`Fetched ${varName} from git repository`, 'success');
+                }
+            } else {
+                showMessage(`Could not extract ${varName} from git repository`, 'error');
+            }
+        } else {
+            showMessage('No git repository detected or not a GitHub repository', 'error');
+        }
+    } catch (error) {
+        showMessage('Error fetching from git repository', 'error');
+    }
+}
+
+// Function to toggle dropdown visibility
+function toggleFetchDropdown(varName) {
+    const dropdown = document.getElementById(`dropdown-${varName}`);
+    const allDropdowns = document.querySelectorAll('.dropdown-content');
+    
+    // Close all other dropdowns
+    allDropdowns.forEach(d => {
+        if (d !== dropdown) {
+            d.style.display = 'none';
+        }
+    });
+    
+    // Toggle current dropdown
+    dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+}
+
+// Function to fetch from a specific source
+async function fetchFromSource(varName, sourceType) {
+    // Close dropdown
+    const dropdown = document.getElementById(`dropdown-${varName}`);
+    if (dropdown) {
+        dropdown.style.display = 'none';
+    }
+    
+    try {
+        switch (sourceType) {
+            case 'global':
+                // Fetch from saved variables
+                if (savedVariables[varName]) {
+                    const input = document.getElementById(`env_${varName}`);
+                    if (input) {
+                        input.value = savedVariables[varName];
+                        showMessage(`Fetched ${varName} from global variables`, 'success');
+                    }
+                } else {
+                    showMessage(`${varName} not found in global variables`, 'error');
+                }
+                break;
+                
+            case 'env':
+                // Use existing fetchFromEnv function
+                await fetchFromEnv(varName);
+                break;
+                
+            case 'git':
+                // Use existing fetchFromGit function
+                await fetchFromGit(varName);
+                break;
+                
+            default:
+                showMessage(`Unknown source type: ${sourceType}`, 'error');
+        }
+    } catch (error) {
+        showMessage(`Error fetching ${varName} from ${sourceType}`, 'error');
+    }
+}
+
+// Function to fetch from a specific source for optional parameters
+async function fetchFromSourceOpt(paramName, sourceType) {
+    // Close dropdown
+    const dropdown = document.getElementById(`dropdown-opt_${paramName}`);
+    if (dropdown) {
+        dropdown.style.display = 'none';
+    }
+    
+    try {
+        switch (sourceType) {
+            case 'global':
+                // Fetch from saved variables
+                if (savedVariables[paramName]) {
+                    const input = document.querySelector(`input[name="opt_${paramName}"]`);
+                    if (input) {
+                        input.value = savedVariables[paramName];
+                        showMessage(`Fetched ${paramName} from global variables`, 'success');
+                    }
+                } else {
+                    showMessage(`${paramName} not found in global variables`, 'error');
+                }
+                break;
+                
+            case 'env':
+                // Use existing fetchFromEnv function with parameter name
+                await fetchFromEnv(paramName);
+                break;
+                
+            default:
+                showMessage(`Unknown source type: ${sourceType}`, 'error');
+        }
+    } catch (error) {
+        showMessage(`Error fetching ${paramName} from ${sourceType}`, 'error');
+    }
+}
+
+// Function to fetch value from .env for Variables tab
+async function fetchFromEnvForVariables(varName) {
+    try {
+        const response = await fetch('/api/env-variables');
+        const data = await response.json();
+        
+        if (data.exists && data.variables[varName]) {
+            // Find the variable input field and set its value
+            const variableInput = document.querySelector(`input[data-var-name="${varName}"]`);
+            
+            if (variableInput) {
+                variableInput.value = data.variables[varName];
+                // Trigger change detection
+                handleVariableChange(varName);
+                showMessage(`Fetched ${varName} from .env file`, 'success');
+            }
+        } else {
+            showMessage(`${varName} not found in .env file`, 'error');
+        }
+    } catch (error) {
+        showMessage('Error fetching from .env file', 'error');
+    }
+}
+
+// Version check and auto-update functions
+async function checkForUpdates() {
+    try {
+        const response = await fetch('/api/version-check');
+        const versionInfo = await response.json();
+        
+        if (versionInfo.needsUpdate && versionInfo.isMandatory) {
+            showMandatoryUpdateModal(versionInfo);
+        } else if (versionInfo.needsUpdate) {
+            showUpdateNotification(versionInfo);
+        }
+    } catch (error) {
+        console.error('Error checking for updates:', error);
+    }
+}
+
+function showMandatoryUpdateModal(versionInfo) {
+    const modal = document.getElementById('serverModal');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalBody = document.getElementById('modalBody');
+    
+    modalTitle.textContent = '🔄 Mandatory Update Required';
+    
+    modalBody.innerHTML = `
+        <div class="update-modal">
+            <div style="text-align: center; margin-bottom: 20px;">
+                <div style="font-size: 48px; margin-bottom: 16px;">⚠️</div>
+                <h3 style="color: #e74c3c; margin-bottom: 12px;">Update Required</h3>
+                <p style="color: #666; margin-bottom: 20px;">
+                    A mandatory update is available. The application must be updated to continue.
+                </p>
+            </div>
+            
+            <div class="version-info" style="background: #f8f9fa; padding: 16px; border-radius: 8px; margin-bottom: 20px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <span style="font-weight: 600;">Current Version:</span>
+                    <span style="font-family: 'JetBrains Mono', monospace;">${versionInfo.currentVersion}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span style="font-weight: 600;">Latest Version:</span>
+                    <span style="font-family: 'JetBrains Mono', monospace; color: #27ae60;">${versionInfo.latestVersion}</span>
+                </div>
+            </div>
+            
+            <div id="updateProgress" style="margin-bottom: 20px; display: none;">
+                <div style="background: #e0e0e0; border-radius: 4px; overflow: hidden; margin-bottom: 8px;">
+                    <div id="progressBar" style="background: #3498db; height: 8px; width: 0%; transition: width 0.3s;"></div>
+                </div>
+                <div id="updateStatus" style="text-align: center; font-size: 14px; color: #666;">
+                    Preparing update...
+                </div>
+            </div>
+            
+            <div class="button-group">
+                <button id="updateNowBtn" class="btn-primary" onclick="performAutoUpdate()" style="width: 100%;">
+                    🔄 Update Now
+                </button>
+            </div>
+            
+            <div style="margin-top: 16px; padding: 12px; background: #fff3cd; border-radius: 6px; border-left: 4px solid #ffc107;">
+                <small style="color: #856404;">
+                    <strong>Note:</strong> The application will restart automatically after the update completes.
+                </small>
+            </div>
+        </div>
+    `;
+    
+    modal.style.display = 'block';
+    
+    // Disable the close button for mandatory updates
+    const closeBtn = modal.querySelector('.modal-close');
+    if (closeBtn) {
+        closeBtn.style.display = 'none';
+    }
+    
+    // Prevent clicking outside to close
+    modal.onclick = null;
+}
+
+function showUpdateNotification(versionInfo) {
+    const message = document.getElementById('message');
+    message.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span>🔄 Update available: v${versionInfo.latestVersion} (current: v${versionInfo.currentVersion})</span>
+            <button onclick="performAutoUpdate()" class="btn-primary" style="padding: 4px 12px; font-size: 12px;">
+                Update Now
+            </button>
+        </div>
+    `;
+    message.className = 'message success';
+    message.style.display = 'block';
+}
+
+async function performAutoUpdate() {
+    const updateBtn = document.getElementById('updateNowBtn');
+    const updateProgress = document.getElementById('updateProgress');
+    const progressBar = document.getElementById('progressBar');
+    const updateStatus = document.getElementById('updateStatus');
+    
+    if (updateBtn) {
+        updateBtn.disabled = true;
+        updateBtn.textContent = '🔄 Updating...';
+    }
+    
+    if (updateProgress) {
+        updateProgress.style.display = 'block';
+    }
+    
+    // Simulate progress
+    let progress = 0;
+    const progressInterval = setInterval(() => {
+        progress += Math.random() * 15;
+        if (progress > 90) progress = 90;
+        
+        if (progressBar) {
+            progressBar.style.width = progress + '%';
+        }
+        
+        if (updateStatus) {
+            if (progress < 30) {
+                updateStatus.textContent = 'Downloading update...';
+            } else if (progress < 60) {
+                updateStatus.textContent = 'Installing update...';
+            } else {
+                updateStatus.textContent = 'Finalizing installation...';
+            }
+        }
+    }, 500);
+    
+    try {
+        const response = await fetch('/api/auto-update', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        
+        const result = await response.json();
+        clearInterval(progressInterval);
+        
+        if (progressBar) progressBar.style.width = '100%';
+        
+        if (result.success) {
+            if (updateStatus) {
+                updateStatus.textContent = 'Update completed! Restarting...';
+                updateStatus.style.color = '#27ae60';
+            }
+            
+            // Show success message and reload after a short delay
+            setTimeout(() => {
+                showMessage('Update completed successfully! The page will reload automatically.', 'success');
+                setTimeout(() => {
+                    window.location.reload();
+                }, 2000);
+            }, 1000);
+            
+        } else {
+            if (updateStatus) {
+                updateStatus.textContent = 'Update failed: ' + result.message;
+                updateStatus.style.color = '#e74c3c';
+            }
+            
+            if (updateBtn) {
+                updateBtn.disabled = false;
+                updateBtn.textContent = '🔄 Retry Update';
+            }
+            
+            showMessage('Update failed: ' + result.message, 'error');
+        }
+    } catch (error) {
+        clearInterval(progressInterval);
+        
+        if (updateStatus) {
+            updateStatus.textContent = 'Update failed: Network error';
+            updateStatus.style.color = '#e74c3c';
+        }
+        
+        if (updateBtn) {
+            updateBtn.disabled = false;
+            updateBtn.textContent = '🔄 Retry Update';
+        }
+        
+        showMessage('Update failed: ' + error.message, 'error');
+    }
+}
+
+// Authentication method update function for dynamic form fields
+async function updateAuthMethodFields(serverKey) {
+    const server = preConfiguredServers[serverKey];
+    const authMethodSelect = document.getElementById('authMethod');
+    const authMethodDescription = document.getElementById('authMethodDescription');
+    const authMethodFields = document.getElementById('authMethodFields');
+    
+    if (!authMethodSelect || !server.authMethods) return;
+    
+    const selectedMethod = authMethodSelect.value;
+    
+    // Update description
+    if (authMethodDescription) {
+        if (selectedMethod && server.authMethods[selectedMethod]) {
+            authMethodDescription.textContent = server.authMethods[selectedMethod].description;
+        } else {
+            authMethodDescription.textContent = 'Choose an authentication method to see required fields';
+        }
+    }
+    
+    // Clear existing fields
+    authMethodFields.innerHTML = '';
+    
+    if (!selectedMethod) return;
+    
+    const authMethod = server.authMethods[selectedMethod];
+    if (!authMethod || !authMethod.requiredVars) return;
+    
+    // Get existing config if reconfiguring
+    const existingServerName = findExistingServerName(serverKey, server);
+    const existingConfig = currentConfig.mcpServers[existingServerName];
+    
+    // Get env variables
+    let envVariables = {};
+    try {
+        const response = await fetch('/api/env-variables');
+        const data = await response.json();
+        if (data.exists) {
+            envVariables = data.variables;
+        }
+    } catch (error) {
+        console.error('Error fetching .env variables:', error);
+    }
+    
+    // Add required fields for selected auth method
+    authMethodFields.innerHTML = '<h4>Authentication Configuration</h4>';
+    
+    authMethod.requiredVars.forEach(envVar => {
+        // Priority: existing config value > saved variable > empty
+        let currentValue = '';
+        if (existingConfig && existingConfig.env && existingConfig.env[envVar]) {
+            currentValue = existingConfig.env[envVar];
+        } else {
+            currentValue = savedVariables[envVar] || '';
+        }
+        
+        // Determine available sources
+        const sources = [];
+        if (savedVariables[envVar]) {
+            sources.push({ type: 'global', label: 'global variables', value: savedVariables[envVar] });
+        }
+        if (envVariables[envVar] !== undefined) {
+            sources.push({ type: 'env', label: '.env file', value: envVariables[envVar] });
+        }
+        
+        const hasMultipleSources = sources.length > 1;
+        const buttonWidth = hasMultipleSources ? '90px' : (sources.length === 1 ? '90px' : '8px');
+        
+        const fieldHtml = `
+            <div class="form-group">
+                <label>${envVar}</label>
+                <div style="position: relative;">
+                    <input type="text" name="env_${envVar}" id="env_${envVar}" value="${currentValue}" required style="padding-right: ${buttonWidth};">
+                    ${sources.length > 0 ? (
+                        hasMultipleSources ? `
+                            <div class="fetch-dropdown" style="position: absolute; right: 4px; top: 50%; transform: translateY(-50%);">
+                                <button type="button" class="btn-fetch-multi" onclick="toggleFetchDropdown('${envVar}')" title="Fetch from multiple sources">
+                                    <span style="font-size: 12px;">📥  fetch  ▼</span>
+                                </button>
+                                <div class="dropdown-content" id="dropdown-${envVar}" style="display: none;">
+                                    ${sources.map(source => `
+                                        <a href="#" onclick="fetchFromSource('${envVar}', '${source.type}'); return false;" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                            📋 ${source.label}: <span style="color: #666; font-size: 11px;">${source.value.length > 20 ? source.value.substring(0, 20) + '...' : source.value}</span>
+                                        </a>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        ` : `
+                            <button type="button" class="btn-fetch-single" onclick="fetchFromSource('${envVar}', '${sources[0].type}')" title="Fetch from ${sources[0].label}">
+                                <span style="font-size: 12px;">📋 fetch from ${sources[0].type}</span>
+                            </button>
+                        `
+                    ) : ''}
+                </div>
+                ${currentValue && (existingConfig && existingConfig.env && existingConfig.env[envVar]) ? '<small style="color: #3498db;">✓ Current server value</small>' : (currentValue ? '<small style="color: #27ae60;">✓ Using saved value from Variables tab</small>' : '')}
+            </div>
+        `;
+        
+        authMethodFields.innerHTML += fieldHtml;
+    });
+}
+
+// Make functions globally available
+window.fetchFromEnv = fetchFromEnv;
+window.fetchFromGit = fetchFromGit;
+window.fetchFromEnvForVariables = fetchFromEnvForVariables;
+window.toggleFetchDropdown = toggleFetchDropdown;
+window.fetchFromSource = fetchFromSource;
+window.fetchFromSourceOpt = fetchFromSourceOpt;
+window.uninstallServer = uninstallServer;
+window.performAutoUpdate = performAutoUpdate;
+window.handleVariableChange = handleVariableChange;
+window.saveIndividualVariable = saveIndividualVariable;
+window.clearSelection = clearSelection;
+window.quickInstallServer = quickInstallServer;
+window.configureServer = configureServer;
+window.searchServers = searchServers;
+window.updateAuthMethodFields = updateAuthMethodFields;
+
+// Keyboard navigation implementation
+function initializeKeyboardNavigation() {
+    const searchBox = document.querySelector('.search-box');
+    
+    // Add Enter key handler to search box
+    searchBox.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            handleSearchEnterKey();
+        } else if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            navigateCards(1);
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            navigateCards(-1);
+        }
+    });
+    
+    // Add global keyboard navigation
+    document.addEventListener('keydown', (e) => {
+        // Only handle navigation if not typing in an input
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+            return;
+        }
+        
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            navigateCards(1);
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            navigateCards(-1);
+        } else if (e.key === 'Enter' && selectedCardIndex >= 0) {
+            e.preventDefault();
+            activateSelectedCard();
+        } else if (e.key === 'Escape') {
+            e.preventDefault();
+            clearSelection();
+            searchBox.focus();
+        }
+    });
+}
+
+function updateVisibleCards() {
+    visibleCards = Array.from(document.querySelectorAll('.server-card:not(.uninstalling)'));
+}
+
+function handleSearchEnterKey() {
+    updateVisibleCards();
+    
+    if (visibleCards.length === 0) {
+        // No results, don't do anything
+        return;
+    } else if (visibleCards.length === 1) {
+        // Single result - auto-action
+        const card = visibleCards[0];
+        const serverKey = getServerKeyFromCard(card);
+        if (serverKey) {
+            const server = preConfiguredServers[serverKey];
+            const isInstalled = isServerInstalled(serverKey, server);
+            
+            if (isInstalled) {
+                // Already installed, configure it
+                configureServer(serverKey);
+            } else {
+                // Not installed, check if it requires config
+                const requiresConfig = server.requiredEnvVars && server.requiredEnvVars.length > 0;
+                if (requiresConfig) {
+                    configureServer(serverKey);
+                } else {
+                    quickInstallServer(serverKey);
+                }
+            }
+        }
+    } else {
+        // Multiple results - start navigation
+        selectedCardIndex = 0;
+        updateCardSelection();
+    }
+}
+
+function navigateCards(direction) {
+    updateVisibleCards();
+    
+    if (visibleCards.length === 0) return;
+    
+    if (selectedCardIndex === -1) {
+        selectedCardIndex = direction > 0 ? 0 : visibleCards.length - 1;
+    } else {
+        selectedCardIndex += direction;
+        
+        // Wrap around
+        if (selectedCardIndex < 0) {
+            selectedCardIndex = visibleCards.length - 1;
+        } else if (selectedCardIndex >= visibleCards.length) {
+            selectedCardIndex = 0;
+        }
+    }
+    
+    updateCardSelection();
+}
+
+function updateCardSelection() {
+    // Remove previous selection
+    visibleCards.forEach((card, index) => {
+        card.classList.remove('keyboard-selected');
+    });
+    
+    // Add selection to current card
+    if (selectedCardIndex >= 0 && selectedCardIndex < visibleCards.length) {
+        const selectedCard = visibleCards[selectedCardIndex];
+        selectedCard.classList.add('keyboard-selected');
+        
+        // Scroll into view if needed
+        selectedCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+}
+
+function activateSelectedCard() {
+    if (selectedCardIndex >= 0 && selectedCardIndex < visibleCards.length) {
+        const card = visibleCards[selectedCardIndex];
+        const serverKey = getServerKeyFromCard(card);
+        
+        if (serverKey) {
+            const server = preConfiguredServers[serverKey];
+            const isInstalled = isServerInstalled(serverKey, server);
+            
+            if (isInstalled) {
+                // Already installed, configure it
+                configureServer(serverKey);
+            } else {
+                // Not installed, check if it requires config
+                const requiresConfig = server.requiredEnvVars && server.requiredEnvVars.length > 0;
+                if (requiresConfig) {
+                    configureServer(serverKey);
+                } else {
+                    quickInstallServer(serverKey);
+                }
+            }
+        }
+    }
+}
+
+function getServerKeyFromCard(card) {
+    // Extract server key from button onclick attributes
+    const configureBtn = card.querySelector('button[onclick*="configureServer"]');
+    if (configureBtn) {
+        const onclickAttr = configureBtn.getAttribute('onclick');
+        const match = onclickAttr.match(/configureServer\('([^']+)'\)/);
+        if (match) {
+            return match[1];
+        }
+    }
+    return null;
+}
+
+// Server shutdown functions
+function confirmStopServer() {
+    const modal = document.getElementById('serverModal');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalBody = document.getElementById('modalBody');
+    
+    modalTitle.textContent = '⚠️ Stop MCP Manager Server';
+    
+    modalBody.innerHTML = `
+        <div style="text-align: center; padding: 20px;">
+            <div style="font-size: 48px; margin-bottom: 20px;">🛑</div>
+            <h3 style="margin-bottom: 20px; color: #e74c3c;">Are you sure you want to stop the server?</h3>
+            <p style="margin-bottom: 30px; color: #666;">
+                This will shut down the MCP Manager web interface.<br>
+                You'll need to restart it from the command line to access it again.
+            </p>
+            <div class="button-group" style="justify-content: center; gap: 15px;">
+                <button type="button" class="btn-primary" style="background: #e74c3c;" onclick="stopServer()">
+                    Yes, Stop Server
+                </button>
+                <button type="button" class="btn-secondary" onclick="closeModal()">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    `;
+    
+    modal.style.display = 'block';
+}
+
+async function stopServer() {
+    try {
+        const response = await fetch('/api/shutdown', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        
+        if (response.ok) {
+            showMessage('Server is shutting down...', 'success');
+            
+            // Show a goodbye message
+            setTimeout(() => {
+                document.body.innerHTML = `
+                    <div style="display: flex; justify-content: center; align-items: center; height: 100vh; background: #ececec;">
+                        <div style="text-align: center; font-family: 'JetBrains Mono', monospace;">
+                            <div style="font-size: 72px; margin-bottom: 20px;">👋</div>
+                            <h1 style="color: #2c3e50; margin-bottom: 20px;">Server Stopped</h1>
+                            <p style="color: #666; font-size: 18px;">
+                                The MCP Manager server has been shut down.<br>
+                                To restart it, run: <code style="background: #fff; padding: 5px 10px; border-radius: 4px;">node mcp-manager.js --web</code>
+                            </p>
+                        </div>
+                    </div>
+                `;
+            }, 1000);
+        } else {
+            throw new Error('Failed to stop server');
+        }
+    } catch (error) {
+        showMessage('Error stopping server: ' + error.message, 'error');
+        closeModal();
+    }
+}
+
+// Make stop server functions available globally
+window.confirmStopServer = confirmStopServer;
+window.stopServer = stopServer;
+
+// Initialize on load
+document.addEventListener('DOMContentLoaded', () => {
+    init();
+});

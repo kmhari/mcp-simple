@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MCP Server Manager</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked@13.0.3/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hyperlist@1.0.0/dist/hyperlist.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="header-container">
+            <div class="header-left">
+                <h1>🔧 MCP Server Manager</h1>
+                <div class="project-info" id="projectInfo">
+                    <span class="project-name" id="projectName">Loading...</span>
+                    <span class="project-type" id="projectType"></span>
+                </div>
+            </div>
+            <button class="btn-close-server" onclick="confirmStopServer()" title="Stop the MCP Manager server">
+                ✕ Stop Server
+            </button>
+        </div>
+        
+        <div id="message" class="message"></div>
+        
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('browse')">Browse Servers</button>
+            <button class="tab" onclick="switchTab('current')">Current Servers</button>
+            <button class="tab" onclick="switchTab('variables')">Variables</button>
+            <button class="tab" onclick="switchTab('custom')">Add Custom</button>
+            <button class="tab" onclick="switchTab('config')">Edit Config</button>
+        </div>
+        
+        <div id="browse" class="tab-content active">
+            <div class="search-container">
+                <input type="text" class="search-box" placeholder="Search servers..." id="searchInput">
+                <div id="searchLoadingIndicator" class="search-loading" style="display: none;">
+                    <div class="loading-spinner"></div>
+                </div>
+            </div>
+            <div class="filters-container">
+                <div class="sort-by-container">
+                    <label>Sort by:</label>
+                    <select id="sortBySelect" onchange="handleSortByChange(this.value)">
+                        <option value="a-z">A → Z</option>
+                        <option value="z-a">Z → A</option>
+                        <option value="stars">Most Stars</option>
+                    </select>
+                </div>
+                <div class="group-by-container">
+                    <label>Group by:</label>
+                    <select id="groupBySelect" onchange="handleGroupByChange(this.value)">
+                        <option value="none">Default</option>
+                        <option value="category">Category</option>
+                    </select>
+                </div>
+                <div class="stars-filter-container">
+                    <label>Min stars:</label>
+                    <select id="starsFilterSelect" onchange="handleStarsFilterChange(this.value)">
+                        <option value="0" selected>All servers</option>
+                        <option value="1">1+ stars</option>
+                        <option value="10">10+ stars</option>
+                        <option value="100">100+ stars</option>
+                        <option value="500">500+ stars</option>
+                        <option value="1000">1,000+ stars</option>
+                        <option value="5000">5,000+ stars</option>
+                        <option value="10000">10,000+ stars</option>
+                    </select>
+                    <div id="activeFilterIndicator" class="active-filter-indicator" style="display: none;">
+                        <span id="activeFilterText">All servers</span>
+                        <button id="resetFilterBtn" class="reset-filter-btn" onclick="resetStarsFilter()" title="Reset filter">×</button>
+                    </div>
+                </div>
+            </div>
+            <div id="serverGrid" class="server-grid">
+                <!-- Server cards will be populated here -->
+            </div>
+        </div>
+        
+        <div id="current" class="tab-content">
+            <div class="current-servers">
+                <h3>Currently Configured Servers</h3>
+                <ul id="currentServerList" class="server-list">
+                    <!-- Current servers will be populated here -->
+                </ul>
+            </div>
+        </div>
+        
+        <div id="custom" class="tab-content">
+            <div class="config-editor">
+                <h3>Add Custom Server</h3>
+                <form onsubmit="addCustomServer(event)">
+                    <div class="form-group">
+                        <label>Server Name</label>
+                        <input type="text" id="customName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Command</label>
+                        <input type="text" id="customCommand" required placeholder="e.g., npx">
+                    </div>
+                    <div class="form-group">
+                        <label>Arguments (comma-separated)</label>
+                        <input type="text" id="customArgs" placeholder="e.g., -y, @modelcontextprotocol/server-example">
+                    </div>
+                    <div class="form-group">
+                        <label>Environment Variables (key=value, comma-separated)</label>
+                        <input type="text" id="customEnv" placeholder="e.g., API_KEY=abc123, DEBUG=true">
+                    </div>
+                    <div class="button-group">
+                        <button type="submit" class="btn-primary">Add Server</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div id="config" class="tab-content">
+            <div class="config-editor">
+                <h3>Edit Configuration</h3>
+                <textarea id="configEditor"></textarea>
+                <div class="button-group">
+                    <button class="btn-primary" onclick="saveConfig()">Save Configuration</button>
+                    <button class="btn-secondary" onclick="loadConfig()">Reload</button>
+                </div>
+            </div>
+        </div>
+        
+        <div id="variables" class="tab-content">
+            <div class="variables-container">
+                <h3>Environment Variables</h3>
+                <p class="variables-description">Manage shared environment variables used across MCP servers. Changes are saved to ~/.config/mcpsimple/mcp.json</p>
+                <div id="variablesList" class="variables-list">
+                    <!-- Variables will be populated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="serverModal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeModal()">&times;</span>
+            <h3 id="modalTitle"></h3>
+            <div id="modalBody"></div>
+        </div>
+    </div>
+    
+    <script type="module" src="/js/search-index.js"></script>
+    <script type="module" src="/js/search-performance.js"></script>
+    <script type="module" src="/js/app.js"></script>
+</body>
+</html>
