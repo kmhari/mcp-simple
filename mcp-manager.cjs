@@ -1198,6 +1198,191 @@ class MCPManager {
         app.get('/api/servers', (req, res) => {
             res.json(this.preConfiguredServers);
         });
+
+        // New paginated servers endpoint with search, sort, and filter
+        app.get('/api/servers/paginated', (req, res) => {
+            try {
+                const page = parseInt(req.query.page) || 1;
+                const limit = parseInt(req.query.limit) || 50;
+                const search = req.query.search || '';
+                const sortBy = req.query.sortBy || 'name';
+                const sortOrder = req.query.sortOrder || 'asc';
+                const category = req.query.category || '';
+                const minStars = parseInt(req.query.minStars) || 0;
+                const maxStars = parseInt(req.query.maxStars) || 999999;
+
+                // Convert servers object to array with keys
+                let serversArray = Object.entries(this.preConfiguredServers).map(([key, server]) => ({
+                    ...server,
+                    id: key
+                }));
+
+                // Apply search filter
+                if (search) {
+                    const searchLower = search.toLowerCase();
+                    serversArray = serversArray.filter(server => 
+                        (server.name && server.name.toLowerCase().includes(searchLower)) ||
+                        (server.description && server.description.toLowerCase().includes(searchLower)) ||
+                        (server.category && server.category.toLowerCase().includes(searchLower)) ||
+                        (server.package && server.package.toLowerCase().includes(searchLower))
+                    );
+                }
+
+                // Apply category filter
+                if (category) {
+                    serversArray = serversArray.filter(server => 
+                        server.category && server.category.toLowerCase() === category.toLowerCase()
+                    );
+                }
+
+                // Apply stars filter
+                serversArray = serversArray.filter(server => {
+                    const stars = server.stars || 0;
+                    return stars >= minStars && stars <= maxStars;
+                });
+
+                // Apply sorting
+                serversArray.sort((a, b) => {
+                    let aVal, bVal;
+                    
+                    switch (sortBy) {
+                        case 'name':
+                            aVal = (a.name || '').toLowerCase();
+                            bVal = (b.name || '').toLowerCase();
+                            break;
+                        case 'stars':
+                            aVal = a.stars || 0;
+                            bVal = b.stars || 0;
+                            break;
+                        case 'category':
+                            aVal = (a.category || '').toLowerCase();
+                            bVal = (b.category || '').toLowerCase();
+                            break;
+                        case 'lastUpdated':
+                            aVal = new Date(a.lastUpdatedAt || a.updated_at || 0);
+                            bVal = new Date(b.lastUpdatedAt || b.updated_at || 0);
+                            break;
+                        default:
+                            aVal = (a.name || '').toLowerCase();
+                            bVal = (b.name || '').toLowerCase();
+                    }
+
+                    if (sortOrder === 'desc') {
+                        return aVal > bVal ? -1 : aVal < bVal ? 1 : 0;
+                    } else {
+                        return aVal > bVal ? 1 : aVal < bVal ? -1 : 0;
+                    }
+                });
+
+                // Calculate pagination
+                const total = serversArray.length;
+                const totalPages = Math.ceil(total / limit);
+                const offset = (page - 1) * limit;
+                const paginatedServers = serversArray.slice(offset, offset + limit);
+
+                // Convert back to object format for compatibility
+                const serversObject = {};
+                paginatedServers.forEach(server => {
+                    const { id, ...serverData } = server;
+                    serversObject[id] = serverData;
+                });
+
+                res.json({
+                    servers: serversObject,
+                    pagination: {
+                        page: page,
+                        limit: limit,
+                        total: total,
+                        totalPages: totalPages,
+                        hasNext: page < totalPages,
+                        hasPrev: page > 1
+                    },
+                    filters: {
+                        search: search,
+                        sortBy: sortBy,
+                        sortOrder: sortOrder,
+                        category: category,
+                        minStars: minStars,
+                        maxStars: maxStars
+                    }
+                });
+            } catch (error) {
+                console.error('Error in paginated servers endpoint:', error);
+                res.status(500).json({ error: error.message });
+            }
+        });
+
+        // Get unique categories endpoint
+        app.get('/api/servers/categories', (req, res) => {
+            try {
+                const categories = new Set();
+                Object.values(this.preConfiguredServers).forEach(server => {
+                    if (server.category) {
+                        categories.add(server.category);
+                    }
+                });
+                res.json(Array.from(categories).sort());
+            } catch (error) {
+                console.error('Error getting categories:', error);
+                res.status(500).json({ error: error.message });
+            }
+        });
+
+        // Search suggestions endpoint for autocomplete
+        app.get('/api/servers/search-suggestions', (req, res) => {
+            try {
+                const query = req.query.q || '';
+                const limit = parseInt(req.query.limit) || 10;
+                
+                if (!query || query.length < 2) {
+                    return res.json([]);
+                }
+
+                const queryLower = query.toLowerCase();
+                const suggestions = new Set();
+
+                Object.entries(this.preConfiguredServers).forEach(([key, server]) => {
+                    // Add matching parts from name
+                    if (server.name && server.name.toLowerCase().includes(queryLower)) {
+                        suggestions.add(server.name);
+                    }
+                    
+                    // Add matching words from description
+                    if (server.description) {
+                        const words = server.description.toLowerCase().split(/\s+/);
+                        words.forEach(word => {
+                            if (word.includes(queryLower) && word.length > 2) {
+                                suggestions.add(word);
+                            }
+                        });
+                    }
+
+                    // Add category if it matches
+                    if (server.category && server.category.toLowerCase().includes(queryLower)) {
+                        suggestions.add(server.category);
+                    }
+                });
+
+                const sortedSuggestions = Array.from(suggestions)
+                    .filter(s => s.length >= query.length)
+                    .sort((a, b) => {
+                        // Prioritize exact matches and shorter strings
+                        const aStartsWith = a.toLowerCase().startsWith(queryLower);
+                        const bStartsWith = b.toLowerCase().startsWith(queryLower);
+                        
+                        if (aStartsWith && !bStartsWith) return -1;
+                        if (!aStartsWith && bStartsWith) return 1;
+                        
+                        return a.length - b.length || a.localeCompare(b);
+                    })
+                    .slice(0, limit);
+
+                res.json(sortedSuggestions);
+            } catch (error) {
+                console.error('Error getting search suggestions:', error);
+                res.status(500).json({ error: error.message });
+            }
+        });
         
         app.get('/api/project-info', (req, res) => {
             res.json(this.getProjectInfo());

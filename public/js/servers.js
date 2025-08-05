@@ -44,12 +44,15 @@ export async function loadServers() {
         const servers = await response.json();
         setPreConfiguredServers(servers);
         
-        // Build search index after servers are loaded
-        if (window.searchIndex) {
-            window.searchIndex.buildIndex(servers);
-        }
+        // Build search index after servers are loaded (disabled for optimized UI)
+        // if (window.searchIndex) {
+        //     window.searchIndex.buildIndex(servers);
+        // }
         
-        if (window.displayServers) window.displayServers();
+        // Only call displayServers if not using optimized UI
+        if (window.displayServers && !window.USE_OPTIMIZED_UI) {
+            window.displayServers();
+        }
     } catch (error) {
         showMessage('Failed to load servers', 'error');
         console.error('Error loading servers:', error);
@@ -79,7 +82,7 @@ export async function loadStarsData() {
         setStarsData(starsDataFormatted);
         console.log('Stars data loaded from database:', Object.keys(starsDataFormatted).length, 'servers with stars');
         if (Object.keys(preConfiguredServers).length > 0) {
-            if (window.displayServers) window.displayServers();
+            if (window.displayServers && !window.USE_OPTIMIZED_UI) window.displayServers();
         }
     } catch (error) {
         console.log('Stars data not available:', error.message);
@@ -139,7 +142,7 @@ export async function quickInstallServer(key) {
             // Update UI immediately
             if (window.updateCurrentServers) window.updateCurrentServers();
             document.getElementById('configEditor').value = JSON.stringify(config, null, 2);
-            if (window.displayServers) window.displayServers();
+            if (window.displayServers && !window.USE_OPTIMIZED_UI) window.displayServers();
             
             // Send request to backend
             const configResponse = await fetch('/api/config', {
@@ -177,7 +180,7 @@ export async function quickInstallServer(key) {
             // Update UI immediately
             if (window.updateCurrentServers) window.updateCurrentServers();
             document.getElementById('configEditor').value = JSON.stringify(config, null, 2);
-            if (window.displayServers) window.displayServers();
+            if (window.displayServers && !window.USE_OPTIMIZED_UI) window.displayServers();
             
             // Send request to backend
             const response = await fetch('/api/config', {
@@ -199,7 +202,7 @@ export async function quickInstallServer(key) {
         invalidateInstalledServersCache(); // Invalidate cache when rolling back
         if (window.updateCurrentServers) window.updateCurrentServers();
         document.getElementById('configEditor').value = JSON.stringify(originalConfig, null, 2);
-        if (window.displayServers) window.displayServers();
+        if (window.displayServers && !window.USE_OPTIMIZED_UI) window.displayServers();
         
         showMessage(`Failed to install ${server.name}: ${error.message}`, 'error');
     }
@@ -230,7 +233,7 @@ export function uninstallServer(key, silent = false) {
         // Update UI immediately
         if (window.updateCurrentServers) window.updateCurrentServers();
         document.getElementById('configEditor').value = JSON.stringify(config, null, 2);
-        if (window.displayServers) window.displayServers();
+        if (window.displayServers && !window.USE_OPTIMIZED_UI) window.displayServers();
         
         // Send request to backend
         fetch('/api/config', {
@@ -248,7 +251,7 @@ export function uninstallServer(key, silent = false) {
             invalidateInstalledServersCache(); // Invalidate cache when rolling back
             if (window.updateCurrentServers) window.updateCurrentServers();
             document.getElementById('configEditor').value = JSON.stringify(originalConfig, null, 2);
-            if (window.displayServers) window.displayServers();
+            if (window.displayServers && !window.USE_OPTIMIZED_UI) window.displayServers();
             
             showMessage(`Failed to uninstall ${server.name}: ${error.message}`, 'error');
         });
@@ -269,7 +272,7 @@ export function removeServer(name) {
         // Update UI immediately
         if (window.updateCurrentServers) window.updateCurrentServers();
         document.getElementById('configEditor').value = JSON.stringify(config, null, 2);
-        if (window.displayServers) window.displayServers();
+        if (window.displayServers && !window.USE_OPTIMIZED_UI) window.displayServers();
         
         // Send request to backend
         fetch('/api/config', {
@@ -287,7 +290,7 @@ export function removeServer(name) {
             invalidateInstalledServersCache(); // Invalidate cache when rolling back
             if (window.updateCurrentServers) window.updateCurrentServers();
             document.getElementById('configEditor').value = JSON.stringify(originalConfig, null, 2);
-            if (window.displayServers) window.displayServers();
+            if (window.displayServers && !window.USE_OPTIMIZED_UI) window.displayServers();
             
             showMessage(`Failed to remove ${name}: ${error.message}`, 'error');
         });
