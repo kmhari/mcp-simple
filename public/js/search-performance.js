@@ -137,8 +137,8 @@ class SearchPerformanceManager {
     }
     
     async executeSearch(searchTerm, signal) {
-        // This will call the existing search function
-        return new Promise((resolve, reject) => {
+        // This will call the search function (optimized or legacy)
+        return new Promise(async (resolve, reject) => {
             // Check if request was cancelled
             if (signal.aborted) {
                 reject(new DOMException('Search cancelled', 'AbortError'));
@@ -146,9 +146,13 @@ class SearchPerformanceManager {
             }
             
             try {
-                // Call the original search function
+                // Call the search function (optimized UI has async searchServers)
                 if (typeof window.searchServers === 'function') {
-                    window.searchServers(searchTerm);
+                    const result = window.searchServers(searchTerm);
+                    // Handle both async and sync versions
+                    if (result && typeof result.then === 'function') {
+                        await result;
+                    }
                     resolve({ searchTerm, timestamp: Date.now() });
                 } else {
                     reject(new Error('Search function not available'));

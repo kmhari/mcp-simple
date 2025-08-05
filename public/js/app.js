@@ -3,7 +3,6 @@ import { loadConfig, saveConfig } from './config.js';
 import { loadServers, loadStarsData, quickInstallServer, uninstallServer, removeServer } from './servers.js';
 import { handleGroupByChange, handleSortByChange, handleStarsFilterChange, searchServers, updateCurrentServers, displayServers, toggleCategory, restoreExpandedStates, updateFilterIndicator, resetStarsFilter } from './ui.js';
 import { initOptimizedUI } from './ui-optimized.js';
-import { initVirtualScrolling, updateVirtualList, refreshVirtualList } from './virtual-scroll.js';
 import { loadVariables, updateVariablesList, handleVariableChange, saveIndividualVariable, fetchFromEnvForVariables, saveVariables } from './variables.js';
 import { clearSelection, initializeKeyboardNavigation } from './keyboard.js';
 import { checkForUpdates, performAutoUpdate } from './updates.js';
@@ -61,25 +60,14 @@ async function loadProjectInfo() {
 
 // Initialize application
 async function init() {
-    // Set UI mode early to prevent legacy UI from interfering
-    const USE_OPTIMIZED_UI = true; // Enable optimized backend-powered UI
-    window.USE_OPTIMIZED_UI = USE_OPTIMIZED_UI; // Make it available globally
-    
     await loadConfig();
     await loadServers();
     await loadStarsData();
     await loadVariables();
     await loadProjectInfo();
     
-    // Check if we should use optimized UI (for performance with large datasets)
-    if (USE_OPTIMIZED_UI) {
-        // Initialize optimized UI with backend APIs
-        initOptimizedUI();
-    } else {
-        // Use legacy client-side processing
-        updateCurrentServers();
-        updateFilterIndicator(0);
-    }
+    // Always use optimized UI with backend APIs
+    initOptimizedUI();
     
     setTimeout(checkForUpdates, 2000);
     

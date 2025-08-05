@@ -1,4 +1,6 @@
 // UI rendering and display functions
+// NOTE: Search, filtering, and sorting operations have been migrated to backend (ui-optimized.js)
+// This file contains legacy display functions and server card rendering
 import { 
     currentConfig, 
     preConfiguredServers, 
@@ -11,77 +13,24 @@ import {
     setCurrentStarsFilter
 } from './state.js';
 import { isServerInstalled } from './utils.js';
-import { 
-    initVirtualScrolling, 
-    updateVirtualList, 
-    refreshVirtualList, 
-    isVirtualScrollingActive 
-} from './virtual-scroll.js';
 
+// Legacy filter handlers - no longer used with optimized UI
 export function handleGroupByChange(value) {
-    setCurrentGroupBy(value);
-    
-    // Invalidate search cache when filters change
-    if (window.searchPerformanceManager) {
-        window.searchPerformanceManager.invalidateCache();
-    }
-    
-    const searchValue = document.querySelector('.search-box').value;
-    searchServers(searchValue);
+    console.warn('Legacy handleGroupByChange called - optimized UI should handle this');
 }
 
 export function handleSortByChange(value) {
-    setCurrentSortBy(value);
-    
-    // Invalidate search cache when filters change
-    if (window.searchPerformanceManager) {
-        window.searchPerformanceManager.invalidateCache();
-    }
-    
-    const searchValue = document.querySelector('.search-box').value;
-    searchServers(searchValue);
+    console.warn('Legacy handleSortByChange called - optimized UI should handle this');
 }
 
 export function handleStarsFilterChange(value) {
-    setCurrentStarsFilter(parseInt(value));
-    
-    // Invalidate search cache when filters change
-    if (window.searchPerformanceManager) {
-        window.searchPerformanceManager.invalidateCache();
-    }
-    
-    const searchValue = document.querySelector('.search-box').value;
-    searchServers(searchValue);
-    updateFilterIndicator(parseInt(value));
+    console.warn('Legacy handleStarsFilterChange called - optimized UI should handle this');
 }
 
 export function displayServers(servers = preConfiguredServers) {
     const grid = document.getElementById('serverGrid');
     
-    // Try virtual scrolling for better performance
-    try {
-        // Check if we should use virtual scrolling (when there are many servers)
-        const serverCount = Object.keys(servers).length;
-        const useVirtualScrolling = serverCount > 25; // Use virtual scrolling for 25+ servers
-        
-        if (useVirtualScrolling && typeof window.HyperList !== 'undefined') {
-            // Get current expanded categories from localStorage
-            const expandedCategories = JSON.parse(localStorage.getItem('expandedCategories') || '[]');
-            
-            // Initialize virtual scrolling if not already done
-            if (!isVirtualScrollingActive()) {
-                initVirtualScrolling(grid);
-            }
-            
-            // Update virtual list with current data
-            updateVirtualList(servers, currentGroupBy, expandedCategories);
-            return; // Exit early - virtual scrolling handles everything
-        }
-    } catch (error) {
-        console.warn('Virtual scrolling failed, falling back to regular rendering:', error);
-    }
-    
-    // Fallback to original rendering method
+    // Regular rendering (virtual scrolling removed - optimized UI uses backend pagination)
     grid.innerHTML = '';
     
     if (currentGroupBy === 'category') {
@@ -102,7 +51,7 @@ export function displayServersFlat(servers, grid) {
     container.className = 'category-grid';
     container.style.marginTop = '0';
     
-    // Servers are already sorted in getFilteredServers, so maintain that order
+    // Servers maintain their order as provided
     const serversArray = Object.entries(servers).map(([key, server]) => ({ key, server }));
 
     serversArray.forEach(({ key, server }) => {
@@ -145,7 +94,7 @@ export function displayServersByCategory(servers, grid) {
             <div class="category-grid accordion-content" data-category="${category}" style="display: none;">
         `;
         
-        // Servers within each category maintain the sort order from getFilteredServers
+        // Servers within each category maintain their provided order
         categories[category].forEach(({ key, server }) => {
             const card = createServerCard(key, server);
             if (card) {
@@ -327,19 +276,9 @@ export function toggleCategory(categoryId) {
         saveExpandedCategory(categoryId);
     }
     
-    // If virtual scrolling is active, refresh the virtual list
-    if (isVirtualScrollingActive()) {
-        // Get current servers (might be filtered)
-        const searchValue = document.querySelector('.search-box').value;
-        const filtered = getFilteredServers(searchValue);
-        const newExpandedCategories = JSON.parse(localStorage.getItem('expandedCategories') || '[]');
-        
-        // Update virtual list with new expanded state
-        updateVirtualList(filtered, currentGroupBy, newExpandedCategories);
-        return;
-    }
+    // Virtual scrolling no longer used with optimized UI - categories handled by backend
     
-    // Fallback to original DOM manipulation for non-virtual scrolling
+    // DOM manipulation for category toggle
     const categorySection = document.querySelector(`.category-section[data-category="${categoryId}"]`) || 
                            document.querySelector(`.accordion-content[data-category="${categoryId}"]`)?.parentElement;
     
@@ -408,144 +347,9 @@ export function restoreExpandedStates() {
     }
 }
 
-/**
- * Helper function to filter servers based on search query and stars filter
- * @param {string} query - Search query string
- * @returns {Object} Filtered servers object
- */
-let cachedSearchKey = '';
-let cachedFilteredServers = null;
-
-function getFilteredServers(query) {
-    const searchTerm = query ? query.trim() : '';
-    const cacheKey = searchTerm + '-' + currentStarsFilter + '-' + currentSortBy;
-    
-    // Return cached result if available.
-    if (cacheKey === cachedSearchKey && cachedFilteredServers !== null) {
-        return cachedFilteredServers;
-    }
-    
-    const filteredEntries = [];
-    let searchResults = new Set();
-    
-    // Use search index for text search if available
-    if (window.searchIndex && window.searchIndex.isBuilt && searchTerm) {
-        searchResults = window.searchIndex.search(searchTerm);
-    } else if (searchTerm) {
-        // Fallback to original string-based search
-        Object.keys(preConfiguredServers).forEach(key => {
-            const server = preConfiguredServers[key];
-            if (!server || !server.name || server.name.trim() === '') return; // Skip servers without names
-            
-            // Cache lowercased strings on the server object.
-            if (!server._nameLower) {
-                server._nameLower = server.name.toLowerCase();
-            }
-            if (!server._descLower && server.description) {
-                server._descLower = server.description.toLowerCase();
-            }
-            if (server.category && !server._categoryLower) {
-                server._categoryLower = server.category.toLowerCase();
-            }
-            if (server.package && !server._packageLower) {
-                server._packageLower = server.package.toLowerCase();
-            }
-            
-            const nameLower = server._nameLower;
-            const descLower = server._descLower || '';
-            const categoryLower = server._categoryLower || '';
-            const packageLower = server._packageLower || '';
-            
-            const matchesSearch = nameLower.includes(searchTerm.toLowerCase()) ||
-                descLower.includes(searchTerm.toLowerCase()) ||
-                categoryLower.includes(searchTerm.toLowerCase()) ||
-                packageLower.includes(searchTerm.toLowerCase());
-            
-            if (matchesSearch) {
-                searchResults.add(key);
-            }
-        });
-    } else {
-        // No search term - include all servers
-        searchResults = new Set(Object.keys(preConfiguredServers));
-    }
-    
-    // Apply stars filter to search results
-    searchResults.forEach(key => {
-        const server = preConfiguredServers[key];
-        if (!server || !server.name || server.name.trim() === '') return; // Skip servers without names
-        
-        const serverStars = server.stars || 0;
-        const matchesStarsFilter = serverStars >= currentStarsFilter;
-        
-        if (matchesStarsFilter) {
-            // Precompute a flag for title match to optimize the sort later.
-            const titleMatch = searchTerm && server.name && 
-                server.name.toLowerCase().includes(searchTerm.toLowerCase());
-            
-            filteredEntries.push({
-                key,
-                server,
-                titleMatch
-            });
-        }
-    });
-    
-    // Sort the filtered entries.
-    filteredEntries.sort((a, b) => {
-        if (searchTerm) {
-            if (a.titleMatch && !b.titleMatch) return -1;
-            if (!a.titleMatch && b.titleMatch) return 1;
-        }
-        switch (currentSortBy) {
-            case 'a-z':
-                return (a.server.name || '').localeCompare(b.server.name || '');
-            case 'z-a':
-                return (b.server.name || '').localeCompare(a.server.name || '');
-            case 'stars': {
-                const starsA = a.server.stars || 0;
-                const starsB = b.server.stars || 0;
-                return starsB - starsA; // Sort by most stars first (descending)
-            }
-            default:
-                return (a.server.name || '').localeCompare(b.server.name || '');
-        }
-    });
-    
-    // Convert the array back to an object.
-    const filtered = {};
-    filteredEntries.forEach(({ key, server }) => {
-        filtered[key] = server;
-    });
-    
-    // Cache the result.
-    cachedSearchKey = cacheKey;
-    cachedFilteredServers = filtered;
-    
-    return filtered;
-}
-
+// Legacy search function - no longer used with optimized UI
 export function searchServers(query) {
-    window.clearSelection();
-    
-    const filtered = getFilteredServers(query);
-    displayServers(filtered);
-    
-    if (Object.keys(filtered).length === 0) {
-        const grid = document.getElementById('serverGrid');
-        const searchText = query ? ` matching "${query}"` : '';
-        const starsText = currentStarsFilter > 0 ? ` with ${currentStarsFilter}+ stars` : '';
-        
-        // Handle empty state for both virtual and regular rendering.
-        if (isVirtualScrollingActive()) {
-            const hyperListContainer = grid.querySelector('#hyperlist-container');
-            if (hyperListContainer) {
-                hyperListContainer.innerHTML = `<div style="text-align: center; padding: 40px; color: #666;">No servers found${searchText}${starsText}.</div>`;
-            }
-        } else {
-            grid.innerHTML = `<div style="text-align: center; padding: 40px; color: #666;">No servers found${searchText}${starsText}.</div>`;
-        }
-    }
+    console.warn('Legacy searchServers called - optimized UI should handle this');
 }
 
 // Update the visual indicator for active star filter
