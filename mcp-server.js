@@ -5,8 +5,9 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { z } from "zod";
 import fs from 'fs';
 import path from 'path';
+import os from 'os';
 import { fileURLToPath } from 'url';
-import { execSync } from 'child_process';
+import { execSync, spawn } from 'child_process';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -180,6 +181,107 @@ class TechStackMCPServer {
         return results;
     }
 
+    async checkRuntimeAvailability() {
+        const runtimes = { npm: false, uvx: false };
+        
+        try {
+            execSync('npm --version', { stdio: 'pipe' });
+            runtimes.npm = true;
+        } catch {}
+        
+        try {
+            execSync('uvx --version', { stdio: 'pipe' });
+            runtimes.uvx = true;
+        } catch {}
+        
+        return runtimes;
+    }
+
+    getClaudeConfigPath() {
+        const homeDir = os.homedir();
+        const configPaths = [
+            path.join(homeDir, 'Library', 'Application Support', 'Claude', 'claude_desktop_config.json'),
+            path.join(homeDir, '.config', 'claude', 'claude_desktop_config.json'),
+            path.join(homeDir, 'AppData', 'Roaming', 'Claude', 'claude_desktop_config.json')
+        ];
+        
+        for (const configPath of configPaths) {
+            if (fs.existsSync(configPath)) {
+                return configPath;
+            }
+        }
+        
+        // Default to the most common path if none exist
+        return configPaths[0];
+    }
+
+    async installMCPServerFromRepository(packageName, serverName, envVars = {}) {
+        const runtimes = await this.checkRuntimeAvailability();
+        
+        if (!runtimes.npm && !runtimes.uvx) {
+            throw new Error('Neither npm nor uvx is available. Please install Node.js with npm or Python with uv.');
+        }
+        
+        // Determine installation method
+        let installCommand;
+        let args;
+        
+        if (packageName.startsWith('@') || runtimes.npm) {
+            // Use npm/npx for npm packages
+            installCommand = 'npx';
+            args = [packageName];
+        } else if (runtimes.uvx) {
+            // Use uvx for Python packages
+            installCommand = 'uvx';
+            args = ['--from', packageName, packageName];
+        } else {
+            throw new Error('Unable to determine appropriate installation method');
+        }
+        
+        // Get Claude config path
+        const configPath = this.getClaudeConfigPath();
+        
+        // Load existing configuration
+        let config = { mcpServers: {} };
+        if (fs.existsSync(configPath)) {
+            try {
+                const content = fs.readFileSync(configPath, 'utf8');
+                config = JSON.parse(content);
+                if (!config.mcpServers) {
+                    config.mcpServers = {};
+                }
+            } catch (error) {
+                console.warn('Warning: Could not parse existing Claude config, creating new one');
+                config = { mcpServers: {} };
+            }
+        }
+        
+        // Add server configuration
+        config.mcpServers[serverName] = {
+            command: installCommand,
+            args: args,
+            env: envVars
+        };
+        
+        // Ensure directory exists
+        const configDir = path.dirname(configPath);
+        if (!fs.existsSync(configDir)) {
+            fs.mkdirSync(configDir, { recursive: true });
+        }
+        
+        // Write updated configuration
+        fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+        
+        return {
+            serverName,
+            packageName,
+            installCommand,
+            args,
+            configPath,
+            envVars
+        };
+    }
+
     setupTools() {
         // Tool 1: Recommend MCP servers
         this.server.tool(
@@ -331,17 +433,18 @@ class TechStackMCPServer {
             }
         );
 
-        // Tool 4: Install MCP server
+        // Tool 4: Install MCP server (Enhanced with mcp-installer functionality)
         this.server.tool(
             'install-mcp-server',
-            'Install an MCP server to the local .mcp.json configuration',
+            'Install an MCP server to the local .mcp.json configuration or Claude Desktop config',
             {
                 serverKey: z.string().describe("The key/identifier of the MCP server to install"),
                 serverName: z.string().optional().describe("Custom name for the server instance"),
                 envVars: z.record(z.string()).optional().describe("Environment variables for the server"),
-                confirmed: z.boolean().optional().default(false).describe("Whether installation has been confirmed")
+                confirmed: z.boolean().optional().default(false).describe("Whether installation has been confirmed"),
+                installToClaudeConfig: z.boolean().optional().default(false).describe("Install to Claude Desktop config instead of .mcp.json")
             },
-            async ({ serverKey, serverName, envVars = {}, confirmed = false }) => {
+            async ({ serverKey, serverName, envVars = {}, confirmed = false, installToClaudeConfig = false }) => {
                 try {
                     const server = this.mcpDatabase[serverKey];
                     
@@ -370,13 +473,57 @@ class TechStackMCPServer {
                                         optionalParams: server.optionalParams || []
                                     },
                                     message: "Please confirm installation of this MCP server by calling this tool again with confirmed: true",
-                                    environmentVariables: server.requiredEnvVars || []
+                                    environmentVariables: server.requiredEnvVars || [],
+                                    installOptions: {
+                                        localMcpJson: "Install to local .mcp.json file",
+                                        claudeDesktop: "Install to Claude Desktop configuration"
+                                    }
                                 }, null, 2)
                             }]
                         };
                     }
 
-                    // Load existing .mcp.json configuration
+                    const finalServerName = serverName || serverKey;
+
+                    // Enhanced installation with Claude Desktop config support
+                    if (installToClaudeConfig) {
+                        try {
+                            // Use the enhanced installation method for Claude Desktop
+                            const result = await this.installMCPServerFromRepository(
+                                server.package || server.installCommand.replace('npx ', ''),
+                                finalServerName,
+                                envVars
+                            );
+
+                            return {
+                                content: [{
+                                    type: "text",
+                                    text: JSON.stringify({
+                                        action: "claude_installation_successful",
+                                        serverName: result.serverName,
+                                        packageName: result.packageName,
+                                        configuration: {
+                                            command: result.installCommand,
+                                            args: result.args,
+                                            env: result.envVars
+                                        },
+                                        configurationFile: result.configPath,
+                                        message: `Successfully installed ${server.name} as "${result.serverName}" in Claude Desktop configuration`,
+                                        note: "Restart Claude Desktop for changes to take effect"
+                                    }, null, 2)
+                                }]
+                            };
+                        } catch (claudeError) {
+                            return {
+                                content: [{
+                                    type: "text",
+                                    text: `Error installing to Claude Desktop config: ${claudeError.message}`
+                                }]
+                            };
+                        }
+                    }
+
+                    // Original .mcp.json installation method
                     const mcpConfigPath = path.join(process.cwd(), '.mcp.json');
                     let mcpConfig = { mcpServers: {} };
                     
@@ -398,7 +545,6 @@ class TechStackMCPServer {
                     }
 
                     // Determine server configuration
-                    const finalServerName = serverName || serverKey;
                     const serverConfig = {
                         command: server.installCommand.split(' ')[0],
                         args: server.installCommand.split(' ').slice(1),
@@ -447,6 +593,87 @@ class TechStackMCPServer {
                         content: [{
                             type: "text",
                             text: `Error installing MCP server: ${error.message}`
+                        }]
+                    };
+                }
+            }
+        );
+
+        // Tool 5: Install MCP server from package (Direct installation like mcp-installer)
+        this.server.tool(
+            'install-mcp-package',
+            'Install any MCP server directly from npm/PyPi package name to Claude Desktop configuration',
+            {
+                packageName: z.string().describe("The npm or PyPi package name (e.g., '@modelcontextprotocol/server-github')"),
+                serverName: z.string().optional().describe("Custom name for the server instance"),
+                envVars: z.record(z.string()).optional().describe("Environment variables for the server"),
+                confirmed: z.boolean().optional().default(false).describe("Whether installation has been confirmed")
+            },
+            async ({ packageName, serverName, envVars = {}, confirmed = false }) => {
+                try {
+                    // Check runtime availability
+                    const runtimes = await this.checkRuntimeAvailability();
+                    
+                    if (!runtimes.npm && !runtimes.uvx) {
+                        return {
+                            content: [{
+                                type: "text",
+                                text: "Neither npm nor uvx is available. Please install Node.js with npm or Python with uv to use this feature."
+                            }]
+                        };
+                    }
+
+                    if (!confirmed) {
+                        return {
+                            content: [{
+                                type: "text",
+                                text: JSON.stringify({
+                                    action: "confirmation_required",
+                                    package: {
+                                        name: packageName,
+                                        serverName: serverName || packageName.split('/').pop(),
+                                        availableRuntimes: runtimes,
+                                        willUse: packageName.startsWith('@') || runtimes.npm ? 'npx' : 'uvx'
+                                    },
+                                    message: `Please confirm installation of package "${packageName}" by calling this tool again with confirmed: true`,
+                                    note: "This will install the package to Claude Desktop configuration"
+                                }, null, 2)
+                            }]
+                        };
+                    }
+
+                    const finalServerName = serverName || packageName.split('/').pop();
+                    
+                    const result = await this.installMCPServerFromRepository(
+                        packageName,
+                        finalServerName,
+                        envVars
+                    );
+
+                    return {
+                        content: [{
+                            type: "text",
+                            text: JSON.stringify({
+                                action: "package_installation_successful",
+                                serverName: result.serverName,
+                                packageName: result.packageName,
+                                configuration: {
+                                    command: result.installCommand,
+                                    args: result.args,
+                                    env: result.envVars
+                                },
+                                configurationFile: result.configPath,
+                                message: `Successfully installed package "${packageName}" as "${result.serverName}" in Claude Desktop configuration`,
+                                note: "Restart Claude Desktop for changes to take effect"
+                            }, null, 2)
+                        }]
+                    };
+
+                } catch (error) {
+                    return {
+                        content: [{
+                            type: "text",
+                            text: `Error installing MCP package: ${error.message}`
                         }]
                     };
                 }
