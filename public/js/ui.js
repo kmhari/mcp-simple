@@ -107,7 +107,9 @@ export function displayServersFlat(servers, grid) {
 
     serversArray.forEach(({ key, server }) => {
         const card = createServerCard(key, server);
-        container.appendChild(card);
+        if (card) {
+            container.appendChild(card);
+        }
     });
     
     grid.appendChild(container);
@@ -146,7 +148,9 @@ export function displayServersByCategory(servers, grid) {
         // Servers within each category maintain the sort order from getFilteredServers
         categories[category].forEach(({ key, server }) => {
             const card = createServerCard(key, server);
-            categorySection.querySelector('.category-grid').appendChild(card);
+            if (card) {
+                categorySection.querySelector('.category-grid').appendChild(card);
+            }
         });
         
         categorySection.innerHTML += '</div>';
@@ -156,6 +160,11 @@ export function displayServersByCategory(servers, grid) {
 
 
 export function createServerCard(key, server) {
+    // Skip servers without valid names
+    if (!server || !server.name || server.name.trim() === '') {
+        return null;
+    }
+    
     const card = document.createElement('div');
     card.className = 'server-card';
     
@@ -426,13 +435,13 @@ function getFilteredServers(query) {
         // Fallback to original string-based search
         Object.keys(preConfiguredServers).forEach(key => {
             const server = preConfiguredServers[key];
-            if (!server.name || !server.description) return;
+            if (!server || !server.name || server.name.trim() === '') return; // Skip servers without names
             
             // Cache lowercased strings on the server object.
             if (!server._nameLower) {
                 server._nameLower = server.name.toLowerCase();
             }
-            if (!server._descLower) {
+            if (!server._descLower && server.description) {
                 server._descLower = server.description.toLowerCase();
             }
             if (server.category && !server._categoryLower) {
@@ -443,7 +452,7 @@ function getFilteredServers(query) {
             }
             
             const nameLower = server._nameLower;
-            const descLower = server._descLower;
+            const descLower = server._descLower || '';
             const categoryLower = server._categoryLower || '';
             const packageLower = server._packageLower || '';
             
@@ -464,7 +473,7 @@ function getFilteredServers(query) {
     // Apply stars filter to search results
     searchResults.forEach(key => {
         const server = preConfiguredServers[key];
-        if (!server) return;
+        if (!server || !server.name || server.name.trim() === '') return; // Skip servers without names
         
         const serverStars = server.stars || 0;
         const matchesStarsFilter = serverStars >= currentStarsFilter;
@@ -496,7 +505,7 @@ function getFilteredServers(query) {
             case 'stars': {
                 const starsA = a.server.stars || 0;
                 const starsB = b.server.stars || 0;
-                return starsB - starsA;
+                return starsB - starsA; // Sort by most stars first (descending)
             }
             default:
                 return (a.server.name || '').localeCompare(b.server.name || '');

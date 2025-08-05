@@ -231,7 +231,9 @@ function createCardElement(item) {
     container.style.padding = '10px';
     
     const card = createServerCard(item.key, item.server);
-    container.appendChild(card);
+    if (card) {
+        container.appendChild(card);
+    }
     
     return container;
 }
