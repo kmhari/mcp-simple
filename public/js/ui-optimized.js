@@ -66,7 +66,7 @@ export async function loadAndDisplayServers() {
             limit: currentLimit,
             search: currentSearchQuery,
             sortBy: currentSortBy,
-            sortOrder: 'asc', // Could be made configurable
+            sortOrder: currentSortBy === 'stars' ? 'desc' : 'asc', // Stars should be descending (most first)
             category: currentCategory,
             minStars: currentStarsFilter,
             maxStars: 999999

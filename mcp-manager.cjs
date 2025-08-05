@@ -1211,11 +1211,13 @@ class MCPManager {
                 const minStars = parseInt(req.query.minStars) || 0;
                 const maxStars = parseInt(req.query.maxStars) || 999999;
 
-                // Convert servers object to array with keys
-                let serversArray = Object.entries(this.preConfiguredServers).map(([key, server]) => ({
-                    ...server,
-                    id: key
-                }));
+                // Convert servers object to array with keys, filtering out servers with undefined names
+                let serversArray = Object.entries(this.preConfiguredServers)
+                    .filter(([key, server]) => server && server.name && server.name.trim() !== '')
+                    .map(([key, server]) => ({
+                        ...server,
+                        id: key
+                    }));
 
                 // Apply search filter
                 if (search) {
