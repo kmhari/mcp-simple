@@ -189,9 +189,10 @@ class MCPManager {
         console.log('9. Create Slack Bot Token');
         console.log('10. Get ClickUp API Key');
         console.log('11. Exit');
-        console.log('\n💡 MCP Server Mode:');
+        console.log('\n💡 MCP Server Modes:');
+        console.log('   Default: Start web interface (http://localhost:3333)');
+        console.log('   Run with --i or --interactive for interactive CLI mode');
         console.log('   Run with --server to start as MCP server for tech stack detection');
-        console.log('   Run with --web to start web interface');
         console.log('   Run with --version to show version number');
         console.log('\nPress q to quit at any time');
         
@@ -1831,13 +1832,16 @@ if (require.main === module) {
         }
     }
     
-    if (args.includes('--web')) {
-        manager.startWebServer();
-    } else {
+    // Check for interactive mode flag
+    if (args.includes('--i') || args.includes('--interactive')) {
+        // Run in interactive mode
         manager.run().catch(error => {
             console.error('Error:', error);
             process.exit(1);
         });
+    } else {
+        // Default to web mode
+        manager.startWebServer();
     }
 }
 
