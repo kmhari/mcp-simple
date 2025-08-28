@@ -20,9 +20,21 @@
                     <span class="project-type" id="projectType"></span>
                 </div>
             </div>
-            <button class="btn-close-server" onclick="confirmStopServer()" title="Stop the MCP Manager server">
-                ✕ Stop Server
-            </button>
+            <div class="header-right">
+                <div class="config-toggle">
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="globalConfigToggle" onchange="toggleConfigMode(this.checked)">
+                        <span class="toggle-slider"></span>
+                    </label>
+                    <span class="config-label">
+                        <span id="configModeLabel">Local</span>
+                        <span id="configPathInfo" class="config-path-info" title=""></span>
+                    </span>
+                </div>
+                <button class="btn-close-server" onclick="confirmStopServer()" title="Stop the MCP Manager server">
+                    ✕ Stop Server
+                </button>
+            </div>
         </div>
         
         <div id="message" class="message"></div>

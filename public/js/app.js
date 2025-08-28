@@ -58,8 +58,96 @@ async function loadProjectInfo() {
     }
 }
 
+// Global config mode state
+let useGlobalConfig = false;
+
+// Initialize config info display
+async function initConfigInfo() {
+    try {
+        const response = await fetch('/api/config-info');
+        const info = await response.json();
+        
+        const label = document.getElementById('configModeLabel');
+        const pathInfo = document.getElementById('configPathInfo');
+        const toggle = document.getElementById('globalConfigToggle');
+        
+        // Set initial state based on stored preference or default
+        const storedMode = localStorage.getItem('mcpConfigMode');
+        if (storedMode === 'global') {
+            useGlobalConfig = true;
+            toggle.checked = true;
+        }
+        
+        updateConfigDisplay(useGlobalConfig ? info.global : info.local, useGlobalConfig);
+    } catch (error) {
+        console.error('Error loading config info:', error);
+    }
+}
+
+// Update config display
+function updateConfigDisplay(configInfo, isGlobal) {
+    const label = document.getElementById('configModeLabel');
+    const pathInfo = document.getElementById('configPathInfo');
+    
+    label.textContent = isGlobal ? 'Global' : 'Local';
+    
+    // Show path and server count
+    const serverText = configInfo.serverCount === 1 ? 'server' : 'servers';
+    pathInfo.textContent = configInfo.exists 
+        ? `${configInfo.serverCount} ${serverText}`
+        : 'No config file';
+    pathInfo.title = configInfo.path;
+}
+
+// Toggle config mode
+async function toggleConfigMode(checked) {
+    useGlobalConfig = checked;
+    
+    // Store preference
+    localStorage.setItem('mcpConfigMode', checked ? 'global' : 'local');
+    
+    try {
+        // Update backend
+        const response = await fetch('/api/config-mode', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ useGlobal: checked })
+        });
+        
+        if (!response.ok) throw new Error('Failed to switch config mode');
+        
+        // Get updated config info
+        const infoResponse = await fetch('/api/config-info');
+        const info = await infoResponse.json();
+        
+        updateConfigDisplay(checked ? info.global : info.local, checked);
+        
+        // Reload config and refresh UI
+        await loadConfig();
+        await updateCurrentServers();
+        
+        // Show message
+        showMessage(`Switched to ${checked ? 'global' : 'local'} configuration`, 'success');
+        
+        // If on config tab, reload it
+        const configTab = document.getElementById('config');
+        if (configTab && configTab.classList.contains('active')) {
+            await loadConfig();
+            document.getElementById('configEditor').value = JSON.stringify(currentConfig, null, 2);
+        }
+    } catch (error) {
+        console.error('Error switching config mode:', error);
+        showMessage('Failed to switch configuration mode', 'error');
+        
+        // Revert toggle
+        document.getElementById('globalConfigToggle').checked = !checked;
+        useGlobalConfig = !checked;
+    }
+}
+
 // Initialize application
 async function init() {
+    await initConfigInfo();
     await loadConfig();
     await loadServers();
     await loadStarsData();
@@ -512,6 +600,7 @@ window.onclick = function(event) {
 }
 
 // Make all functions globally available for HTML onclick handlers
+window.toggleConfigMode = toggleConfigMode;
 window.handleGroupByChange = handleGroupByChange;
 window.handleSortByChange = handleSortByChange;
 window.handleStarsFilterChange = handleStarsFilterChange;

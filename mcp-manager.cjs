@@ -9,7 +9,10 @@ const { execSync } = require('child_process');
 
 class MCPManager {
     constructor() {
-        this.configPath = path.join(process.cwd(), '.claude.json');
+        this.localConfigPath = path.join(process.cwd(), '.claude.json');
+        this.globalConfigPath = path.join(os.homedir(), '.claude.json');
+        this.configPath = this.localConfigPath; // Default to local
+        this.useGlobalConfig = false;
         this.locationsFile = path.join(os.homedir(), '.config', 'mcpsimple', 'locations');
         this.databasePath = path.join(__dirname, 'db.json');
         this.rl = readline.createInterface({
@@ -136,11 +139,21 @@ class MCPManager {
         }
     }
 
-    loadConfig() {
+    setConfigMode(useGlobal) {
+        this.useGlobalConfig = useGlobal;
+        this.configPath = useGlobal ? this.globalConfigPath : this.localConfigPath;
+    }
+
+    loadConfig(useGlobal = null) {
+        // Allow override for specific calls
+        const configPath = useGlobal !== null 
+            ? (useGlobal ? this.globalConfigPath : this.localConfigPath)
+            : this.configPath;
+            
         try {
-            if (fs.existsSync(this.configPath)) {
-                this.registerLocation(this.configPath);
-                const content = fs.readFileSync(this.configPath, 'utf8');
+            if (fs.existsSync(configPath)) {
+                this.registerLocation(configPath);
+                const content = fs.readFileSync(configPath, 'utf8');
                 return JSON.parse(content);
             }
         } catch (error) {
@@ -152,10 +165,15 @@ class MCPManager {
         };
     }
 
-    saveConfig(config) {
+    saveConfig(config, useGlobal = null) {
+        // Allow override for specific calls
+        const configPath = useGlobal !== null 
+            ? (useGlobal ? this.globalConfigPath : this.localConfigPath)
+            : this.configPath;
+            
         try {
-            fs.writeFileSync(this.configPath, JSON.stringify(config, null, 2));
-            this.registerLocation(this.configPath);
+            fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+            this.registerLocation(configPath);
             console.log('✅ Configuration saved successfully!');
         } catch (error) {
             console.log('❌ Error saving config:', error.message);
@@ -1141,16 +1159,66 @@ class MCPManager {
         
         // API Routes
         app.get('/api/config', (req, res) => {
-            res.json(this.loadConfig());
+            const useGlobal = req.query.global === 'true';
+            res.json(this.loadConfig(useGlobal));
         });
         
         app.post('/api/config', (req, res) => {
             try {
-                this.saveConfig(req.body);
+                const useGlobal = req.query.global === 'true';
+                this.saveConfig(req.body, useGlobal);
                 res.json({ success: true });
             } catch (error) {
                 res.status(400).json({ error: error.message });
             }
+        });
+        
+        // Get config info endpoint (shows both local and global status)
+        app.get('/api/config-info', (req, res) => {
+            const localExists = fs.existsSync(this.localConfigPath);
+            const globalExists = fs.existsSync(this.globalConfigPath);
+            
+            let localCount = 0;
+            let globalCount = 0;
+            
+            if (localExists) {
+                try {
+                    const localConfig = this.loadConfig(false);
+                    localCount = Object.keys(localConfig.mcpServers || {}).length;
+                } catch (e) {}
+            }
+            
+            if (globalExists) {
+                try {
+                    const globalConfig = this.loadConfig(true);
+                    globalCount = Object.keys(globalConfig.mcpServers || {}).length;
+                } catch (e) {}
+            }
+            
+            res.json({
+                local: {
+                    path: this.localConfigPath,
+                    exists: localExists,
+                    serverCount: localCount
+                },
+                global: {
+                    path: this.globalConfigPath,
+                    exists: globalExists,
+                    serverCount: globalCount
+                },
+                currentMode: this.useGlobalConfig ? 'global' : 'local'
+            });
+        });
+        
+        // Set config mode endpoint
+        app.post('/api/config-mode', (req, res) => {
+            const { useGlobal } = req.body;
+            this.setConfigMode(useGlobal);
+            res.json({ 
+                success: true, 
+                mode: useGlobal ? 'global' : 'local',
+                path: this.configPath
+            });
         });
         
         // Git cloning endpoint for "self" installType servers
