@@ -6,7 +6,7 @@ let starsData = {};
 let selectedCardIndex = -1;
 let visibleCards = [];
 let currentGroupBy = 'none';
-let currentSortBy = 'a-z'; // Default sort: a-z, options: 'a-z', 'z-a', 'stars'
+let currentSortBy = 'stars'; // Default sort: stars, options: 'stars', 'a-z', 'z-a'
 let currentStarsFilter = 0; // Default to no stars filter
 
 export {
