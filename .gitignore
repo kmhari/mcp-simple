@@ -92,3 +92,5 @@ public/readmes/
 dist/
 /readme-analyzer
 db.json.mcp/
+db.json
+.mcp/
