@@ -1142,8 +1142,9 @@ class MCPManager {
         const app = express();
         const PORT = process.env.PORT || 3333;
         
-        // Middleware
-        app.use(express.json());
+        // Middleware with increased body size limit (10MB)
+        app.use(express.json({ limit: '10mb' }));
+        app.use(express.urlencoded({ limit: '10mb', extended: true }));
         app.use(express.static(path.join(__dirname, 'public')));
         
         // Enable CORS
