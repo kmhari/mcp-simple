@@ -5,6 +5,7 @@
 # Development files
 CLAUDE.md
 .mcp.json
+.claude.json
 
 # OS files
 .DS_Store

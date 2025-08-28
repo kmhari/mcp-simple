@@ -436,13 +436,13 @@ class TechStackMCPServer {
         // Tool 4: Install MCP server (Enhanced with mcp-installer functionality)
         this.server.tool(
             'install-mcp-server',
-            'Install an MCP server to the local .mcp.json configuration or Claude Desktop config',
+            'Install an MCP server to the local .claude.json configuration or Claude Desktop config',
             {
                 serverKey: z.string().describe("The key/identifier of the MCP server to install"),
                 serverName: z.string().optional().describe("Custom name for the server instance"),
                 envVars: z.record(z.string()).optional().describe("Environment variables for the server"),
                 confirmed: z.boolean().optional().default(false).describe("Whether installation has been confirmed"),
-                installToClaudeConfig: z.boolean().optional().default(false).describe("Install to Claude Desktop config instead of .mcp.json")
+                installToClaudeConfig: z.boolean().optional().default(false).describe("Install to Claude Desktop config instead of .claude.json")
             },
             async ({ serverKey, serverName, envVars = {}, confirmed = false, installToClaudeConfig = false }) => {
                 try {
@@ -475,7 +475,7 @@ class TechStackMCPServer {
                                     message: "Please confirm installation of this MCP server by calling this tool again with confirmed: true",
                                     environmentVariables: server.requiredEnvVars || [],
                                     installOptions: {
-                                        localMcpJson: "Install to local .mcp.json file",
+                                        localMcpJson: "Install to local .claude.json file",
                                         claudeDesktop: "Install to Claude Desktop configuration"
                                     }
                                 }, null, 2)
@@ -523,8 +523,8 @@ class TechStackMCPServer {
                         }
                     }
 
-                    // Original .mcp.json installation method
-                    const mcpConfigPath = path.join(process.cwd(), '.mcp.json');
+                    // Original .claude.json installation method
+                    const mcpConfigPath = path.join(process.cwd(), '.claude.json');
                     let mcpConfig = { mcpServers: {} };
                     
                     if (fs.existsSync(mcpConfigPath)) {
@@ -538,7 +538,7 @@ class TechStackMCPServer {
                             return {
                                 content: [{
                                     type: "text",
-                                    text: `Error reading existing .mcp.json: ${parseError.message}`
+                                    text: `Error reading existing .claude.json: ${parseError.message}`
                                 }]
                             };
                         }
@@ -583,7 +583,7 @@ class TechStackMCPServer {
                                 serverKey: serverKey,
                                 configuration: serverConfig,
                                 configurationFile: mcpConfigPath,
-                                message: `Successfully installed ${server.name} as "${finalServerName}" in .mcp.json`
+                                message: `Successfully installed ${server.name} as "${finalServerName}" in .claude.json`
                             }, null, 2)
                         }]
                     };

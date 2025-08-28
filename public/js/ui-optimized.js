@@ -20,6 +20,7 @@ let isLoading = false;
 // Current search and filter state
 let currentSearchQuery = '';
 let currentCategory = '';
+let selectedCategories = new Set();
 
 export function handleGroupByChange(value) {
     setCurrentGroupBy(value);
@@ -67,7 +68,7 @@ export async function loadAndDisplayServers() {
             search: currentSearchQuery,
             sortBy: currentSortBy,
             sortOrder: currentSortBy === 'stars' ? 'desc' : 'asc', // Stars should be descending (most first)
-            category: currentCategory,
+            categories: Array.from(selectedCategories).join(','), // Send selected categories as comma-separated string
             minStars: currentStarsFilter,
             maxStars: 999999
         };
@@ -458,6 +459,100 @@ export function restoreExpandedStates() {
     });
 }
 
+// Load and display categories in sidebar
+export async function loadCategoryFilters() {
+    try {
+        const categories = await apiClient.getCategories();
+        const categoryFiltersContainer = document.getElementById('categoryFilters');
+        
+        if (!categories || categories.length === 0) {
+            categoryFiltersContainer.innerHTML = '<div class="loading-categories">No categories found</div>';
+            return;
+        }
+
+        categoryFiltersContainer.innerHTML = '';
+        
+        categories.forEach(category => {
+            const filterItem = document.createElement('div');
+            filterItem.className = 'category-filter-item';
+            
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.id = `category-${category}`;
+            checkbox.value = category;
+            checkbox.checked = selectedCategories.has(category);
+            checkbox.addEventListener('change', handleCategoryCheckboxChange);
+            
+            const label = document.createElement('label');
+            label.htmlFor = `category-${category}`;
+            label.innerHTML = `
+                <span>${category}</span>
+                <span class="sidebar-category-count" id="count-${category}">•</span>
+            `;
+            
+            filterItem.appendChild(checkbox);
+            filterItem.appendChild(label);
+            categoryFiltersContainer.appendChild(filterItem);
+        });
+
+        // Load category counts
+        updateCategoryCounts();
+        
+    } catch (error) {
+        console.error('Error loading categories:', error);
+        document.getElementById('categoryFilters').innerHTML = '<div class="loading-categories">Error loading categories</div>';
+    }
+}
+
+// Handle category checkbox changes
+export function handleCategoryCheckboxChange(event) {
+    const category = event.target.value;
+    
+    if (event.target.checked) {
+        selectedCategories.add(category);
+    } else {
+        selectedCategories.delete(category);
+    }
+    
+    currentPage = 1; // Reset to first page
+    loadAndDisplayServers();
+}
+
+// Clear all selected categories
+export function clearAllCategories() {
+    selectedCategories.clear();
+    
+    // Uncheck all checkboxes
+    const checkboxes = document.querySelectorAll('#categoryFilters input[type="checkbox"]');
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = false;
+    });
+    
+    currentPage = 1; // Reset to first page
+    loadAndDisplayServers();
+}
+
+// Update category counts with real data from API
+async function updateCategoryCounts() {
+    try {
+        const categoryCounts = await apiClient.getCategoryCounts();
+        const countElements = document.querySelectorAll('[id^="count-"]');
+        
+        countElements.forEach(element => {
+            const categoryName = element.id.replace('count-', '');
+            const count = categoryCounts[categoryName] || 0;
+            element.textContent = count > 0 ? count : '0';
+        });
+    } catch (error) {
+        console.error('Error updating category counts:', error);
+        // Fallback to placeholder if API fails
+        const countElements = document.querySelectorAll('[id^="count-"]');
+        countElements.forEach(element => {
+            element.textContent = '•';
+        });
+    }
+}
+
 // Initialize optimized UI
 export function initOptimizedUI() {
     // Replace the search function in window
@@ -467,6 +562,7 @@ export function initOptimizedUI() {
     window.handleStarsFilterChange = handleStarsFilterChange;
     window.resetStarsFilter = resetStarsFilter;
     window.toggleCategory = toggleCategory;
+    window.clearAllCategories = clearAllCategories;
     window.currentPage = currentPage;
     window.totalPages = totalPages;
     window.goToPage = goToPage;
@@ -478,7 +574,8 @@ export function initOptimizedUI() {
     // Set up search input handler for optimized UI
     initSearchHandler();
     
-    // Load initial data
+    // Load categories and initial data
+    loadCategoryFilters();
     loadAndDisplayServers();
 }
 

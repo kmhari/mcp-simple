@@ -1546,3 +1546,136 @@ h1 {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
 }
+/* Category Sidebar Styles */
+.browse-layout {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+}
+
+.category-sidebar {
+    width: 220px;
+    flex-shrink: 0;
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 15px;
+    box-shadow: inset 1px 1px 1px 0 rgb(255, 255, 255), 
+                inset -1px -1px 1px 0 rgba(0, 0, 0, .15), 
+                .444584px .444584px .628737px -1px rgba(0, 0, 0, .26), 
+                1.21072px 1.21072px 1.71222px -1.5px rgba(0, 0, 0, .247), 
+                2.6583px 2.6583px 3.75941px -2.25px rgba(0, 0, 0, .23), 
+                5.90083px 5.90083px 8.34503px -3px rgba(0, 0, 0, .192), 
+                10px 10px 21.2132px -3.75px rgba(0, 0, 0, .056), 
+                -.5px -.5px 0 0 rgb(0 0 0 / 5%);
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.sidebar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.sidebar-header h3 {
+    color: #2c3e50;
+    font-size: 16px;
+    margin: 0;
+}
+
+.clear-categories-btn {
+    background: none;
+    border: none;
+    color: #666;
+    font-size: 12px;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.clear-categories-btn:hover {
+    background: #e0e0e0;
+    color: #333;
+}
+
+.category-filters {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.category-filter-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 0;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+.category-filter-item:hover {
+    background: rgba(0, 0, 0, 0.05);
+    padding-left: 4px;
+    padding-right: 4px;
+}
+
+.category-filter-item input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
+.category-filter-item label {
+    cursor: pointer;
+    font-size: 13px;
+    color: #333;
+    flex-grow: 1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.sidebar-category-count {
+    font-size: 11px;
+    color: #666;
+    background: #e0e0e0;
+    padding: 2px 6px;
+    border-radius: 10px;
+    min-width: 20px;
+    text-align: center;
+}
+
+.main-content {
+    flex-grow: 1;
+    min-width: 0;
+}
+
+.loading-categories {
+    text-align: center;
+    color: #666;
+    font-size: 13px;
+    padding: 20px 0;
+}
+
+/* Responsive design for smaller screens */
+@media (max-width: 768px) {
+    .browse-layout {
+        flex-direction: column;
+    }
+    
+    .category-sidebar {
+        width: 100%;
+        max-height: 200px;
+        order: 2;
+    }
+    
+    .main-content {
+        order: 1;
+    }
+}
+EOF < /dev/null

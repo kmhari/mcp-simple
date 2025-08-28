@@ -6,6 +6,7 @@ yarn-error.log*
 
 # MCP Configuration files
 .mcp.json
+.claude.json
 
 # Logs
 *.log

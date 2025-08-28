@@ -98,6 +98,42 @@ class APIClient {
     }
 
     /**
+     * Get category counts
+     * @returns {Promise<Object>} Object with category names as keys and counts as values
+     */
+    async getCategoryCounts() {
+        const cacheKey = 'category-counts';
+        
+        if (this.cache.has(cacheKey)) {
+            const cached = this.cache.get(cacheKey);
+            if (Date.now() - cached.timestamp < this.cacheTimeout) {
+                return cached.data;
+            }
+            this.cache.delete(cacheKey);
+        }
+
+        try {
+            const response = await fetch('/api/servers/category-counts');
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            
+            // Cache the result
+            this.cache.set(cacheKey, {
+                data: data,
+                timestamp: Date.now()
+            });
+
+            return data;
+        } catch (error) {
+            console.error('Error fetching category counts:', error);
+            return {};
+        }
+    }
+
+    /**
      * Get search suggestions for autocomplete
      * @param {string} query - Search query
      * @param {number} limit - Maximum suggestions to return

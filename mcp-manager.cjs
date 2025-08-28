@@ -9,7 +9,7 @@ const { execSync } = require('child_process');
 
 class MCPManager {
     constructor() {
-        this.configPath = path.join(process.cwd(), '.mcp.json');
+        this.configPath = path.join(process.cwd(), '.claude.json');
         this.locationsFile = path.join(os.homedir(), '.config', 'mcpsimple', 'locations');
         this.databasePath = path.join(__dirname, 'db.json');
         this.rl = readline.createInterface({
@@ -1207,7 +1207,7 @@ class MCPManager {
                 const search = req.query.search || '';
                 const sortBy = req.query.sortBy || 'name';
                 const sortOrder = req.query.sortOrder || 'asc';
-                const category = req.query.category || '';
+                const categories = req.query.categories ? req.query.categories.split(',').filter(c => c.trim()) : [];
                 const minStars = parseInt(req.query.minStars) || 0;
                 const maxStars = parseInt(req.query.maxStars) || 999999;
 
@@ -1230,10 +1230,12 @@ class MCPManager {
                     );
                 }
 
-                // Apply category filter
-                if (category) {
+                // Apply category filter (support multiple categories)
+                if (categories.length > 0) {
                     serversArray = serversArray.filter(server => 
-                        server.category && server.category.toLowerCase() === category.toLowerCase()
+                        server.category && categories.some(cat => 
+                            server.category.toLowerCase() === cat.toLowerCase()
+                        )
                     );
                 }
 
@@ -1303,7 +1305,7 @@ class MCPManager {
                         search: search,
                         sortBy: sortBy,
                         sortOrder: sortOrder,
-                        category: category,
+                        categories: categories,
                         minStars: minStars,
                         maxStars: maxStars
                     }
@@ -1326,6 +1328,28 @@ class MCPManager {
                 res.json(Array.from(categories).sort());
             } catch (error) {
                 console.error('Error getting categories:', error);
+                res.status(500).json({ error: error.message });
+            }
+        });
+
+        // Get category counts endpoint
+        app.get('/api/servers/category-counts', (req, res) => {
+            try {
+                const categoryCounts = {};
+                
+                // Filter servers with valid names first (same logic as paginated endpoint)
+                const validServers = Object.entries(this.preConfiguredServers)
+                    .filter(([key, server]) => server && server.name && server.name.trim() !== '')
+                    .map(([key, server]) => server);
+                
+                validServers.forEach(server => {
+                    const category = server.category || 'Other';
+                    categoryCounts[category] = (categoryCounts[category] || 0) + 1;
+                });
+                
+                res.json(categoryCounts);
+            } catch (error) {
+                console.error('Error getting category counts:', error);
                 res.status(500).json({ error: error.message });
             }
         });
