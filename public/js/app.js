@@ -75,7 +75,18 @@ async function initConfigInfo() {
         const storedMode = localStorage.getItem('mcpConfigMode');
         if (storedMode === 'global') {
             useGlobalConfig = true;
+            window.useGlobalConfig = true; // Make sure it's globally available
             toggle.checked = true;
+            
+            // Also update the backend to use global mode
+            await fetch('/api/config-mode', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ useGlobal: true })
+            });
+        } else {
+            useGlobalConfig = false;
+            window.useGlobalConfig = false;
         }
         
         updateConfigDisplay(useGlobalConfig ? info.global : info.local, useGlobalConfig);
@@ -101,7 +112,9 @@ function updateConfigDisplay(configInfo, isGlobal) {
 
 // Toggle config mode
 async function toggleConfigMode(checked) {
+    // Update global state first so loadConfig uses the right mode
     useGlobalConfig = checked;
+    window.useGlobalConfig = checked; // Ensure it's available globally
     
     // Store preference
     localStorage.setItem('mcpConfigMode', checked ? 'global' : 'local');
@@ -122,26 +135,34 @@ async function toggleConfigMode(checked) {
         
         updateConfigDisplay(checked ? info.global : info.local, checked);
         
-        // Reload config and refresh UI
+        // Reload config and refresh UI - only call once
         await loadConfig();
-        await updateCurrentServers();
+        
+        // The loadConfig function already calls updateCurrentServers via window object
+        // but let's ensure it's called in case that fails
+        if (window.updateCurrentServers) {
+            await window.updateCurrentServers();
+        }
         
         // Show message
         showMessage(`Switched to ${checked ? 'global' : 'local'} configuration`, 'success');
         
-        // If on config tab, reload it
+        // If on config tab, just update the editor (config already loaded)
         const configTab = document.getElementById('config');
         if (configTab && configTab.classList.contains('active')) {
-            await loadConfig();
-            document.getElementById('configEditor').value = JSON.stringify(currentConfig, null, 2);
+            const configEditor = document.getElementById('configEditor');
+            if (configEditor) {
+                configEditor.value = JSON.stringify(currentConfig, null, 2);
+            }
         }
     } catch (error) {
         console.error('Error switching config mode:', error);
         showMessage('Failed to switch configuration mode', 'error');
         
-        // Revert toggle
+        // Revert toggle and global state
         document.getElementById('globalConfigToggle').checked = !checked;
         useGlobalConfig = !checked;
+        window.useGlobalConfig = !checked;
     }
 }
 

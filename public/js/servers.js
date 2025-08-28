@@ -142,7 +142,9 @@ export async function quickInstallServer(key) {
             // Legacy displayServers no longer needed with optimized UI
             
             // Send request to backend
-            const configResponse = await fetch('/api/config', {
+            const useGlobal = window.useGlobalConfig || false;
+            const url = useGlobal ? '/api/config?global=true' : '/api/config';
+            const configResponse = await fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(config)
@@ -180,7 +182,9 @@ export async function quickInstallServer(key) {
             // Legacy displayServers no longer needed with optimized UI
             
             // Send request to backend
-            const response = await fetch('/api/config', {
+            const useGlobal = window.useGlobalConfig || false;
+            const url = useGlobal ? '/api/config?global=true' : '/api/config';
+            const response = await fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(config)
@@ -233,7 +237,9 @@ export function uninstallServer(key, silent = false) {
         if (window.displayServers && !window.USE_OPTIMIZED_UI) window.displayServers();
         
         // Send request to backend
-        fetch('/api/config', {
+        const useGlobal = window.useGlobalConfig || false;
+        const configUrl = useGlobal ? '/api/config?global=true' : '/api/config';
+        fetch(configUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(config)
@@ -272,7 +278,9 @@ export function removeServer(name) {
         if (window.displayServers && !window.USE_OPTIMIZED_UI) window.displayServers();
         
         // Send request to backend
-        fetch('/api/config', {
+        const useGlobal = window.useGlobalConfig || false;
+        const configUrl = useGlobal ? '/api/config?global=true' : '/api/config';
+        fetch(configUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(config)
