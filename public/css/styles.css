@@ -1640,16 +1640,19 @@ input:checked + .toggle-slider:before {
     background: #f8f9fa;
     border-radius: 8px;
     padding: 15px;
-    box-shadow: inset 1px 1px 1px 0 rgb(255, 255, 255), 
-                inset -1px -1px 1px 0 rgba(0, 0, 0, .15), 
-                .444584px .444584px .628737px -1px rgba(0, 0, 0, .26), 
-                1.21072px 1.21072px 1.71222px -1.5px rgba(0, 0, 0, .247), 
-                2.6583px 2.6583px 3.75941px -2.25px rgba(0, 0, 0, .23), 
-                5.90083px 5.90083px 8.34503px -3px rgba(0, 0, 0, .192), 
-                10px 10px 21.2132px -3.75px rgba(0, 0, 0, .056), 
+    box-shadow: inset 1px 1px 1px 0 rgb(255, 255, 255),
+                inset -1px -1px 1px 0 rgba(0, 0, 0, .15),
+                .444584px .444584px .628737px -1px rgba(0, 0, 0, .26),
+                1.21072px 1.21072px 1.71222px -1.5px rgba(0, 0, 0, .247),
+                2.6583px 2.6583px 3.75941px -2.25px rgba(0, 0, 0, .23),
+                5.90083px 5.90083px 8.34503px -3px rgba(0, 0, 0, .192),
+                10px 10px 21.2132px -3.75px rgba(0, 0, 0, .056),
                 -.5px -.5px 0 0 rgb(0 0 0 / 5%);
-    max-height: 60vh;
+    position: sticky;
+    top: 20px;
+    max-height: calc(100vh - 40px);
     overflow-y: auto;
+    align-self: flex-start;
 }
 
 .sidebar-header {
