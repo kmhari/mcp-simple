@@ -129,6 +129,7 @@ class ResourceBrowser {
         const name = item.name || item.displayName || 'Unnamed';
         const desc = item.description || 'No description';
         const cat = item.category || 'General';
+        const escapedName = name.replace(/'/g, "\\'").replace(/"/g, '&quot;');
 
         return `
             <div class="server-card">
@@ -146,8 +147,8 @@ class ResourceBrowser {
                 <div class="description">${desc}</div>
                 <div class="card-footer">
                     <div class="button-container">
-                        <button onclick="window.browsers['${this.type}'].view('${name}')">View</button>
-                        <button onclick="window.browsers['${this.type}'].install('${name}')">Install</button>
+                        <button onclick="window.browsers['${this.type}'].view('${escapedName}')">View</button>
+                        <button onclick="window.browsers['${this.type}'].install('${escapedName}')">Install</button>
                     </div>
                 </div>
             </div>
@@ -195,7 +196,15 @@ class ResourceBrowser {
 
     async install(name) {
         const item = this.allItems.find(i => (i.name || i.displayName) === name);
-        if (!item) return;
+        if (!item) {
+            alert('❌ Item not found in catalog');
+            return;
+        }
+
+        if (!item.filePath) {
+            alert('❌ No download URL available for this item');
+            return;
+        }
 
         const isGlobal = document.getElementById('globalConfigToggle')?.checked || false;
         const confirmed = confirm(`Install "${name}" to ${isGlobal ? 'global' : 'local'} configuration?`);
@@ -203,15 +212,19 @@ class ResourceBrowser {
         if (!confirmed) return;
 
         try {
+            const payload = {
+                type: this.type,
+                name: item.name || item.displayName,
+                filePath: item.filePath,
+                fileName: item.fileName || null
+            };
+
+            console.log('Installing resource:', payload);
+
             const response = await fetch(`/api/install-resource?global=${isGlobal}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    type: this.type,
-                    name,
-                    filePath: item.filePath,
-                    fileName: item.fileName
-                })
+                body: JSON.stringify(payload)
             });
 
             const result = await response.json();
