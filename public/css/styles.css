@@ -1751,15 +1751,81 @@ input:checked + .toggle-slider:before {
     .browse-layout {
         flex-direction: column;
     }
-    
+
     .category-sidebar {
         width: 100%;
         max-height: 200px;
         order: 2;
     }
-    
+
     .main-content {
         order: 1;
     }
+}
+
+/* Agent Detail Modal Styles */
+.agent-detail-view {
+    padding: 20px 0;
+}
+
+.agent-detail-categories {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.category-badge {
+    display: inline-block;
+    padding: 6px 12px;
+    background: #ececec;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #666;
+    box-shadow: inset 2px 2px 4px #bebebe, inset -2px -2px 4px #ffffff;
+}
+
+.agent-detail-description {
+    margin-bottom: 20px;
+    line-height: 1.6;
+}
+
+.agent-detail-description p {
+    margin: 10px 0;
+    color: #333;
+}
+
+.agent-detail-repo {
+    padding-top: 15px;
+    border-top: 1px solid #d4d4d4;
+    font-size: 13px;
+    color: #666;
+    margin-bottom: 15px;
+}
+
+.agent-detail-actions {
+    margin-top: 20px;
+}
+
+.view-source-btn {
+    padding: 10px 20px;
+    background: #ececec;
+    border: none;
+    border-radius: 8px;
+    color: #666;
+    font-weight: 500;
+    cursor: pointer;
+    box-shadow: 3px 3px 6px #bebebe, -3px -3px 6px #ffffff;
+    transition: all 0.3s ease;
+}
+
+.view-source-btn:hover {
+    color: #2c3e50;
+    box-shadow: 2px 2px 4px #bebebe, -2px -2px 4px #ffffff;
+}
+
+.view-source-btn:active {
+    box-shadow: inset 2px 2px 4px #bebebe, inset -2px -2px 4px #ffffff;
 }
 EOF < /dev/null
