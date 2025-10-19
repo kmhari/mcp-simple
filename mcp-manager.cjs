@@ -1832,7 +1832,68 @@ class MCPManager {
                 });
             }
         });
-        
+
+        // Agent installation endpoint
+        app.post('/api/install-agent', async (req, res) => {
+            try {
+                const { filePath, name } = req.body;
+                const useGlobal = req.query.global === 'true';
+
+                if (!filePath || !name) {
+                    return res.status(400).json({ error: 'Agent filePath and name are required' });
+                }
+
+                // Determine agent directory based on global/local mode
+                const agentsDir = useGlobal
+                    ? path.join(os.homedir(), '.claude', 'agents')
+                    : path.join(process.cwd(), '.claude', 'agents');
+
+                // Create agents directory if it doesn't exist
+                if (!fs.existsSync(agentsDir)) {
+                    fs.mkdirSync(agentsDir, { recursive: true });
+                }
+
+                // Download agent file
+                const fileName = path.basename(filePath);
+                const localPath = path.join(agentsDir, fileName);
+
+                const https = await import('https');
+                const file = fs.createWriteStream(localPath);
+
+                await new Promise((resolve, reject) => {
+                    https.get(filePath, (response) => {
+                        if (response.statusCode !== 200) {
+                            reject(new Error(`Failed to download: ${response.statusCode}`));
+                            return;
+                        }
+
+                        response.pipe(file);
+
+                        file.on('finish', () => {
+                            file.close();
+                            resolve();
+                        });
+                    }).on('error', (err) => {
+                        fs.unlink(localPath, () => {});
+                        reject(err);
+                    });
+                });
+
+                res.json({
+                    success: true,
+                    message: `Agent "${name}" installed successfully`,
+                    path: localPath,
+                    mode: useGlobal ? 'global' : 'local'
+                });
+            } catch (error) {
+                console.error('Agent installation error:', error);
+                res.status(500).json({
+                    error: 'Failed to install agent',
+                    details: error.message
+                });
+            }
+        });
+
         // Shutdown endpoint
         app.post('/api/shutdown', (req, res) => {
             console.log('\n📛 Shutdown request received via web interface');

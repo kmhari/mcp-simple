@@ -275,14 +275,35 @@ async function viewAgentSource(filePath, name) {
 
 async function installAgent(filePath, name) {
     try {
-        const agentDir = `~/.claude/agents`;
-        const fileName = filePath.split('/').pop();
+        // Check if global config mode is enabled
+        const isGlobal = document.getElementById('globalConfigToggle')?.checked || false;
+        const mode = isGlobal ? 'global' : 'local';
 
-        alert(`Agent installation requires manual setup.\n\nDownload: ${filePath}\n\nSave to: ${agentDir}/${fileName}`);
+        // Show loading state
+        const confirmed = confirm(`Install agent "${name}" to ${mode} configuration?\n\n${isGlobal ? 'Global: ~/.claude/agents/' : 'Local: ./.claude/agents/'}`);
 
+        if (!confirmed) {
+            return;
+        }
+
+        const response = await fetch(`/api/install-agent?global=${isGlobal}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ filePath, name })
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(result.error || 'Installation failed');
+        }
+
+        alert(`✅ ${result.message}\n\nInstalled to: ${result.path}`);
     } catch (error) {
         console.error('Failed to install agent:', error);
-        alert('Failed to install agent');
+        alert(`❌ Failed to install agent: ${error.message}`);
     }
 }
 
