@@ -201,6 +201,13 @@ class ResourceBrowser {
             return;
         }
 
+        // Templates are special - they're bundles, not single files
+        if (this.type === 'templates') {
+            const info = `Template: ${item.displayName || item.name}\n\n${item.description}\n\nTemplates are workflow bundles from:\nhttps://github.com/davila7/claude-code-templates\n\nTo install, clone the repository and copy the desired template components to your .claude directory.`;
+            alert(info);
+            return;
+        }
+
         if (!item.filePath) {
             alert('❌ No download URL available for this item');
             return;
