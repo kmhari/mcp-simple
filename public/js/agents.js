@@ -89,7 +89,36 @@ function clearRepoFilters() {
     filterAndRenderAgents();
 }
 
+function calculateRelevanceScore(agent, searchTerm) {
+    if (!searchTerm) return 0;
+
+    const name = (agent.name || '').toLowerCase();
+    const description = (agent.description || '').toLowerCase();
+    const fileName = (agent.fileName || '').toLowerCase();
+    const categories = (agent.categories || []).join(' ').toLowerCase();
+
+    let score = 0;
+
+    // Title matches (highest priority)
+    if (name === searchTerm) score += 1000; // Exact match
+    else if (name.startsWith(searchTerm)) score += 500; // Starts with
+    else if (name.includes(searchTerm)) score += 100; // Contains
+
+    // Description matches (medium priority)
+    if (description.includes(searchTerm)) score += 50;
+
+    // Filename matches (lower priority)
+    if (fileName.includes(searchTerm)) score += 20;
+
+    // Category matches (lowest priority)
+    if (categories.includes(searchTerm)) score += 10;
+
+    return score;
+}
+
 function filterAndRenderAgents() {
+    const searchTerm = document.getElementById('agentSearchInput')?.value.toLowerCase() || '';
+
     filteredAgents = allAgents.filter(agent => {
         // Filter by categories
         if (selectedCategories.size > 0) {
@@ -101,117 +130,63 @@ function filterAndRenderAgents() {
         }
 
         // Filter by search term
-        const searchTerm = document.getElementById('agentSearchInput')?.value.toLowerCase() || '';
         if (searchTerm) {
             return agent.name.toLowerCase().includes(searchTerm) ||
                    agent.fileName.toLowerCase().includes(searchTerm) ||
-                   (agent.description && agent.description.toLowerCase().includes(searchTerm));
+                   (agent.description && agent.description.toLowerCase().includes(searchTerm)) ||
+                   (agent.categories && agent.categories.some(cat => cat.toLowerCase().includes(searchTerm)));
         }
 
         return true;
     });
 
+    // Sort by relevance if there's a search term
+    if (searchTerm) {
+        filteredAgents.sort((a, b) => {
+            const scoreA = calculateRelevanceScore(a, searchTerm);
+            const scoreB = calculateRelevanceScore(b, searchTerm);
+            return scoreB - scoreA; // Higher score first
+        });
+    } else {
+        // Default alphabetical sort when no search
+        filteredAgents.sort((a, b) => a.name.localeCompare(b.name));
+    }
+
     renderAgents();
 }
 
 function renderAgents() {
-    const sortBy = document.getElementById('agentSortSelect')?.value || 'a-z';
+    // filteredAgents is already sorted by relevance in filterAndRenderAgents()
+    let html = '<div class="category-grid">';
+    html += filteredAgents.map(agent => {
+        const categories = (agent.categories || ['General']).join(', ');
+        const description = agent.description || agent.fileName || 'No description available';
 
-    let sorted = [...filteredAgents];
-    if (sortBy === 'a-z') {
-        sorted.sort((a, b) => a.name.localeCompare(b.name));
-    } else if (sortBy === 'z-a') {
-        sorted.sort((a, b) => b.name.localeCompare(a.name));
-    } else if (sortBy === 'category') {
-        sorted.sort((a, b) => {
-            const aCat = (a.categories && a.categories[0]) || 'Uncategorized';
-            const bCat = (b.categories && b.categories[0]) || 'Uncategorized';
-            return aCat.localeCompare(bCat);
-        });
-    }
-
-    // Group agents by category for display when sorted by category
-    if (sortBy === 'category') {
-        const agentsByCategory = {};
-        sorted.forEach(agent => {
-            const category = (agent.categories && agent.categories[0]) || 'Uncategorized';
-
-            if (!agentsByCategory[category]) {
-                agentsByCategory[category] = [];
-            }
-            agentsByCategory[category].push(agent);
-        });
-
-        let html = '';
-        for (const [category, agents] of Object.entries(agentsByCategory)) {
-            html += `<div class="category-section">
-                <h2 class="category-title">${category} <span class="category-count">(${agents.length})</span></h2>
-                <div class="category-grid">`;
-            html += agents.map(agent => {
-                const description = agent.description || agent.fileName || 'No description available';
-                const categories = (agent.categories || ['General']).join(', ');
-                return `
-                <div class="server-card">
-                    <div class="card-header">
-                        <div class="server-logo-placeholder"></div>
-                        <div class="card-header-content">
-                            <div class="server-info">
-                                <h3>${agent.name}</h3>
-                                <div class="owner-name">
-                                    <span class="owner-username">${categories}</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="description">${description}</div>
-                    <div class="card-footer">
-                        <div class="button-container">
-                            <button onclick="viewAgent('${agent.filePath}', '${agent.name}')">View</button>
-                            <button onclick="installAgent('${agent.filePath}', '${agent.name}')">Install</button>
-                        </div>
-                    </div>
-                </div>`;
-            }).join('');
-            html += '</div></div>';
-        }
-        document.getElementById('agentGrid').innerHTML = html || '<p>No agents found</p>';
-    } else {
-        // Regular grid display for other sort options
-        let html = '<div class="category-grid">';
-        html += sorted.map(agent => {
-            const categories = (agent.categories || ['General']).join(', ');
-            const description = agent.description || agent.fileName || 'No description available';
-
-            return `
-            <div class="server-card">
-                <div class="card-header">
-                    <div class="server-logo-placeholder"></div>
-                    <div class="card-header-content">
-                        <div class="server-info">
-                            <h3>${agent.name}</h3>
-                            <div class="owner-name">
-                                <span class="owner-username">${categories}</span>
-                            </div>
+        return `
+        <div class="server-card">
+            <div class="card-header">
+                <div class="server-logo-placeholder"></div>
+                <div class="card-header-content">
+                    <div class="server-info">
+                        <h3>${agent.name}</h3>
+                        <div class="owner-name">
+                            <span class="owner-username">${categories}</span>
                         </div>
                     </div>
                 </div>
-                <div class="description">${description}</div>
-                <div class="card-footer">
-                    <div class="button-container">
-                        <button onclick="viewAgent('${agent.filePath}', '${agent.name}')">View</button>
-                        <button onclick="installAgent('${agent.filePath}', '${agent.name}')">Install</button>
-                    </div>
+            </div>
+            <div class="description">${description}</div>
+            <div class="card-footer">
+                <div class="button-container">
+                    <button onclick="viewAgent('${agent.filePath}', '${agent.name}')">View</button>
+                    <button onclick="installAgent('${agent.filePath}', '${agent.name}')">Install</button>
                 </div>
-            </div>`;
-        }).join('');
-        html += '</div>';
+            </div>
+        </div>`;
+    }).join('');
+    html += '</div>';
 
-        document.getElementById('agentGrid').innerHTML = html || '<p>No agents found</p>';
-    }
-}
-
-function handleAgentSort(value) {
-    renderAgents();
+    document.getElementById('agentGrid').innerHTML = html || '<p>No agents found</p>';
 }
 
 async function viewAgent(filePath, name) {
