@@ -1,0 +1,81 @@
+{
+  "metadata": {
+    "title": "Claude Code Templates Catalog",
+    "description": "Ready-to-use workflow templates from claude-code-templates repository",
+    "totalTemplates": 10,
+    "generatedAt": "2025-10-19T18:10:00.000Z",
+    "source": "https://github.com/davila7/claude-code-templates"
+  },
+  "templates": [
+    {
+      "name": "git-workflow",
+      "displayName": "Git Workflow",
+      "description": "Git workflow automation: feature, release, and hotfix commands with git specialists",
+      "keywords": ["git", "workflow", "automation"],
+      "category": "Version Control"
+    },
+    {
+      "name": "supabase-toolkit",
+      "displayName": "Supabase Toolkit",
+      "description": "Complete Supabase workflow with specialized commands, data engineering agents, and MCP integrations",
+      "keywords": ["supabase", "database", "postgresql", "data"],
+      "category": "Databases"
+    },
+    {
+      "name": "nextjs-vercel-pro",
+      "displayName": "Next.js & Vercel Pro",
+      "description": "Complete Next.js and Vercel development toolkit with deployment automation and performance optimization",
+      "keywords": ["nextjs", "vercel", "react", "deployment", "performance"],
+      "category": "Development"
+    },
+    {
+      "name": "testing-suite",
+      "displayName": "Testing Suite",
+      "description": "Comprehensive testing toolkit with E2E, unit, integration, and visual testing automation",
+      "keywords": ["testing", "qa", "e2e", "automation", "quality"],
+      "category": "Quality Assurance"
+    },
+    {
+      "name": "security-pro",
+      "displayName": "Security Pro",
+      "description": "Enterprise security toolkit with auditing, penetration testing, and compliance automation",
+      "keywords": ["security", "audit", "compliance", "pentesting", "vulnerability"],
+      "category": "Security"
+    },
+    {
+      "name": "ai-ml-toolkit",
+      "displayName": "AI/ML Toolkit",
+      "description": "AI and Machine Learning development suite with data engineering and model deployment tools",
+      "keywords": ["ai", "ml", "machine-learning", "data-science", "nlp"],
+      "category": "AI/ML"
+    },
+    {
+      "name": "devops-automation",
+      "displayName": "DevOps Automation",
+      "description": "DevOps automation suite with CI/CD, infrastructure management, and deployment orchestration",
+      "keywords": ["devops", "cicd", "infrastructure", "deployment", "automation"],
+      "category": "DevOps"
+    },
+    {
+      "name": "documentation-generator",
+      "displayName": "Documentation Generator",
+      "description": "Automated documentation generation with API docs, technical writing, and content management",
+      "keywords": ["documentation", "api-docs", "technical-writing", "markdown"],
+      "category": "Documentation"
+    },
+    {
+      "name": "performance-optimizer",
+      "displayName": "Performance Optimizer",
+      "description": "Performance optimization suite with profiling, bundle analysis, and speed improvement tools",
+      "keywords": ["performance", "optimization", "profiling", "speed", "bundle"],
+      "category": "Performance"
+    },
+    {
+      "name": "project-management-suite",
+      "displayName": "Project Management Suite",
+      "description": "Project management toolkit with sprint planning, task automation, and team collaboration tools",
+      "keywords": ["project-management", "agile", "scrum", "planning", "collaboration"],
+      "category": "Project Management"
+    }
+  ]
+}

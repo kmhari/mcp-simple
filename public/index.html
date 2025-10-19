@@ -16,6 +16,10 @@
         <div class="nav-links">
             <a href="#" class="nav-link active" data-page="mcp-servers" onclick="switchPage('mcp-servers')">MCP Servers</a>
             <a href="#" class="nav-link" data-page="sub-agents" onclick="switchPage('sub-agents')">Sub Agents</a>
+            <a href="#" class="nav-link" data-page="commands" onclick="switchPage('commands')">Commands</a>
+            <a href="#" class="nav-link" data-page="hooks" onclick="switchPage('hooks')">Hooks</a>
+            <a href="#" class="nav-link" data-page="settings" onclick="switchPage('settings')">Settings</a>
+            <a href="#" class="nav-link" data-page="templates" onclick="switchPage('templates')">Templates</a>
         </div>
     </nav>
 
@@ -220,6 +224,27 @@
                 </div>
             </div>
         </div>
+        </div>
+
+        <!-- Commands Page -->
+        <div id="commands-page" class="page-content">
+            <div id="resourceBrowse" data-type="commands"></div>
+        </div>
+
+        <!-- Hooks Page -->
+        <div id="hooks-page" class="page-content">
+            <div id="resourceBrowse" data-type="hooks"></div>
+        </div>
+
+        <!-- Settings Page -->
+        <div id="settings-page" class="page-content">
+            <div id="resourceBrowse" data-type="settings"></div>
+        </div>
+
+        <!-- Templates Page -->
+        <div id="templates-page" class="page-content">
+            <div id="resourceBrowse" data-type="templates"></div>
+        </div>
     </div>
 
     <div id="serverModal" class="modal">
@@ -233,5 +258,6 @@
     <script type="module" src="/js/search-performance.js"></script>
     <script type="module" src="/js/app.js"></script>
     <script src="/js/agents.js"></script>
+    <script src="/js/browse.js"></script>
 </body>
 </html>

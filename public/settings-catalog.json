@@ -1,0 +1,46 @@
+{
+  "metadata": {
+    "title": "Claude Code Settings Catalog",
+    "description": "Settings configurations from claude-code-templates repository",
+    "totalSettings": 5,
+    "generatedAt": "2025-10-19T18:10:00.000Z",
+    "source": "https://github.com/davila7/claude-code-templates"
+  },
+  "settings": [
+    {
+      "name": "Development Settings",
+      "fileName": "development.json",
+      "filePath": "https://raw.githubusercontent.com/davila7/claude-code-templates/main/cli-tool/components/settings/development.json",
+      "description": "Optimized settings for development workflow",
+      "category": "Development"
+    },
+    {
+      "name": "Production Settings",
+      "fileName": "production.json",
+      "filePath": "https://raw.githubusercontent.com/davila7/claude-code-templates/main/cli-tool/components/settings/production.json",
+      "description": "Production-ready settings with security best practices",
+      "category": "Production"
+    },
+    {
+      "name": "Performance Settings",
+      "fileName": "performance.json",
+      "filePath": "https://raw.githubusercontent.com/davila7/claude-code-templates/main/cli-tool/components/settings/performance.json",
+      "description": "Settings optimized for performance",
+      "category": "Performance"
+    },
+    {
+      "name": "Security Settings",
+      "fileName": "security.json",
+      "filePath": "https://raw.githubusercontent.com/davila7/claude-code-templates/main/cli-tool/components/settings/security.json",
+      "description": "Enhanced security configuration",
+      "category": "Security"
+    },
+    {
+      "name": "Team Collaboration Settings",
+      "fileName": "team.json",
+      "filePath": "https://raw.githubusercontent.com/davila7/claude-code-templates/main/cli-tool/components/settings/team.json",
+      "description": "Settings for team collaboration",
+      "category": "Team"
+    }
+  ]
+}

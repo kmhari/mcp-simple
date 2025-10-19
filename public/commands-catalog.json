@@ -1,0 +1,740 @@
+{
+  "metadata": {
+    "title": "Claude Code Commands Catalog",
+    "description": "Slash commands from claude-code-templates",
+    "totalCommands": 50,
+    "generatedAt": "2025-10-19T18:07:19.670Z"
+  },
+  "commands": [
+    {
+      "name": "Git Flow Feature Branch",
+      "fileName": "feature.md",
+      "filePath": "https://raw.githubusercontent.com/davila7/claude-code-templates/main/./cli-tool/components/commands/git/feature.md",
+      "plugin": "git-workflow",
+      "category": "Git",
+      "description": "Create a new Git Flow feature branch from develop with proper naming and tracking",
+      "keywords": [
+        "git",
+        "workflow",
+        "automation"
+      ]
+    },
+    {
+      "name": "Git Flow Release Branch",
+      "fileName": "release.md",
+      "filePath": "https://raw.githubusercontent.com/davila7/claude-code-templates/main/./cli-tool/components/commands/git/release.md",
+      "plugin": "git-workflow",
+      "category": "Git",
+      "description": "Create a new Git Flow release branch from develop with version bumping and changelog generation",
+      "keywords": [
+        "git",
+        "workflow",
+        "automation"
+      ]
+    },
+    {
+      "name": "Git Flow Hotfix Branch",
+      "fileName": "hotfix.md",
+      "filePath": "https://raw.githubusercontent.com/davila7/claude-code-templates/main/./cli-tool/components/commands/git/hotfix.md",
+      "plugin": "git-workflow",
+      "category": "Git",
+      "description": "Create a new Git Flow hotfix branch from main for emergency production fixes",
+      "keywords": [
+        "git",
+        "workflow",
+        "automation"
+      ]
+    },
+    {
+      "name": "Git Flow Finish Branch",
+      "fileName": "finish.md",
+      "filePath": "https://raw.githubusercontent.com/davila7/claude-code-templates/main/./cli-tool/components/commands/git/finish.md",
+      "plugin": "git-workflow",
+      "category": "Git",
+      "description": "Complete and merge current Git Flow branch (feature/release/hotfix) with proper cleanup and tagging",
+      "keywords": [
+        "git",
+        "workflow",
+        "automation"
+      ]
+    },
+    {
+      "name": "Git Flow Status",
+      "fileName": "flow-status.md",
+      "filePath": "https://raw.githubusercontent.com/davila7/claude-code-templates/main/./cli-tool/components/commands/git/flow-status.md",
+      "plugin": "git-workflow",
+      "category": "Git",
+      "description": "Display comprehensive Git Flow status including branch type, sync status, changes, and merge targets",
+      "keywords": [
+        "git",
+        "workflow",
+        "automation"
+      ]
+    },
+    {
+      "name": "Supabase Backup Manager",
+      "fileName": "supabase-backup-manager.md",
+      "filePath": "https://raw.githubusercontent.com/davila7/claude-code-templates/main/./cli-tool/components/commands/database/supabase-backup-manager.md",
+      "plugin": "supabase-toolkit",
+      "category": "Database",
+      "description": "Manage Supabase database backups with automated scheduling and recovery procedures",
+      "keywords": [
+        "supabase",
+        "database",
+        "postgresql",
+        "data"
+      ]
+    },
+    {
+      "name": "Supabase Data Explorer",
+      "fileName": "supabase-data-explorer.md",
+      "filePath": "https://raw.githubusercontent.com/davila7/claude-code-templates/main/./cli-tool/components/commands/database/supabase-data-explorer.md",
+      "plugin": "supabase-toolkit",
+      "category": "Database",
+      "description": "Explore and analyze Supabase database data with intelligent querying and visualization",
+      "keywords": [
+        "supabase",
+        "database",
+        "postgresql",
+        "data"
+      ]
+    },
+    {
+      "name": "Supabase Migration Assistant",
+      "fileName": "supabase-migration-assistant.md",
+      "filePath": "https://raw.githubusercontent.com/davila7/claude-code-templates/main/./cli-tool/components/commands/database/supabase-migration-assistant.md",
+      "plugin": "supabase-toolkit",
+      "category": "Database",
+      "description": "Generate and manage Supabase database migrations with automated testing and validation",
+      "keywords": [
+        "supabase",
+        "database",
+        "postgresql",
+        "data"
+      ]
+    },
+    {
+      "name": "Supabase Performance Optimizer",
+      "fileName": "supabase-performance-optimizer.md",
+      "filePath": "https://raw.githubusercontent.com/davila7/claude-code-templates/main/./cli-tool/components/commands/database/supabase-performance-optimizer.md",
+      "plugin": "supabase-toolkit",
+      "category": "Database",
+      "description": "Optimize Supabase database performance with intelligent analysis and recommendations",
+      "keywords": [
+        "supabase",
+        "database",
+        "postgresql",
+        "data"
+      ]
+    },
+    {
+      "name": "Supabase Schema Sync",
+      "fileName": "supabase-schema-sync.md",
+      "filePath": "https://raw.githubusercontent.com/davila7/claude-code-templates/main/./cli-tool/components/commands/database/supabase-schema-sync.md",
+      "plugin": "supabase-toolkit",
+      "category": "Database",
+      "description": "Synchronize database schema with Supabase using MCP integration",
+      "keywords": [
+        "supabase",
+        "database",
+        "postgresql",
+        "data"
+      ]
+    },
+    {
+      "name": "nextjs scaffold",
+      "fileName": "nextjs-scaffold.md",
+      "filePath": "https://raw.githubusercontent.com/davila7/claude-code-templates/main/./cli-tool/components/commands/nextjs-vercel/nextjs-scaffold.md",
+      "plugin": "nextjs-vercel-pro",
+      "category": "Nextjs Vercel",
+      "description": "Create a new Next.js application with best practices and optimal configuration",
+      "keywords": [
+        "nextjs",
+        "vercel",
+        "react",
+        "deployment",
+        "performance"
+      ]
+    },
+    {
+      "name": "nextjs component generator",
+      "fileName": "nextjs-component-generator.md",
+      "filePath": "https://raw.githubusercontent.com/davila7/claude-code-templates/main/./cli-tool/components/commands/nextjs-vercel/nextjs-component-generator.md",
+      "plugin": "nextjs-vercel-pro",
+      "category": "Nextjs Vercel",
+      "description": "Generate optimized React components for Next.js with TypeScript and best practices",
+      "keywords": [
+        "nextjs",
+        "vercel",
+        "react",
+        "deployment",
+        "performance"
+      ]
+    },
+    {
+      "name": "GET request",
+      "fileName": "nextjs-api-tester.md",
+      "filePath": "https://raw.githubusercontent.com/davila7/claude-code-templates/main/./cli-tool/components/commands/nextjs-vercel/nextjs-api-tester.md",
+      "plugin": "nextjs-vercel-pro",
+      "category": "Nextjs Vercel",
+      "description": "Test and validate Next.js API routes with comprehensive test scenarios",
+      "keywords": [
+        "nextjs",
+        "vercel",
+        "react",
+        "deployment",
+        "performance"
+      ]
+    },
+    {
+      "name": "Install Lighthouse CLI if not available",
+      "fileName": "nextjs-performance-audit.md",
+      "filePath": "https://raw.githubusercontent.com/davila7/claude-code-templates/main/./cli-tool/components/commands/nextjs-vercel/nextjs-performance-audit.md",
+      "plugin": "nextjs-vercel-pro",
+      "category": "Nextjs Vercel",
+      "description": "Comprehensive Next.js performance audit with actionable optimization recommendations",
+      "keywords": [
+        "nextjs",
+        "vercel",
+        "react",
+        "deployment",
+        "performance"
+      ]
+    },
+    {
+      "name": "Build optimization commands",
+      "fileName": "vercel-deploy-optimize.md",
+      "filePath": "https://raw.githubusercontent.com/davila7/claude-code-templates/main/./cli-tool/components/commands/nextjs-vercel/vercel-deploy-optimize.md",
+      "plugin": "nextjs-vercel-pro",
+      "category": "Nextjs Vercel",
+      "description": "Optimize and deploy Next.js application to Vercel with performance monitoring",
+      "keywords": [
+        "nextjs",
+        "vercel",
+        "react",
+        "deployment",
+        "performance"
+      ]
+    },
+    {
+      "name": "vercel edge function",
+      "fileName": "vercel-edge-function.md",
+      "filePath": "https://raw.githubusercontent.com/davila7/claude-code-templates/main/./cli-tool/components/commands/nextjs-vercel/vercel-edge-function.md",
+      "plugin": "nextjs-vercel-pro",
+      "category": "Nextjs Vercel",
+      "description": "Generate optimized Vercel Edge Functions with geolocation, authentication, and data transformation",
+      "keywords": [
+        "nextjs",
+        "vercel",
+        "react",
+        "deployment",
+        "performance"
+      ]
+    },
+    {
+      "name": "List all environment variables for all environments",
+      "fileName": "vercel-env-sync.md",
+      "filePath": "https://raw.githubusercontent.com/davila7/claude-code-templates/main/./cli-tool/components/commands/nextjs-vercel/vercel-env-sync.md",
+      "plugin": "nextjs-vercel-pro",
+      "category": "Nextjs Vercel",
+      "description": "Synchronize environment variables between local development and Vercel deployments",
+      "keywords": [
+        "nextjs",
+        "vercel",
+        "react",
+        "deployment",
+        "performance"
+      ]
+    },
+    {
+      "name": "Generate Tests",
+      "fileName": "generate-tests.md",
+      "filePath": "https://raw.githubusercontent.com/davila7/claude-code-templates/main/./cli-tool/components/commands/testing/generate-tests.md",
+      "plugin": "testing-suite",
+      "category": "Testing",
+      "description": "Generate comprehensive test suite with unit, integration, and edge case coverage",
+      "keywords": [
+        "testing",
+        "qa",
+        "e2e",
+        "automation",
+        "quality"
+      ]
+    },
+    {
+      "name": "E2E Setup",
+      "fileName": "e2e-setup.md",
+      "filePath": "https://raw.githubusercontent.com/davila7/claude-code-templates/main/./cli-tool/components/commands/testing/e2e-setup.md",
+      "plugin": "testing-suite",
+      "category": "Testing",
+      "description": "Configure comprehensive end-to-end testing suite with framework selection and CI integration",
+      "keywords": [
+        "testing",
+        "qa",
+        "e2e",
+        "automation",
+        "quality"
+      ]
+    },
+    {
+      "name": "Test Coverage",
+      "fileName": "test-coverage.md",
+      "filePath": "https://raw.githubusercontent.com/davila7/claude-code-templates/main/./cli-tool/components/commands/testing/test-coverage.md",
+      "plugin": "testing-suite",
+      "category": "Testing",
+      "description": "Analyze and improve test coverage with comprehensive reporting and gap identification",
+      "keywords": [
+        "testing",
+        "qa",
+        "e2e",
+        "automation",
+        "quality"
+      ]
+    },
+    {
+      "name": "Setup Visual Testing",
+      "fileName": "setup-visual-testing.md",
+      "filePath": "https://raw.githubusercontent.com/davila7/claude-code-templates/main/./cli-tool/components/commands/testing/setup-visual-testing.md",
+      "plugin": "testing-suite",
+      "category": "Testing",
+      "description": "Setup comprehensive visual regression testing with cross-browser and responsive testing",
+      "keywords": [
+        "testing",
+        "qa",
+        "e2e",
+        "automation",
+        "quality"
+      ]
+    },
+    {
+      "name": "Setup Load Testing",
+      "fileName": "setup-load-testing.md",
+      "filePath": "https://raw.githubusercontent.com/davila7/claude-code-templates/main/./cli-tool/components/commands/testing/setup-load-testing.md",
+      "plugin": "testing-suite",
+      "category": "Testing",
+      "description": "Configure comprehensive load testing with performance metrics and bottleneck identification",
+      "keywords": [
+        "testing",
+        "qa",
+        "e2e",
+        "automation",
+        "quality"
+      ]
+    },
+    {
+      "name": "Test Automation Orchestrator",
+      "fileName": "test-automation-orchestrator.md",
+      "filePath": "https://raw.githubusercontent.com/davila7/claude-code-templates/main/./cli-tool/components/commands/testing/test-automation-orchestrator.md",
+      "plugin": "testing-suite",
+      "category": "Testing",
+      "description": "Orchestrate comprehensive test automation with intelligent execution and optimization",
+      "keywords": [
+        "testing",
+        "qa",
+        "e2e",
+        "automation",
+        "quality"
+      ]
+    },
+    {
+      "name": "Test Quality Analyzer",
+      "fileName": "test-quality-analyzer.md",
+      "filePath": "https://raw.githubusercontent.com/davila7/claude-code-templates/main/./cli-tool/components/commands/testing/test-quality-analyzer.md",
+      "plugin": "testing-suite",
+      "category": "Testing",
+      "description": "Analyze test suite quality with comprehensive metrics and improvement recommendations",
+      "keywords": [
+        "testing",
+        "qa",
+        "e2e",
+        "automation",
+        "quality"
+      ]
+    },
+    {
+      "name": "Security Audit",
+      "fileName": "security-audit.md",
+      "filePath": "https://raw.githubusercontent.com/davila7/claude-code-templates/main/./cli-tool/components/commands/security/security-audit.md",
+      "plugin": "security-pro",
+      "category": "Security",
+      "description": "Perform comprehensive security assessment and vulnerability analysis",
+      "keywords": [
+        "security",
+        "audit",
+        "compliance",
+        "pentesting",
+        "vulnerability"
+      ]
+    },
+    {
+      "name": "vulnerability scan",
+      "fileName": "vulnerability-scan.md",
+      "filePath": "https://raw.githubusercontent.com/davila7/claude-code-templates/main/./cli-tool/components/commands/security/vulnerability-scan.md",
+      "plugin": "security-pro",
+      "category": "Security",
+      "description": "Enterprise security toolkit with auditing, penetration testing, and compliance automation",
+      "keywords": [
+        "security",
+        "audit",
+        "compliance",
+        "pentesting",
+        "vulnerability"
+      ]
+    },
+    {
+      "name": "Dependency Audit",
+      "fileName": "dependency-audit.md",
+      "filePath": "https://raw.githubusercontent.com/davila7/claude-code-templates/main/./cli-tool/components/commands/security/dependency-audit.md",
+      "plugin": "security-pro",
+      "category": "Security",
+      "description": "Audit dependencies for security vulnerabilities, license compliance, and update recommendations",
+      "keywords": [
+        "security",
+        "audit",
+        "compliance",
+        "pentesting",
+        "vulnerability"
+      ]
+    },
+    {
+      "name": "code security review",
+      "fileName": "code-security-review.md",
+      "filePath": "https://raw.githubusercontent.com/davila7/claude-code-templates/main/./cli-tool/components/commands/security/code-security-review.md",
+      "plugin": "security-pro",
+      "category": "Security",
+      "description": "Enterprise security toolkit with auditing, penetration testing, and compliance automation",
+      "keywords": [
+        "security",
+        "audit",
+        "compliance",
+        "pentesting",
+        "vulnerability"
+      ]
+    },
+    {
+      "name": "setup ci cd pipeline",
+      "fileName": "setup-ci-cd-pipeline.md",
+      "filePath": "https://raw.githubusercontent.com/davila7/claude-code-templates/main/./cli-tool/components/commands/deployment/setup-ci-cd-pipeline.md",
+      "plugin": "devops-automation",
+      "category": "Deployment",
+      "description": "DevOps automation suite with CI/CD, infrastructure management, and deployment orchestration",
+      "keywords": [
+        "devops",
+        "cicd",
+        "infrastructure",
+        "deployment",
+        "automation"
+      ]
+    },
+    {
+      "name": "docker compose setup",
+      "fileName": "docker-compose-setup.md",
+      "filePath": "https://raw.githubusercontent.com/davila7/claude-code-templates/main/./cli-tool/components/commands/deployment/docker-compose-setup.md",
+      "plugin": "devops-automation",
+      "category": "Deployment",
+      "description": "DevOps automation suite with CI/CD, infrastructure management, and deployment orchestration",
+      "keywords": [
+        "devops",
+        "cicd",
+        "infrastructure",
+        "deployment",
+        "automation"
+      ]
+    },
+    {
+      "name": "kubernetes deploy",
+      "fileName": "kubernetes-deploy.md",
+      "filePath": "https://raw.githubusercontent.com/davila7/claude-code-templates/main/./cli-tool/components/commands/deployment/kubernetes-deploy.md",
+      "plugin": "devops-automation",
+      "category": "Deployment",
+      "description": "DevOps automation suite with CI/CD, infrastructure management, and deployment orchestration",
+      "keywords": [
+        "devops",
+        "cicd",
+        "infrastructure",
+        "deployment",
+        "automation"
+      ]
+    },
+    {
+      "name": "monitoring setup",
+      "fileName": "monitoring-setup.md",
+      "filePath": "https://raw.githubusercontent.com/davila7/claude-code-templates/main/./cli-tool/components/commands/deployment/monitoring-setup.md",
+      "plugin": "devops-automation",
+      "category": "Deployment",
+      "description": "DevOps automation suite with CI/CD, infrastructure management, and deployment orchestration",
+      "keywords": [
+        "devops",
+        "cicd",
+        "infrastructure",
+        "deployment",
+        "automation"
+      ]
+    },
+    {
+      "name": "backup strategy",
+      "fileName": "backup-strategy.md",
+      "filePath": "https://raw.githubusercontent.com/davila7/claude-code-templates/main/./cli-tool/components/commands/deployment/backup-strategy.md",
+      "plugin": "devops-automation",
+      "category": "Deployment",
+      "description": "DevOps automation suite with CI/CD, infrastructure management, and deployment orchestration",
+      "keywords": [
+        "devops",
+        "cicd",
+        "infrastructure",
+        "deployment",
+        "automation"
+      ]
+    },
+    {
+      "name": "generate api docs",
+      "fileName": "generate-api-docs.md",
+      "filePath": "https://raw.githubusercontent.com/davila7/claude-code-templates/main/./cli-tool/components/commands/documentation/generate-api-docs.md",
+      "plugin": "documentation-generator",
+      "category": "Documentation",
+      "description": "Automated documentation generation with API docs, technical writing, and content management",
+      "keywords": [
+        "documentation",
+        "api-docs",
+        "technical-writing",
+        "markdown"
+      ]
+    },
+    {
+      "name": "Documentation Update & Synchronization",
+      "fileName": "update-docs.md",
+      "filePath": "https://raw.githubusercontent.com/davila7/claude-code-templates/main/./cli-tool/components/commands/documentation/update-docs.md",
+      "plugin": "documentation-generator",
+      "category": "Documentation",
+      "description": "Systematically update project documentation with implementation status, API changes, and synchronized content",
+      "keywords": [
+        "documentation",
+        "api-docs",
+        "technical-writing",
+        "markdown"
+      ]
+    },
+    {
+      "name": "create user guide",
+      "fileName": "create-user-guide.md",
+      "filePath": "https://raw.githubusercontent.com/davila7/claude-code-templates/main/./cli-tool/components/commands/documentation/create-user-guide.md",
+      "plugin": "documentation-generator",
+      "category": "Documentation",
+      "description": "Automated documentation generation with API docs, technical writing, and content management",
+      "keywords": [
+        "documentation",
+        "api-docs",
+        "technical-writing",
+        "markdown"
+      ]
+    },
+    {
+      "name": "setup docusaurus",
+      "fileName": "setup-docusaurus.md",
+      "filePath": "https://raw.githubusercontent.com/davila7/claude-code-templates/main/./cli-tool/components/commands/documentation/setup-docusaurus.md",
+      "plugin": "documentation-generator",
+      "category": "Documentation",
+      "description": "Automated documentation generation with API docs, technical writing, and content management",
+      "keywords": [
+        "documentation",
+        "api-docs",
+        "technical-writing",
+        "markdown"
+      ]
+    },
+    {
+      "name": "generate changelog",
+      "fileName": "generate-changelog.md",
+      "filePath": "https://raw.githubusercontent.com/davila7/claude-code-templates/main/./cli-tool/components/commands/documentation/generate-changelog.md",
+      "plugin": "documentation-generator",
+      "category": "Documentation",
+      "description": "Automated documentation generation with API docs, technical writing, and content management",
+      "keywords": [
+        "documentation",
+        "api-docs",
+        "technical-writing",
+        "markdown"
+      ]
+    },
+    {
+      "name": "optimize bundle",
+      "fileName": "optimize-bundle.md",
+      "filePath": "https://raw.githubusercontent.com/davila7/claude-code-templates/main/./cli-tool/components/commands/performance/optimize-bundle.md",
+      "plugin": "performance-optimizer",
+      "category": "Performance",
+      "description": "Performance optimization suite with profiling, bundle analysis, and speed improvement tools",
+      "keywords": [
+        "performance",
+        "optimization",
+        "profiling",
+        "speed",
+        "bundle"
+      ]
+    },
+    {
+      "name": "Performance Audit",
+      "fileName": "performance-audit.md",
+      "filePath": "https://raw.githubusercontent.com/davila7/claude-code-templates/main/./cli-tool/components/commands/performance/performance-audit.md",
+      "plugin": "performance-optimizer",
+      "category": "Performance",
+      "description": "Comprehensive performance audit with metrics, bottleneck identification, and optimization recommendations",
+      "keywords": [
+        "performance",
+        "optimization",
+        "profiling",
+        "speed",
+        "bundle"
+      ]
+    },
+    {
+      "name": "add caching",
+      "fileName": "add-caching.md",
+      "filePath": "https://raw.githubusercontent.com/davila7/claude-code-templates/main/./cli-tool/components/commands/performance/add-caching.md",
+      "plugin": "performance-optimizer",
+      "category": "Performance",
+      "description": "Performance optimization suite with profiling, bundle analysis, and speed improvement tools",
+      "keywords": [
+        "performance",
+        "optimization",
+        "profiling",
+        "speed",
+        "bundle"
+      ]
+    },
+    {
+      "name": "optimize images",
+      "fileName": "optimize-images.md",
+      "filePath": "https://raw.githubusercontent.com/davila7/claude-code-templates/main/./cli-tool/components/commands/performance/optimize-images.md",
+      "plugin": "performance-optimizer",
+      "category": "Performance",
+      "description": "Performance optimization suite with profiling, bundle analysis, and speed improvement tools",
+      "keywords": [
+        "performance",
+        "optimization",
+        "profiling",
+        "speed",
+        "bundle"
+      ]
+    },
+    {
+      "name": "reduce bundle size",
+      "fileName": "reduce-bundle-size.md",
+      "filePath": "https://raw.githubusercontent.com/davila7/claude-code-templates/main/./cli-tool/components/commands/performance/reduce-bundle-size.md",
+      "plugin": "performance-optimizer",
+      "category": "Performance",
+      "description": "Performance optimization suite with profiling, bundle analysis, and speed improvement tools",
+      "keywords": [
+        "performance",
+        "optimization",
+        "profiling",
+        "speed",
+        "bundle"
+      ]
+    },
+    {
+      "name": "add lazy loading",
+      "fileName": "add-lazy-loading.md",
+      "filePath": "https://raw.githubusercontent.com/davila7/claude-code-templates/main/./cli-tool/components/commands/performance/add-lazy-loading.md",
+      "plugin": "performance-optimizer",
+      "category": "Performance",
+      "description": "Performance optimization suite with profiling, bundle analysis, and speed improvement tools",
+      "keywords": [
+        "performance",
+        "optimization",
+        "profiling",
+        "speed",
+        "bundle"
+      ]
+    },
+    {
+      "name": "sprint planning",
+      "fileName": "sprint-planning.md",
+      "filePath": "https://raw.githubusercontent.com/davila7/claude-code-templates/main/./cli-tool/components/commands/project-management/sprint-planning.md",
+      "plugin": "project-management-suite",
+      "category": "Project Management",
+      "description": "Project management toolkit with sprint planning, task automation, and team collaboration tools",
+      "keywords": [
+        "project-management",
+        "agile",
+        "scrum",
+        "planning",
+        "collaboration"
+      ]
+    },
+    {
+      "name": "create roadmap",
+      "fileName": "create-roadmap.md",
+      "filePath": "https://raw.githubusercontent.com/davila7/claude-code-templates/main/./cli-tool/components/commands/project-management/create-roadmap.md",
+      "plugin": "project-management-suite",
+      "category": "Project Management",
+      "description": "Project management toolkit with sprint planning, task automation, and team collaboration tools",
+      "keywords": [
+        "project-management",
+        "agile",
+        "scrum",
+        "planning",
+        "collaboration"
+      ]
+    },
+    {
+      "name": "task breakdown",
+      "fileName": "task-breakdown.md",
+      "filePath": "https://raw.githubusercontent.com/davila7/claude-code-templates/main/./cli-tool/components/commands/project-management/task-breakdown.md",
+      "plugin": "project-management-suite",
+      "category": "Project Management",
+      "description": "Project management toolkit with sprint planning, task automation, and team collaboration tools",
+      "keywords": [
+        "project-management",
+        "agile",
+        "scrum",
+        "planning",
+        "collaboration"
+      ]
+    },
+    {
+      "name": "estimate project",
+      "fileName": "estimate-project.md",
+      "filePath": "https://raw.githubusercontent.com/davila7/claude-code-templates/main/./cli-tool/components/commands/project-management/estimate-project.md",
+      "plugin": "project-management-suite",
+      "category": "Project Management",
+      "description": "Project management toolkit with sprint planning, task automation, and team collaboration tools",
+      "keywords": [
+        "project-management",
+        "agile",
+        "scrum",
+        "planning",
+        "collaboration"
+      ]
+    },
+    {
+      "name": "standup generator",
+      "fileName": "standup-generator.md",
+      "filePath": "https://raw.githubusercontent.com/davila7/claude-code-templates/main/./cli-tool/components/commands/project-management/standup-generator.md",
+      "plugin": "project-management-suite",
+      "category": "Project Management",
+      "description": "Project management toolkit with sprint planning, task automation, and team collaboration tools",
+      "keywords": [
+        "project-management",
+        "agile",
+        "scrum",
+        "planning",
+        "collaboration"
+      ]
+    },
+    {
+      "name": "retrospective facilitator",
+      "fileName": "retrospective-facilitator.md",
+      "filePath": "https://raw.githubusercontent.com/davila7/claude-code-templates/main/./cli-tool/components/commands/project-management/retrospective-facilitator.md",
+      "plugin": "project-management-suite",
+      "category": "Project Management",
+      "description": "Project management toolkit with sprint planning, task automation, and team collaboration tools",
+      "keywords": [
+        "project-management",
+        "agile",
+        "scrum",
+        "planning",
+        "collaboration"
+      ]
+    }
+  ]
+}

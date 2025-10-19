@@ -19,9 +19,10 @@ execSync('npm run build', { cwd: rootDir, stdio: 'inherit' });
 console.log('📋 Copying essential files...');
 const filesToCopy = [
   'mcp-manager.cjs',
-  'mcp-manager.js', 
+  'mcp-manager.js',
   'mcp-server.js',
   'db.json',
+  'agents-catalog.json',
   'package.json',
   'LICENSE'
 ];
@@ -46,7 +47,7 @@ if (!fs.existsSync(publicDir)) {
 }
 
 // Move built assets to public directory to match server expectations
-const builtFiles = ['index.html', 'assets'];
+const builtFiles = ['index.html', 'assets', 'agents-catalog.json'];
 builtFiles.forEach(item => {
   const src = path.join(distDir, item);
   const dest = path.join(publicDir, item);
@@ -76,9 +77,10 @@ const deployPackage = {
   bin: originalPackage.bin,
   files: [
     "mcp-manager.js",
-    "mcp-manager.cjs", 
+    "mcp-manager.cjs",
     "mcp-server.js",
     "db.json",
+    "agents-catalog.json",
     "public/",
     "README.md",
     "LICENSE"

@@ -1,0 +1,65 @@
+{
+  "metadata": {
+    "title": "Claude Code Hooks Catalog",
+    "description": "Hook configurations from claude-code-templates repository",
+    "totalHooks": 40,
+    "generatedAt": "2025-10-19T18:10:00.000Z",
+    "source": "https://github.com/davila7/claude-code-templates"
+  },
+  "hooks": [
+    {
+      "name": "Slack Notifications",
+      "fileName": "slack-notifications.json",
+      "filePath": "https://raw.githubusercontent.com/davila7/claude-code-templates/main/cli-tool/components/hooks/automation/slack-notifications.json",
+      "category": "Automation",
+      "description": "Send notifications to Slack when Claude Code performs actions",
+      "hookType": "notification",
+      "events": ["file-edit", "task-complete"]
+    },
+    {
+      "name": "Discord Notifications",
+      "fileName": "discord-notifications.json",
+      "filePath": "https://raw.githubusercontent.com/davila7/claude-code-templates/main/cli-tool/components/hooks/automation/discord-notifications.json",
+      "category": "Automation",
+      "description": "Send notifications to Discord channels",
+      "hookType": "notification",
+      "events": ["file-edit", "task-complete"]
+    },
+    {
+      "name": "Telegram Notifications",
+      "fileName": "telegram-notifications.json",
+      "filePath": "https://raw.githubusercontent.com/davila7/claude-code-templates/main/cli-tool/components/hooks/automation/telegram-notifications.json",
+      "category": "Automation",
+      "description": "Send notifications to Telegram",
+      "hookType": "notification",
+      "events": ["file-edit", "task-complete"]
+    },
+    {
+      "name": "Build On Change",
+      "fileName": "build-on-change.json",
+      "filePath": "https://raw.githubusercontent.com/davila7/claude-code-templates/main/cli-tool/components/hooks/automation/build-on-change.json",
+      "category": "Automation",
+      "description": "Automatically trigger build when files change",
+      "hookType": "automation",
+      "events": ["file-edit"]
+    },
+    {
+      "name": "Dependency Checker",
+      "fileName": "dependency-checker.json",
+      "filePath": "https://raw.githubusercontent.com/davila7/claude-code-templates/main/cli-tool/components/hooks/automation/dependency-checker.json",
+      "category": "Automation",
+      "description": "Check for outdated dependencies",
+      "hookType": "validation",
+      "events": ["file-edit"]
+    },
+    {
+      "name": "Vercel Auto Deploy",
+      "fileName": "vercel-auto-deploy.json",
+      "filePath": "https://raw.githubusercontent.com/davila7/claude-code-templates/main/cli-tool/components/hooks/automation/vercel-auto-deploy.json",
+      "category": "Automation",
+      "description": "Automatically deploy to Vercel",
+      "hookType": "deployment",
+      "events": ["task-complete"]
+    }
+  ]
+}

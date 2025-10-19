@@ -1894,6 +1894,79 @@ class MCPManager {
             }
         });
 
+        // Universal resource installation endpoint
+        app.post('/api/install-resource', async (req, res) => {
+            try {
+                const { type, name, filePath, fileName } = req.body;
+                const useGlobal = req.query.global === 'true';
+
+                if (!type || !name || !filePath) {
+                    return res.status(400).json({ error: 'Missing required fields' });
+                }
+
+                // Determine installation directory based on type
+                const typeMap = {
+                    commands: '.claude/commands',
+                    hooks: '.claude/hooks',
+                    settings: '.claude',
+                    templates: '.claude'
+                };
+
+                const subDir = typeMap[type];
+                if (!subDir) {
+                    return res.status(400).json({ error: 'Invalid resource type' });
+                }
+
+                const baseDir = useGlobal
+                    ? path.join(os.homedir(), subDir)
+                    : path.join(process.cwd(), subDir);
+
+                // Create directory if it doesn't exist
+                if (!fs.existsSync(baseDir)) {
+                    fs.mkdirSync(baseDir, { recursive: true });
+                }
+
+                // Download resource file
+                const targetFile = fileName || path.basename(filePath);
+                const localPath = path.join(baseDir, targetFile);
+
+                const https = await import('https');
+                const file = fs.createWriteStream(localPath);
+
+                await new Promise((resolve, reject) => {
+                    https.get(filePath, (response) => {
+                        if (response.statusCode !== 200) {
+                            reject(new Error(`Failed to download: ${response.statusCode}`));
+                            return;
+                        }
+
+                        response.pipe(file);
+
+                        file.on('finish', () => {
+                            file.close();
+                            resolve();
+                        });
+                    }).on('error', (err) => {
+                        fs.unlink(localPath, () => {});
+                        reject(err);
+                    });
+                });
+
+                res.json({
+                    success: true,
+                    message: `${type.slice(0, -1).charAt(0).toUpperCase() + type.slice(1, -1)} "${name}" installed successfully`,
+                    path: localPath,
+                    mode: useGlobal ? 'global' : 'local'
+                });
+            } catch (error) {
+                console.error('Resource installation error:', error);
+                res.status(500).json({
+                    error: 'Failed to install resource',
+                    details: error.message
+                });
+            }
+        });
+
         // Shutdown endpoint
         app.post('/api/shutdown', (req, res) => {
             console.log('\n📛 Shutdown request received via web interface');
